@@ -267,3 +267,34 @@
   .loginPage { padding: 16px; }
   .loginForm { padding: 27px 21px; }
 }
+
+/* Control legibility pass — compact hierarchy without micro typography. */
+.adminBoundary {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.55;
+}
+
+.adminBoundary p { font-size: 14px !important; font-weight: 500; line-height: 1.65; }
+.adminBoundary small,
+.adminBoundary dt,
+.adminBoundary th { font-size: 12.5px !important; font-weight: 550; line-height: 1.45; }
+.adminBoundary label,
+.adminBoundary label > span,
+.adminBoundary legend { font-size: 13px !important; font-weight: 650 !important; }
+.adminBoundary input,
+.adminBoundary select,
+.adminBoundary textarea { font-size: 14px !important; font-weight: 500; }
+.adminBoundary button,
+.adminBoundary a { font-size: 13px !important; }
+.adminBoundary .navigation a,
+.adminBoundary .disabledLink { font-size: 14px !important; font-weight: 650; }
+.adminBoundary .pageHeading p,
+.adminBoundary .detailHeading p { font-size: 15px !important; }
+.adminBoundary .table { font-size: 13px; }
+.adminBoundary .table td > b,
+.adminBoundary .table td > strong { font-size: 13px !important; }
+.adminBoundary .statusBadge { min-height: 28px; font-size: 12.5px !important; }
+.adminBoundary .itemBody h3 { font-size: 16px; font-weight: 700; }
+.adminBoundary .itemBody dd,
+.adminBoundary .operationList dd { font-size: 13px !important; }

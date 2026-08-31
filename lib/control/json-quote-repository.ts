@@ -20,7 +20,11 @@ import {
   type QuoteUpdateInput
 } from "@/lib/control/quote-contracts";
 import { buildStoredQuote, quoteToInput } from "@/lib/control/quote-calculations";
-import { INITIAL_QUOTE_PRODUCT_INPUTS } from "@/lib/control/quote-seeds";
+import {
+  INITIAL_QUOTE_PRODUCT_INPUTS,
+  LEGACY_QUOTE_PRODUCT_IDS,
+  QUOTE_PRODUCT_SEED_IDS
+} from "@/lib/control/quote-seeds";
 import { QuoteConflictError, QuoteStateError, type ControlQuoteRepository } from "@/lib/control/quote-repository";
 
 const LOCK_TIMEOUT_MS = 6_000;
@@ -41,12 +45,30 @@ function initialState(): ControlRepositoryState {
     counters: {},
     productTemplates: INITIAL_QUOTE_PRODUCT_INPUTS.map((product, index) => ({
       ...product,
-      id: `00000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`,
+      id: QUOTE_PRODUCT_SEED_IDS[index],
       createdAt: timestamp,
       updatedAt: timestamp
     })),
     quotes: []
   });
+}
+
+function reconcileProductSeeds(state: ControlRepositoryState) {
+  const timestamp = new Date().toISOString();
+  const legacyIds = new Set(LEGACY_QUOTE_PRODUCT_IDS);
+  const existingById = new Map(state.productTemplates.map((item) => [item.id, item]));
+  const customProducts = state.productTemplates.filter((item) => (
+    !legacyIds.has(item.id) && !QUOTE_PRODUCT_SEED_IDS.includes(item.id)
+  ));
+  const seededProducts = INITIAL_QUOTE_PRODUCT_INPUTS.map((input, index) => (
+    existingById.get(QUOTE_PRODUCT_SEED_IDS[index]) ?? QuoteProductTemplateSchema.parse({
+      ...input,
+      id: QUOTE_PRODUCT_SEED_IDS[index],
+      createdAt: timestamp,
+      updatedAt: timestamp
+    })
+  ));
+  return { ...state, productTemplates: [...seededProducts, ...customProducts] };
 }
 
 export class JsonControlQuoteRepository implements ControlQuoteRepository {
@@ -210,7 +232,8 @@ export class JsonControlQuoteRepository implements ControlQuoteRepository {
 
   private async readState() {
     try {
-      return ControlRepositoryStateSchema.parse(JSON.parse(await readFile(this.filePath, "utf8")));
+      const state = ControlRepositoryStateSchema.parse(JSON.parse(await readFile(this.filePath, "utf8")));
+      return reconcileProductSeeds(state);
     } catch (error) {
       if (isNodeError(error, "ENOENT")) return initialState();
       throw error;
@@ -259,4 +282,3 @@ export class JsonControlQuoteRepository implements ControlQuoteRepository {
     }
   }
 }
-

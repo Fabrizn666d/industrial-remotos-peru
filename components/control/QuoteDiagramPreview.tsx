@@ -1,14 +1,16 @@
 "use client";
 
+import { useId } from "react";
 import type { QuoteDiagram } from "@/lib/control/quote-contracts";
 import styles from "./QuoteEditor.module.css";
 
 export function QuoteDiagramPreview({ diagram, widthMm, heightMm }: { diagram: QuoteDiagram; widthMm: number | null; heightMm: number | null }) {
+  const markerId = `arrow-${useId().replace(/:/g, "")}`;
   const totalRows = diagram.rows.reduce((sum, row) => sum + row.heightWeight, 0);
   let y = 32;
   return (
     <svg className={styles.diagramPreview} viewBox="0 0 240 180" role="img" aria-label={diagram.name}>
-      <defs><marker id={`arrow-${diagram.presetId}`} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" /></marker></defs>
+      <defs><marker id={markerId} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" /></marker></defs>
       <line x1="45" y1="19" x2="210" y2="19" /><line x1="45" y1="14" x2="45" y2="24" /><line x1="210" y1="14" x2="210" y2="24" />
       <text x="127" y="13" textAnchor="middle">{widthMm ? `${Math.round(widthMm)} mm` : "Ancho"}</text>
       <line x1="29" y1="32" x2="29" y2="146" /><line x1="24" y1="32" x2="34" y2="32" /><line x1="24" y1="146" x2="34" y2="146" />
@@ -31,11 +33,10 @@ export function QuoteDiagramPreview({ diagram, widthMm, heightMm }: { diagram: Q
           return <g key={panel.id}>
             <rect className={styles.diagramPanel} x={panelX + 3} y={rowY + 3} width={Math.max(panelWidth - 6, 1)} height={Math.max(rowHeight - 6, 1)} />
             <text className={styles.diagramLabel} x={centerX} y={centerY + 4} textAnchor="middle">{panel.label}</text>
-            {moving && <line className={styles.diagramMovement} x1={centerX + (rightward ? -12 : 12)} y1={centerY + 14} x2={centerX + (rightward ? 12 : -12)} y2={centerY + 14} markerEnd={`url(#arrow-${diagram.presetId})`} />}
+            {moving && <line className={styles.diagramMovement} x1={centerX + (rightward ? -12 : 12)} y1={centerY + 14} x2={centerX + (rightward ? 12 : -12)} y2={centerY + 14} markerEnd={`url(#${markerId})`} />}
           </g>;
         })}</g>;
       })}
     </svg>
   );
 }
-

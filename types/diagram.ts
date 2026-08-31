@@ -1,10 +1,12 @@
 export type DiagramUnit = "mm" | "cm";
 
 export type DiagramPanelSemantic =
-  | "panel-primary"
-  | "panel-secondary"
-  | "panel-tertiary"
-  | "custom";
+  | "fixed"
+  | "sliding"
+  | "awning"
+  | "casement"
+  | "door"
+  | "unknown";
 
 export type DiagramPanel = {
   id: string;
@@ -31,11 +33,20 @@ export type ConfirmedDimension = {
   verifiedBy: string;
 };
 
+export type DiagramReferenceDimension = {
+  value: number;
+  unit: DiagramUnit;
+};
+
 export type DiagramDefinition = {
   id: string;
   version: number;
   name: string;
   rows: DiagramRow[];
+  /** Non-binding measurement transcribed from the source sheet. */
+  referenceWidth?: DiagramReferenceDimension;
+  /** Non-binding measurement transcribed from the source sheet. */
+  referenceHeight?: DiagramReferenceDimension;
   overallWidth?: ConfirmedDimension;
   overallHeight?: ConfirmedDimension;
   profileSeries?: string;

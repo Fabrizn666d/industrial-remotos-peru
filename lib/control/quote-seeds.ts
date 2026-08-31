@@ -1,134 +1,265 @@
-import type { QuoteDiagram, QuoteProductTemplateInput } from "@/lib/control/quote-contracts";
+import { diagramPresets } from "@/data/diagram-presets";
+import type {
+  QuoteDiagram,
+  QuoteProductCategory,
+  QuoteProductTemplateInput
+} from "@/lib/control/quote-contracts";
 
-function diagram(
-  presetId: string,
-  name: string,
-  rows: QuoteDiagram["rows"]
-): QuoteDiagram {
-  return { presetId, name, rows };
+function toQuoteDiagram(preset: (typeof diagramPresets)[number]): QuoteDiagram {
+  return {
+    presetId: preset.id,
+    name: preset.name,
+    referenceWidth: preset.referenceWidth?.value ?? null,
+    referenceHeight: preset.referenceHeight?.value ?? null,
+    referenceUnit: preset.referenceWidth?.unit ?? preset.referenceHeight?.unit ?? "cm",
+    sourceNote: preset.notes ?? "",
+    rows: preset.rows.map((row) => ({
+      id: row.id,
+      heightWeight: row.heightWeight,
+      panels: row.panels.map((panel) => ({
+        id: panel.id,
+        label: panel.sourceMark ?? panel.publicLabel ?? "",
+        semantic: panel.semantic,
+        sourceMark: panel.sourceMark ?? "",
+        widthWeight: panel.widthWeight,
+        movement: panel.movement ?? "none"
+      }))
+    }))
+  };
 }
 
-const twoSliding = diagram("sketch-two-equal", "Dos hojas corredizas", [{
-  id: "row-1",
-  heightWeight: 1,
-  panels: [
-    { id: "left", label: "C", widthWeight: 1, movement: "right" },
-    { id: "right", label: "C", widthWeight: 1, movement: "left" }
-  ]
-}]);
+export const QUOTE_DIAGRAM_PRESETS: QuoteDiagram[] = diagramPresets.map(toQuoteDiagram);
 
-const fourCentral = diagram("sketch-four-alternating", "Cuatro paños con apertura central", [{
-  id: "row-1",
-  heightWeight: 1,
-  panels: [
-    { id: "fixed-left", label: "F", widthWeight: 1, movement: "none" },
-    { id: "slide-left", label: "C", widthWeight: 1, movement: "right" },
-    { id: "slide-right", label: "C", widthWeight: 1, movement: "left" },
-    { id: "fixed-right", label: "F", widthWeight: 1, movement: "none" }
-  ]
-}]);
+function diagram(number: number) {
+  const id = `IRP-DIAGRAM-${String(number).padStart(2, "0")}`;
+  const value = QUOTE_DIAGRAM_PRESETS.find((item) => item.presetId === id);
+  if (!value) throw new Error(`No existe el preset ${id}`);
+  return value;
+}
 
-const fixedSliding = diagram("sketch-two-asymmetric", "Fijo más hoja corrediza", [{
-  id: "row-1",
-  heightWeight: 1,
-  panels: [
-    { id: "fixed", label: "F", widthWeight: 1, movement: "none" },
-    { id: "sliding", label: "C", widthWeight: 1, movement: "left" }
-  ]
-}]);
+type ProductSeed = {
+  name: string;
+  technicalDescription: string;
+  category: QuoteProductCategory;
+  preset: number;
+  series: string;
+  profile: string;
+  glass: string;
+  finish?: string;
+  sourceReferencePriceUsd: number;
+  diagramNeedsVerification?: boolean;
+};
 
-const upperSlidingLowerFixed = diagram("sketch-upper-two-lower-one", "Dos hojas superiores y fijo inferior", [
-  {
-    id: "upper",
-    heightWeight: 0.48,
-    panels: [
-      { id: "upper-left", label: "C", widthWeight: 1, movement: "right" },
-      { id: "upper-right", label: "C", widthWeight: 1, movement: "left" }
-    ]
-  },
-  {
-    id: "lower",
-    heightWeight: 0.52,
-    panels: [{ id: "lower-fixed", label: "F", widthWeight: 1, movement: "none" }]
-  }
-]);
-
-const fixedPanel = diagram("fixed-single", "Paño fijo", [{
-  id: "row-1",
-  heightWeight: 1,
-  panels: [{ id: "fixed", label: "F", widthWeight: 1, movement: "none" }]
-}]);
+function product({
+  name,
+  technicalDescription,
+  category,
+  preset,
+  series,
+  profile,
+  glass,
+  finish = "Negro mate RAL 9011",
+  sourceReferencePriceUsd,
+  diagramNeedsVerification = false
+}: ProductSeed): QuoteProductTemplateInput {
+  return {
+    name,
+    technicalDescription,
+    category,
+    diagram: structuredClone(diagram(preset)),
+    series,
+    profile,
+    glass,
+    finish,
+    sourceReferencePriceUsd,
+    diagramNeedsVerification,
+    basePriceMinor: 0,
+    active: true
+  };
+}
 
 /**
- * Catálogo inicial editable para comenzar el flujo solicitado. Los importes son
- * precios base en soles y pueden modificarse desde Control antes de emitir.
+ * Catálogo comercial inicial reconstruido desde _CASA_VALENCIA_TERRONES (5).
+ * Los valores USD se conservan únicamente como referencia histórica interna;
+ * todos los precios comerciales PEN comienzan en S/ 0.00.
  */
 export const INITIAL_QUOTE_PRODUCT_INPUTS: QuoteProductTemplateInput[] = [
-  {
-    name: "Ventana corrediza 2 hojas",
-    technicalDescription: "Sistema corredizo de aluminio de dos hojas móviles, vidrio templado incoloro de 8 mm, juntas EPDM y herrajes de cierre.",
-    diagram: twoSliding,
+  product({
+    name: "Fijo doble — cuarto principal",
+    technicalDescription: "Fijo en dos partes unido mediante perfil T del mismo color, acristalado con junta cuña EPDM. Medida fuente referencial: 1300 × 2760 mm.",
+    category: "FIXED",
+    preset: 12,
     series: "ALFA 60",
-    profile: "Aluminio para sistema corredizo",
+    profile: "Perfilería de aluminio ALFA 60 con perfil T",
     glass: "Vidrio templado incoloro de 8 mm",
-    finish: "Negro mate RAL 9011",
-    basePriceMinor: 59_890,
-    active: true
-  },
-  {
-    name: "Mampara corrediza 4 hojas",
-    technicalDescription: "Mampara de cuatro hojas en dos carriles, con paños laterales fijos y hojas centrales corredizas con apertura al centro.",
-    diagram: fourCentral,
-    series: "STYLE 70",
-    profile: "Aluminio para mampara corrediza",
-    glass: "Vidrio laminado de 8 mm",
-    finish: "Negro mate RAL 9011",
-    basePriceMinor: 190_697,
-    active: true
-  },
-  {
-    name: "Fijo + corrediza",
-    technicalDescription: "Composición de dos paños: fijo lateral y hoja corrediza, con perfilería de aluminio, juntas EPDM y sistema de cierre.",
-    diagram: fixedSliding,
+    sourceReferencePriceUsd: 1110.42
+  }),
+  product({
+    name: "Fijo + ventana abatible",
+    technicalDescription: "Composición de paño fijo y ventana abatible. Medida fuente referencial: 400 × 1670 mm.",
+    category: "WINDOW",
+    preset: 8,
     series: "ALFA 60",
-    profile: "Aluminio para sistema fijo/corredizo",
-    glass: "Vidrio laminado de 8 mm",
-    finish: "Negro mate RAL 9011",
-    basePriceMinor: 137_229,
-    active: true
-  },
-  {
-    name: "Ventana superior + fijo inferior",
-    technicalDescription: "Dos hojas superiores corredizas sobre un paño fijo inferior, con perfilería de aluminio y sellos EPDM.",
-    diagram: upperSlidingLowerFixed,
-    series: "ALFA 60",
-    profile: "Aluminio para composición apilada",
-    glass: "Vidrio laminado de 6 mm",
-    finish: "Negro mate RAL 9011",
-    basePriceMinor: 59_890,
-    active: true
-  },
-  {
-    name: "Mampara 2 hojas",
-    technicalDescription: "Conjunto de dos paños: uno fijo y uno corredizo, con vidrio laminado, herrajes y sellos para instalación.",
-    diagram: fixedSliding,
+    profile: "Perfilería de aluminio ALFA 60",
+    glass: "Vidrio templado incoloro de 8 mm",
+    sourceReferencePriceUsd: 488.58,
+    diagramNeedsVerification: true
+  }),
+  product({
+    name: "Mampara corredera 2 hojas",
+    technicalDescription: "Mampara corredera de dos hojas con manilla multipunto, cierre embutido automático y acristalado con junta cuña EPDM. Medida fuente referencial: 2000 × 2300 mm.",
+    category: "MAMPARA",
+    preset: 3,
     series: "STYLE 60",
-    profile: "Aluminio para mampara",
+    profile: "Perfilería de aluminio STYLE 60",
     glass: "Vidrio laminado de 8 mm",
-    finish: "Negro mate RAL 9011",
-    basePriceMinor: 179_883,
-    active: true
-  },
-  {
-    name: "Paño fijo vertical",
-    technicalDescription: "Paño fijo vertical con perfil perimetral de aluminio, vidrio templado incoloro y sello EPDM.",
-    diagram: fixedPanel,
+    sourceReferencePriceUsd: 1798.83
+  }),
+  product({
+    name: "Puerta 1 hoja + fijo derecho",
+    technicalDescription: "Puerta de una hoja con fijo derecho, apertura interior, manilla recuperable, cerradura de acero inoxidable y junta EPDM. Medida fuente referencial: 1500 × 2300 mm.",
+    category: "DOOR",
+    preset: 8,
     series: "ALFA 60",
-    profile: "Perfil perimetral de aluminio",
+    profile: "Perfilería de aluminio ALFA 60 para puerta y fijo",
+    glass: "Vidrio laminado de 8 mm",
+    sourceReferencePriceUsd: 1372.29,
+    diagramNeedsVerification: true
+  }),
+  product({
+    name: "Ventana proyectante superior + fijo inferior",
+    technicalDescription: "Ventana proyectante superior y fijo inferior, con brazos de acero inoxidable para apertura exterior y junta EPDM. Medida fuente referencial: 400 × 1670 mm.",
+    category: "WINDOW",
+    preset: 6,
+    series: "ALFA 60",
+    profile: "Perfilería de aluminio ALFA 60",
+    glass: "Vidrio laminado de 6 mm",
+    sourceReferencePriceUsd: 363.16,
+    diagramNeedsVerification: true
+  }),
+  product({
+    name: "Puerta 1 hoja",
+    technicalDescription: "Puerta de una hoja con apertura interior, manilla recuperable, cerradura de acero inoxidable y junta cuña EPDM. Medida fuente referencial: 1000 × 2300 mm.",
+    category: "DOOR",
+    preset: 7,
+    series: "ALFA 60",
+    profile: "Perfilería de aluminio ALFA 60 para puerta",
     glass: "Vidrio templado incoloro de 8 mm",
-    finish: "Negro mate RAL 9011",
-    basePriceMinor: 36_316,
-    active: true
-  }
+    sourceReferencePriceUsd: 1022.10,
+    diagramNeedsVerification: true
+  }),
+  product({
+    name: "Proyectante + composición fija superior/inferior",
+    technicalDescription: "Composición fija en dos partes superior e inferior más ventana proyectante, con brazos de acero inoxidable para apertura exterior y junta EPDM. Medida fuente referencial: 400 × 2630 mm.",
+    category: "WINDOW",
+    preset: 10,
+    series: "ALFA 60",
+    profile: "Perfilería de aluminio ALFA 60",
+    glass: "Vidrio laminado de 6 mm",
+    sourceReferencePriceUsd: 598.90,
+    diagramNeedsVerification: true
+  }),
+  product({
+    name: "Oscilobatiente superior + fijo inferior",
+    technicalDescription: "Ventana oscilobatiente de una hoja superior más fijo inferior, con apertura interior, sistema oscilo, bisagra y seguro de acero inoxidable. Medida fuente referencial: 700 × 2100 mm.",
+    category: "WINDOW",
+    preset: 11,
+    series: "ALFA 60",
+    profile: "Perfilería de aluminio ALFA 60",
+    glass: "Vidrio laminado de 6 mm",
+    sourceReferencePriceUsd: 664.20,
+    diagramNeedsVerification: true
+  }),
+  product({
+    name: "Paño fijo 900 × 2300",
+    technicalDescription: "Paño fijo acristalado con junta cuña EPDM. Medida fuente referencial: 900 × 2300 mm.",
+    category: "FIXED",
+    preset: 7,
+    series: "ALFA 60",
+    profile: "Perfilería perimetral de aluminio ALFA 60",
+    glass: "Vidrio templado incoloro de 8 mm",
+    sourceReferencePriceUsd: 724.79
+  }),
+  product({
+    name: "Paño fijo 900 × 2500",
+    technicalDescription: "Paño fijo acristalado con junta cuña EPDM. Medida fuente referencial: 900 × 2500 mm.",
+    category: "FIXED",
+    preset: 7,
+    series: "ALFA 60",
+    profile: "Perfilería perimetral de aluminio ALFA 60",
+    glass: "Vidrio templado incoloro de 8 mm",
+    sourceReferencePriceUsd: 761.30
+  }),
+  product({
+    name: "Puerta 1 hoja + fijo lateral",
+    technicalDescription: "Puerta de una hoja combinada con paño fijo, ambos con vidrio laminado. Medida fuente referencial: 1900 × 2280 mm.",
+    category: "DOOR",
+    preset: 15,
+    series: "ALFA 60",
+    profile: "Perfilería de aluminio ALFA 60 para puerta y fijo",
+    glass: "Vidrio laminado de 8 mm",
+    sourceReferencePriceUsd: 1591.15,
+    diagramNeedsVerification: true
+  }),
+  product({
+    name: "Ventana practicable 2 hojas + paños fijos",
+    technicalDescription: "Composición con cuatro paños fijos, dos superiores y dos inferiores, más ventana practicable de dos hojas con apertura interior panorámica, manilla en hoja activa y pasador en hoja pasiva. Medida fuente referencial: 2000 × 2300 mm.",
+    category: "WINDOW",
+    preset: 17,
+    series: "ALFA 60",
+    profile: "Perfilería de aluminio ALFA 60",
+    glass: "Vidrio templado incoloro de 8 mm",
+    sourceReferencePriceUsd: 2081.18,
+    diagramNeedsVerification: true
+  }),
+  product({
+    name: "Puerta doble — hoja activa + pasiva",
+    technicalDescription: "Puerta con hoja izquierda pasiva y hoja activa derecha de apertura interior, manilla recuperable en hoja activa y pasadores de seguridad en hoja pasiva. Medida fuente referencial: 2100 × 2600 mm.",
+    category: "DOOR",
+    preset: 16,
+    series: "ALFA 60",
+    profile: "Perfilería de aluminio ALFA 60 para puerta doble",
+    glass: "Vidrio laminado de 8 mm",
+    sourceReferencePriceUsd: 1919.70,
+    diagramNeedsVerification: true
+  }),
+  product({
+    name: "Mampara corredera 4 hojas — 2 carriles",
+    technicalDescription: "Mampara corredera de cuatro hojas en dos carriles, apertura central, manilla multipunto y cierre embutido automático en hojas laterales. Medida fuente referencial: 2840 × 2540 mm.",
+    category: "MAMPARA",
+    preset: 9,
+    series: "STYLE 70",
+    profile: "Perfilería de aluminio STYLE 70 para dos carriles",
+    glass: "Vidrio laminado de 8 mm",
+    sourceReferencePriceUsd: 1906.97
+  }),
+  product({
+    name: "Mampara corredera 4 hojas — templado",
+    technicalDescription: "Mampara corredera de cuatro hojas con apertura central, manilla multipunto, cierre embutido automático y junta cuña EPDM. Medida fuente referencial: 3880 × 2880 mm.",
+    category: "MAMPARA",
+    preset: 2,
+    series: "STYLE 70",
+    profile: "Perfilería de aluminio STYLE 70",
+    glass: "Vidrio templado incoloro de 8 mm",
+    sourceReferencePriceUsd: 2431.81
+  }),
+  product({
+    name: "Mampara corredera 4 hojas — pavonado",
+    technicalDescription: "Mampara corredera de cuatro hojas con apertura central, manilla multipunto, cierre embutido automático y junta cuña EPDM. Medida fuente referencial: 3430 × 2500 mm.",
+    category: "MAMPARA",
+    preset: 9,
+    series: "STYLE 70",
+    profile: "Perfilería de aluminio STYLE 70",
+    glass: "Vidrio laminado pavonado de 8 mm",
+    sourceReferencePriceUsd: 3708.89
+  })
 ];
 
+export const LEGACY_QUOTE_PRODUCT_IDS = Array.from(
+  { length: 6 },
+  (_, index) => `00000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`
+);
+
+export const QUOTE_PRODUCT_SEED_IDS = INITIAL_QUOTE_PRODUCT_INPUTS.map(
+  (_, index) => `00000000-0000-4000-9000-${String(index + 1).padStart(12, "0")}`
+);

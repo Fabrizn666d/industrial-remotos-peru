@@ -135,19 +135,27 @@
 .editorFooter > button:disabled { opacity: .4; cursor: not-allowed; }
 
 .modalBackdrop { position: fixed; z-index: 100; inset: 0; display: grid; place-items: center; overflow-y: auto; background: rgba(1,12,23,.64); padding: 28px; backdrop-filter: blur(5px); }
-.productModal { width: min(970px,100%); max-height: min(850px,90vh); overflow: hidden; border-radius: 18px; background: #fff; box-shadow: 0 35px 100px rgba(0,0,0,.3); }
+.productModal { display: grid; width: min(1040px,100%); max-height: min(850px,90vh); grid-template-rows: auto auto minmax(0,1fr); overflow: hidden; border-radius: 18px; background: #fff; box-shadow: 0 35px 100px rgba(0,0,0,.3); }
 .productModal > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; border-bottom: 1px solid #e3eaf1; padding: 23px; }
 .productModal > header span { color: #087eff; font-size: 8px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
 .productModal > header h2 { margin: 5px 0; color: #0e2035; font-size: 20px; }
 .productModal > header p { margin: 0; color: #758598; font-size: 9px; }
 .productModal > header > button { display: grid; width: 35px; height: 35px; flex: 0 0 auto; place-items: center; border: 1px solid #d7e1eb; border-radius: 9px; background: #fff; color: #52677b; cursor: pointer; }
-.productGrid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; max-height: calc(90vh - 125px); overflow-y: auto; padding: 18px; }
+.productSearch { display: grid; grid-template-columns: minmax(260px,1fr) auto auto; gap: 12px; align-items: center; border-bottom: 1px solid #e4ebf2; background: #f8fafc; padding: 13px 18px; }
+.productSearch > label { display: flex; min-height: 42px; align-items: center; gap: 9px; border: 1px solid #d3dfea; border-radius: 9px; background: #fff; padding: 0 12px; color: #75869a; }
+.productSearch input { min-width: 0; width: 100%; border: 0; outline: 0; color: #172b42; font-size: 13px; }
+.productSearch > div { display: flex; gap: 6px; overflow-x: auto; }
+.productSearch > div button { min-height: 35px; border: 1px solid #d4e0ea; border-radius: 999px; background: #fff; padding: 0 11px; color: #53677b; font-size: 12.5px; font-weight: 650; white-space: nowrap; cursor: pointer; }
+.productSearch > div button.activeProductFilter { border-color: #087eff; background: #e9f4ff; color: #086dcc; }
+.productSearch > span { color: #718296; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+.productGrid { display: grid; min-height: 0; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; overflow-y: auto; padding: 18px; }
 .productGrid > button { display: grid; grid-template-columns: 155px minmax(0,1fr); gap: 13px; align-items: center; border: 1px solid #dbe5ef; border-radius: 13px; background: #fff; padding: 12px; color: inherit; text-align: left; cursor: pointer; transition: border-color .18s,box-shadow .18s,transform .18s; }
 .productGrid > button:hover { transform: translateY(-2px); border-color: #5ca8f5; box-shadow: 0 10px 26px rgba(13,85,155,.1); }
 .productGrid h3 { margin: 0 0 6px; color: #15304d; font-size: 11px; }
 .productGrid p { display: -webkit-box; overflow: hidden; margin: 0 0 7px; color: #6f7f91; font-size: 8px; line-height: 1.45; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
 .productGrid span { display: block; color: #708299; font-size: 7px; }
 .productGrid strong { display: block; margin-top: 7px; color: #0874e6; font-size: 12px; }
+.productSearchEmpty { grid-column: 1 / -1; border: 1px dashed #bdccda; border-radius: 12px; padding: 40px 20px; color: #66798d; font-size: 14px; text-align: center; }
 
 @media (max-width: 1050px) {
   .conditionsLayout { grid-template-columns: 1fr; }
@@ -155,6 +163,8 @@
   .itemSimple { grid-template-columns: 220px minmax(0,1fr); }
   .itemFields { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .productGrid { grid-template-columns: 1fr; }
+  .productSearch { grid-template-columns: 1fr; }
+  .productSearch > span { justify-self: end; }
 }
 
 @media (max-width: 760px) {
@@ -197,3 +207,41 @@
   .editorFooter > button,.editorFooter > a { width: 100%; justify-content: center; }
   .productGrid > button { grid-template-columns: 115px minmax(0,1fr); }
 }
+
+/* Readability floor for the operational editor. */
+.editorHeader > div:first-child > a { font-size: 13px; }
+.editorHeader > div:first-child > span { font-size: 12.5px; }
+.editorHeader p { font-size: 14px; }
+.headerActions a,.headerActions button,.addProduct,.nextAction { font-size: 13px; }
+.steps button { font-size: 13px; }
+.steps button > span { font-size: 12px; }
+.feedback,.lockedNotice { font-size: 13px; }
+.cardHeading > div > span { font-size: 12.5px; }
+.cardHeading p { font-size: 14px; }
+.field > span { font-size: 13px; }
+.field input,.field textarea,.field select,.field output { font-size: 14px; }
+.projectDetails summary { font-size: 13px; }
+.productEmpty span { font-size: 13px; }
+.itemHeader > div:first-child > span { font-size: 12px; }
+.itemHeader small { font-size: 12px; }
+.itemHeader h3 { font-size: 16px; font-weight: 700; }
+.includeSwitch,.advancedToggle,.checkField { font-size: 13px; }
+.diagramBox small { font-size: 12.5px; }
+.technicalFields h4 { font-size: 14px; }
+.technicalFields button,.diagramEditor > button { font-size: 12.5px; }
+.technicalFieldRow input,.diagramPanelEditor input,.diagramPanelEditor select { font-size: 13px; }
+.diagramEditor > div > p,.diagramPanelEditor span { font-size: 13px; }
+.totalsCard > span { font-size: 12.5px; }
+.totalsCard label { font-size: 13px; }
+.totalsCard footer span { font-size: 14px; }
+.totalsCard footer strong { font-size: 20px; }
+.totalsCard > small { font-size: 12.5px; }
+.previewEmpty button,.finalActions a,.finalActions button,.editorFooter > button,.editorFooter > a { font-size: 13px; }
+.finalActions p { font-size: 14px; }
+.editorFooter > span { font-size: 12.5px; }
+.productModal > header span { font-size: 12.5px; }
+.productModal > header p { font-size: 14px; }
+.productGrid h3 { font-size: 16px; font-weight: 700; }
+.productGrid p { font-size: 13px; }
+.productGrid span { font-size: 12.5px; }
+.productGrid strong { font-size: 18px; }

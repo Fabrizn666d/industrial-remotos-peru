@@ -15,6 +15,7 @@ import {
   Loader2,
   Plus,
   Save,
+  Search,
   Settings2,
   Trash2,
   X
@@ -23,11 +24,23 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { calculateQuoteItem, calculateQuoteTotals, formatPen, quoteToInput } from "@/lib/control/quote-calculations";
-import type { Quote, QuoteInput, QuoteItemInput, QuoteProductTemplate } from "@/lib/control/quote-contracts";
+import type { Quote, QuoteInput, QuoteItemInput, QuoteProductCategory, QuoteProductTemplate } from "@/lib/control/quote-contracts";
 import { QuoteDiagramPreview } from "./QuoteDiagramPreview";
 import styles from "./QuoteEditor.module.css";
 
 const steps = ["Datos básicos", "Productos", "Condiciones y totales", "Vista previa", "Generar PDF"];
+
+const productCategories: { value: "ALL" | QuoteProductCategory; label: string }[] = [
+  { value: "ALL", label: "Todos" },
+  { value: "WINDOW", label: "Ventanas" },
+  { value: "MAMPARA", label: "Mamparas" },
+  { value: "DOOR", label: "Puertas" },
+  { value: "FIXED", label: "Fijos" }
+];
+
+function normalizeSearch(value: string) {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("es-PE");
+}
 
 function dateInput(date: Date) {
   const year = date.getFullYear();
@@ -121,6 +134,8 @@ export function QuoteEditor({ initialQuote, products }: QuoteEditorProps) {
   const [revision, setRevision] = useState(initialQuote?.revision ?? null);
   const [status, setStatus] = useState(initialQuote?.status ?? "DRAFT");
   const [selectorOpen, setSelectorOpen] = useState(false);
+  const [productQuery, setProductQuery] = useState("");
+  const [productCategory, setProductCategory] = useState<"ALL" | QuoteProductCategory>("ALL");
   const [advanced, setAdvanced] = useState<string[]>([]);
   const [diagramEditing, setDiagramEditing] = useState<string[]>([]);
   const [pending, setPending] = useState(false);
@@ -137,6 +152,19 @@ export function QuoteEditor({ initialQuote, products }: QuoteEditorProps) {
     }
   }), [data.items]);
   const totals = useMemo(() => calculateQuoteTotals(calculatedItems, data.adjustments), [calculatedItems, data.adjustments]);
+  const availableProducts = useMemo(() => {
+    const needle = normalizeSearch(productQuery.trim());
+    return products.filter((product) => (
+      product.active
+      && (productCategory === "ALL" || product.category === productCategory)
+      && (!needle || normalizeSearch([
+        product.name,
+        product.series,
+        product.glass,
+        product.technicalDescription
+      ].join(" ")).includes(needle))
+    ));
+  }, [productCategory, productQuery, products]);
 
   function updateClient(field: keyof QuoteInput["client"], value: string) {
     setData((current) => ({ ...current, client: { ...current.client, [field]: value } }));
@@ -354,7 +382,7 @@ export function QuoteEditor({ initialQuote, products }: QuoteEditorProps) {
 
       <footer className={styles.editorFooter}><button type="button" onClick={() => setStep((current) => Math.max(0, current - 1))} disabled={step === 0 || pending}><ArrowLeft size={16} /> Anterior</button><span>Paso {step + 1} de {steps.length}</span>{step < steps.length - 1 ? <button className={styles.nextAction} type="button" onClick={goNext} disabled={pending}>Continuar <ArrowRight size={16} /></button> : <Link className={styles.nextAction} href="/admin/cotizaciones">Finalizar <Check size={16} /></Link>}</footer>
 
-      {selectorOpen && <div className={styles.modalBackdrop} role="presentation" onMouseDown={(event) => { if (event.currentTarget === event.target) setSelectorOpen(false); }}><section className={styles.productModal} role="dialog" aria-modal="true" aria-label="Agregar producto"><header><div><span>Catálogo de cotización</span><h2>Selecciona un producto</h2><p>Se copiarán su SVG, descripción técnica y precio base. Todo seguirá siendo editable.</p></div><button type="button" onClick={() => setSelectorOpen(false)} aria-label="Cerrar"><X size={19} /></button></header><div className={styles.productGrid}>{products.filter((product) => product.active).map((product) => <button type="button" key={product.id} onClick={() => addProduct(product)}><QuoteDiagramPreview diagram={product.diagram} widthMm={null} heightMm={null} /><div><h3>{product.name}</h3><p>{product.technicalDescription}</p><span>{product.series || "Serie editable"}</span><strong>{formatPen(product.basePriceMinor)}</strong></div></button>)}</div></section></div>}
+      {selectorOpen && <div className={styles.modalBackdrop} role="presentation" onMouseDown={(event) => { if (event.currentTarget === event.target) setSelectorOpen(false); }}><section className={styles.productModal} role="dialog" aria-modal="true" aria-label="Agregar producto"><header><div><span>Catálogo de cotización</span><h2>Selecciona un producto</h2><p>Se copiarán su SVG, descripción técnica y precio base. Todo seguirá siendo editable.</p></div><button type="button" onClick={() => setSelectorOpen(false)} aria-label="Cerrar"><X size={19} /></button></header><div className={styles.productSearch}><label><Search size={18} /><input autoFocus value={productQuery} onChange={(event) => setProductQuery(event.target.value)} placeholder="Buscar por nombre, serie o vidrio..." /></label><div>{productCategories.map((option) => <button className={productCategory === option.value ? styles.activeProductFilter : ""} type="button" key={option.value} onClick={() => setProductCategory(option.value)}>{option.label}</button>)}</div><span>{availableProducts.length} resultado{availableProducts.length === 1 ? "" : "s"}</span></div><div className={styles.productGrid}>{availableProducts.map((product) => <button type="button" key={product.id} onClick={() => addProduct(product)}><QuoteDiagramPreview diagram={product.diagram} widthMm={null} heightMm={null} /><div><h3>{product.name}</h3><p>{product.technicalDescription}</p><span>{product.series || "Serie editable"} · {product.glass || "Vidrio editable"}</span><strong>{formatPen(product.basePriceMinor)}</strong></div></button>)}{!availableProducts.length && <div className={styles.productSearchEmpty}>No encontramos productos con esos filtros.</div>}</div></section></div>}
     </div>
   );
 }

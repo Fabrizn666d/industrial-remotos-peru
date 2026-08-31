@@ -18,7 +18,11 @@ import {
 } from "@/lib/control/quote-contracts";
 import { buildStoredQuote, quoteToInput } from "@/lib/control/quote-calculations";
 import { QuoteConflictError, QuoteStateError, type ControlQuoteRepository } from "@/lib/control/quote-repository";
-import { INITIAL_QUOTE_PRODUCT_INPUTS } from "@/lib/control/quote-seeds";
+import {
+  INITIAL_QUOTE_PRODUCT_INPUTS,
+  LEGACY_QUOTE_PRODUCT_IDS,
+  QUOTE_PRODUCT_SEED_IDS
+} from "@/lib/control/quote-seeds";
 
 type PoolFactory = () => Pool;
 type Queryable = Pick<Pool, "query"> | Pick<PoolClient, "query">;
@@ -125,22 +129,28 @@ export class PostgresControlQuoteRepository implements ControlQuoteRepository {
 
   private async seedProductsIfNeeded() {
     const pool = this.poolFactory();
-    const count = await pool.query<{ total: number }>("SELECT count(*)::int AS total FROM irp_quote_product_templates");
-    if ((count.rows[0]?.total ?? 0) > 0) return;
+    const seeded = await pool.query<{ total: number }>(
+      "SELECT count(*)::int AS total FROM irp_quote_product_templates WHERE id = ANY($1::uuid[])",
+      [QUOTE_PRODUCT_SEED_IDS]
+    );
+    if ((seeded.rows[0]?.total ?? 0) === INITIAL_QUOTE_PRODUCT_INPUTS.length) return;
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
       await client.query("SELECT pg_advisory_xact_lock(hashtextextended('irp-quote-product-seed', 0))");
-      const recheck = await client.query<{ total: number }>("SELECT count(*)::int AS total FROM irp_quote_product_templates");
-      if ((recheck.rows[0]?.total ?? 0) === 0) {
-        const timestamp = new Date().toISOString();
-        for (const [index, input] of INITIAL_QUOTE_PRODUCT_INPUTS.entries()) {
-          const id = `00000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`;
-          await client.query(`
-            INSERT INTO irp_quote_product_templates (id, name, active, product_snapshot, created_at, updated_at)
-            VALUES ($1::uuid, $2, $3, $4::jsonb, $5::timestamptz, $5::timestamptz)
-          `, [id, input.name, input.active, JSON.stringify(input), timestamp]);
-        }
+      const timestamp = new Date().toISOString();
+      for (const [index, input] of INITIAL_QUOTE_PRODUCT_INPUTS.entries()) {
+        await client.query(`
+          INSERT INTO irp_quote_product_templates (id, name, active, product_snapshot, created_at, updated_at)
+          VALUES ($1::uuid, $2, $3, $4::jsonb, $5::timestamptz, $5::timestamptz)
+          ON CONFLICT (id) DO NOTHING
+        `, [QUOTE_PRODUCT_SEED_IDS[index], input.name, input.active, JSON.stringify(input), timestamp]);
+      }
+      if (LEGACY_QUOTE_PRODUCT_IDS.length) {
+        await client.query(
+          "DELETE FROM irp_quote_product_templates WHERE id = ANY($1::uuid[])",
+          [LEGACY_QUOTE_PRODUCT_IDS]
+        );
       }
       await client.query("COMMIT");
     } catch (error) {
@@ -340,4 +350,3 @@ export class PostgresControlQuoteRepository implements ControlQuoteRepository {
     return mapQuote(row, existing.items);
   }
 }
-

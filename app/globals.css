@@ -3278,3 +3278,94 @@ body:has(.irp-home) .irp-hero__content { width: min(760px, 50%); margin-right: a
 @media (max-width: 900px) {
   .solution-row .showcase-card { grid-column: auto; }
 }
+
+/* Global legibility pass — Plus Jakarta Sans remains the only site typeface. */
+body:not(:has(.adminBoundary)) {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+body:not(:has(.adminBoundary)) .site-header .nav-link,
+body:not(:has(.adminBoundary)) .mobile-nav a {
+  font-size: 14px !important;
+  font-weight: 650 !important;
+}
+
+body:not(:has(.adminBoundary)) .header-phone,
+body:not(:has(.adminBoundary)) .header-phone b,
+body:not(:has(.adminBoundary)) .header-quote-cta,
+body:not(:has(.adminBoundary)) .project-chip {
+  font-size: 13px !important;
+  font-weight: 650 !important;
+}
+
+body:not(:has(.adminBoundary)) .header-phone small,
+body:not(:has(.adminBoundary)) .mobile-nav__footer {
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+}
+
+body:not(:has(.adminBoundary)) main p {
+  font-size: 15px !important;
+  font-weight: 500;
+  line-height: 1.7;
+}
+
+body:not(:has(.adminBoundary)) main small,
+body:not(:has(.adminBoundary)) .site-footer small {
+  font-size: 13px !important;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+body:not(:has(.adminBoundary)) main label,
+body:not(:has(.adminBoundary)) main legend,
+body:not(:has(.adminBoundary)) main dt {
+  font-size: 13px !important;
+  font-weight: 650 !important;
+}
+
+body:not(:has(.adminBoundary)) main input,
+body:not(:has(.adminBoundary)) main select,
+body:not(:has(.adminBoundary)) main textarea {
+  font-size: 15px !important;
+  font-weight: 500;
+}
+
+body:not(:has(.adminBoundary)) main button,
+body:not(:has(.adminBoundary)) main .button,
+body:not(:has(.adminBoundary)) main .text-link {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+
+body:not(:has(.adminBoundary)) main .eyebrow,
+body:not(:has(.adminBoundary)) main [class*="badge"],
+body:not(:has(.adminBoundary)) main [class*="kicker"] {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+
+body:not(:has(.adminBoundary)) main h1,
+body:not(:has(.adminBoundary)) main h2,
+body:not(:has(.adminBoundary)) main h3,
+body:not(:has(.adminBoundary)) main strong,
+body:not(:has(.adminBoundary)) main b {
+  font-weight: 650;
+}
+
+/* Dense illustrative mock interfaces are secondary content, but remain readable. */
+body:not(:has(.adminBoundary)) main .home-quote__device p,
+body:not(:has(.adminBoundary)) main .config-ui p,
+body:not(:has(.adminBoundary)) main .chat-preview p,
+body:not(:has(.adminBoundary)) main .advisor-stage__copy p,
+body:not(:has(.adminBoundary)) main .irp-advisor__copy p {
+  font-size: 13px !important;
+  line-height: 1.55;
+}
+
+@media (max-width: 760px) {
+  body:not(:has(.adminBoundary)) { font-size: 15px; }
+  body:not(:has(.adminBoundary)) main p { font-size: 15px !important; }
+}

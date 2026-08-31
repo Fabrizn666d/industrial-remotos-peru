@@ -11,6 +11,8 @@ export type QuoteStatus = z.infer<typeof QuoteStatusSchema>;
 export const QuoteDiagramPanelSchema = z.object({
   id: requiredText(80),
   label: editableText(12),
+  semantic: z.enum(["fixed", "sliding", "awning", "casement", "door", "unknown"]).default("unknown"),
+  sourceMark: editableText(12).default(""),
   widthWeight: z.number().positive().max(100),
   movement: z.enum(["none", "left", "right", "up", "down"])
 }).strict();
@@ -24,9 +26,16 @@ export const QuoteDiagramRowSchema = z.object({
 export const QuoteDiagramSchema = z.object({
   presetId: requiredText(100),
   name: requiredText(160),
-  rows: z.array(QuoteDiagramRowSchema).min(1).max(8)
+  rows: z.array(QuoteDiagramRowSchema).min(1).max(8),
+  referenceWidth: z.number().positive().max(100_000).nullable().default(null),
+  referenceHeight: z.number().positive().max(100_000).nullable().default(null),
+  referenceUnit: z.enum(["mm", "cm"]).default("cm"),
+  sourceNote: editableText(240).default("")
 }).strict();
 export type QuoteDiagram = z.infer<typeof QuoteDiagramSchema>;
+
+export const QuoteProductCategorySchema = z.enum(["WINDOW", "MAMPARA", "DOOR", "FIXED", "OTHER"]);
+export type QuoteProductCategory = z.infer<typeof QuoteProductCategorySchema>;
 
 export const QuoteProductTemplateInputSchema = z.object({
   name: requiredText(160),
@@ -36,6 +45,9 @@ export const QuoteProductTemplateInputSchema = z.object({
   profile: editableText(160),
   glass: editableText(300),
   finish: editableText(200),
+  category: QuoteProductCategorySchema.default("OTHER"),
+  sourceReferencePriceUsd: z.number().nonnegative().max(10_000_000).nullable().default(null),
+  diagramNeedsVerification: z.boolean().default(false),
   basePriceMinor: money,
   active: z.boolean()
 }).strict();

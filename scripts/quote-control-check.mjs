@@ -33,8 +33,9 @@ try {
   await page.getByRole("button", { name: /Continuar/i }).click();
 
   await page.getByRole("button", { name: /Agregar el primer producto/i }).click();
-  await page.getByRole("dialog").getByRole("button", { name: /Ventana corrediza 2 hojas/i }).click();
-  const firstItem = page.locator("article").filter({ hasText: "Ventana corrediza 2 hojas" }).last();
+  await page.getByRole("dialog").getByPlaceholder("Buscar por nombre, serie o vidrio...").fill("Mampara corredera 2");
+  await page.getByRole("dialog").getByRole("button", { name: /Mampara corredera 2 hojas/i }).click();
+  const firstItem = page.locator("article").filter({ hasText: "Mampara corredera 2 hojas" }).last();
   await firstItem.getByLabel(/Descripción técnica/).fill("Sistema corredizo MEJORADO de aluminio con vidrio templado incoloro de 8 mm.");
   await firstItem.getByLabel("Ancho (mm)").fill("1020");
   await firstItem.getByLabel("Alto (mm)").fill("1900");
@@ -45,8 +46,9 @@ try {
   await firstItem.getByLabel("Acabado", { exact: true }).fill("Negro mate QA");
 
   await page.getByRole("button", { name: /^Agregar producto$/i }).click();
-  await page.getByRole("dialog").getByRole("button", { name: /Mampara corrediza 4 hojas/i }).click();
-  const secondItem = page.locator("article").filter({ hasText: "Mampara corrediza 4 hojas" }).last();
+  await page.getByRole("dialog").getByPlaceholder("Buscar por nombre, serie o vidrio...").fill("2 carriles");
+  await page.getByRole("dialog").getByRole("button", { name: /Mampara corredera 4 hojas — 2 carriles/i }).click();
+  const secondItem = page.locator("article").filter({ hasText: "Mampara corredera 4 hojas — 2 carriles" }).last();
   page.once("dialog", (dialog) => dialog.accept());
   await secondItem.getByRole("button", { name: "Eliminar" }).click();
   await page.getByRole("button", { name: /Continuar/i }).click();
@@ -79,7 +81,7 @@ try {
   await page.goto(`${baseUrl}/admin/cotizaciones/${quoteId}`, { waitUntil: "networkidle" });
   if (await page.getByLabel("Nombre / Razón social*").inputValue() !== "Cliente QA IRP") throw new Error("El cliente no se conservó al reabrir");
   await page.getByRole("button", { name: /Productos/i }).click();
-  const reopenedItem = page.locator("article").filter({ hasText: "Ventana corrediza 2 hojas" }).last();
+  const reopenedItem = page.locator("article").filter({ hasText: "Mampara corredera 2 hojas" }).last();
   if (!(await reopenedItem.getByLabel(/Descripción técnica/).inputValue()).includes("MEJORADO")) throw new Error("La descripción no se conservó al reabrir");
   await page.setViewportSize({ width: 390, height: 844 });
   await page.waitForTimeout(300);
@@ -94,7 +96,16 @@ try {
 
   const productPageResponse = await page.goto(`${baseUrl}/admin/configuracion/productos-cotizacion`, { waitUntil: "networkidle" });
   if (!productPageResponse?.ok()) throw new Error("La configuración de productos no cargó");
-  await page.getByText("S/ 598.90", { exact: true }).first().waitFor();
+  await page.getByText("S/ 0.00", { exact: true }).first().waitFor();
+  await page.getByPlaceholder("Buscar productos...").fill("pavonado");
+  await page.getByRole("heading", { name: "Mampara corredera 4 hojas — pavonado" }).waitFor();
+  if (await page.locator("article").count() !== 1) throw new Error("La búsqueda de productos no filtró correctamente");
+  await page.getByPlaceholder("Buscar productos...").fill("");
+  await page.getByRole("button", { name: "Mamparas", exact: true }).click();
+  if (await page.locator("article").count() !== 4) throw new Error("El filtro Mamparas no devolvió las 4 plantillas esperadas");
+  await page.locator("article").first().locator("button").first().click();
+  const presetButtons = page.getByRole("group", { name: "Preset SVG" }).getByRole("button");
+  if (await presetButtons.count() !== 18) throw new Error("No se mostraron los 18 presets SVG en el selector visual");
 
   if (browserErrors.length) throw new Error(`Errores de navegador: ${browserErrors.join(" | ")}`);
   process.stdout.write(JSON.stringify({ ok: true, quoteId, code: quote.code, areaM2: quote.items[0].areaM2, totalMinor: quote.totals.totalMinor, pdfBytes: pdf.length, mobileMetrics }, null, 2));

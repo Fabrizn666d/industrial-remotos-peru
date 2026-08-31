@@ -1,0 +1,9 @@
+
+> industrial-remotos-peru@1.0.0 start
+> next start -p 3010
+
+▲ Next.js 16.3.0
+- Local:         http://localhost:3010
+- Network:       http://192.168.18.161:3010
+✓ Ready in 582ms
+✓ Running next.config.mjs took 56ms

@@ -1,0 +1,83 @@
+import { chromium } from "playwright-core";
+
+const baseUrl = process.env.SITE_URL || "http://127.0.0.1:3010";
+const executablePath = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+const browser = await chromium.launch({ executablePath, headless: true });
+
+try {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "es-PE", reducedMotion: "reduce" });
+  await context.addInitScript(() => {
+    sessionStorage.setItem("irp-intro-v3", "seen");
+  });
+  const page = await context.newPage();
+
+  await page.goto(baseUrl + "/soluciones/puertas-automatizacion", { waitUntil: "networkidle" });
+  await page.evaluate(() => localStorage.removeItem("irp-project-v2"));
+  await page.reload({ waitUntil: "networkidle" });
+  const solutionLinks = await page.locator('.solution-detail-v4__option-grid a[href^="/cotizar?producto="]').count();
+  const productsNavRemoved = await page.getByRole("navigation", { name: /principal/i }).getByText("Productos", { exact: true }).count() === 0;
+
+  await page.getByRole("button", { name: /Abrir asistente/ }).click();
+  const assistant = page.getByRole("dialog", { name: /Asistente de cotización/ });
+  await assistant.getByRole("button", { name: /ventanas o mamparas/i }).click();
+  const assistantHref = await assistant.getByRole("link", { name: /Configurar solución/ }).getAttribute("href");
+  const assistantConfiguratorReady = assistantHref?.includes("producto=ventanas-mamparas") === true;
+  await page.getByRole("button", { name: "Cerrar asistente" }).click();
+  await page.goto(baseUrl + "/asistente", { waitUntil: "networkidle" });
+  if (!process.env.SKIP_SCREENSHOTS) await page.screenshot({ path: ".visual-check/v4-desktop-assistant.png" });
+  await page.getByRole("button", { name: "Quiero automatizar mi puerta" }).click();
+  await page.getByRole("button", { name: "Residencial" }).click();
+  const fullAssistantHref = await page.getByRole("link", { name: /Abrir configuración recomendada/ }).getAttribute("href");
+  const fullAssistantReady = fullAssistantHref?.includes("producto=automatizacion") === true;
+
+  await page.goto(baseUrl + "/cotizar?producto=seccionales", { waitUntil: "networkidle" });
+  for (let step = 0; step < 7; step += 1) {
+    await page.locator(".configurator__nav button").last().click();
+  }
+  await page.locator(".configurator__nav button").last().click();
+  await page.getByRole("dialog", { name: "Mi proyecto" }).waitFor();
+  await page.waitForTimeout(250);
+
+  const project = JSON.parse(await page.evaluate(() => localStorage.getItem("irp-project-v2") || "[]"));
+  await page.getByRole("button", { name: /Cerrar Mi proyecto/ }).click();
+  await page.goto(baseUrl + "/cotizar/finalizar", { waitUntil: "networkidle" });
+  if (!process.env.SKIP_SCREENSHOTS) await page.screenshot({ path: ".visual-check/v4-desktop-checkout.png" });
+  await page.getByRole("button", { name: /Continuar/ }).click();
+  await page.getByLabel("Nombres y apellidos").fill("Juan Pérez");
+  await page.getByLabel("Correo electrónico").fill("juan@example.com");
+  await page.getByLabel("WhatsApp / teléfono").fill("987 654 321");
+  await page.getByRole("button", { name: /Continuar/ }).click();
+  await page.getByLabel("Tipo de proyecto").selectOption({ label: "Puertas seccionales" });
+  await page.getByLabel("Distrito o ubicación").fill("Santiago de Surco, Lima");
+  await page.getByRole("button", { name: /Continuar/ }).click();
+  await page.getByRole("button", { name: /Continuar/ }).click();
+  await page.getByRole("button", { name: /Enviar solicitud/ }).click();
+  await page.waitForURL(/\/cotizar\/confirmacion\/COT-IRP-/);
+  await page.locator(".confirmation-main h1").waitFor();
+  const confirmationVisible = await page.locator(".confirmation-main h1").isVisible();
+  if (!process.env.SKIP_SCREENSHOTS) await page.screenshot({ path: ".visual-check/v4-desktop-confirmation.png", fullPage: true });
+  await page.getByRole("link", { name: /Ver cotiz/i }).click();
+  await page.waitForURL(/\/proforma$/);
+  const proformaHeading = page.getByRole("heading", { name: /COT-IRP-/ });
+  await proformaHeading.waitFor({ state: "visible" });
+  const proformaVisible = await proformaHeading.isVisible();
+  if (!process.env.SKIP_SCREENSHOTS) await page.screenshot({ path: ".visual-check/v4-desktop-proforma.png", fullPage: true });
+  const result = {
+    solutionLinks,
+    productsNavRemoved,
+    assistantConfiguratorReady,
+    fullAssistantReady,
+    projectLines: project.length,
+    projectQuantity: project.reduce((total, item) => total + item.quantity, 0),
+    configuredMeasures: project.some((item) => item.measures === "3.20 m × 2.40 m"),
+    confirmationVisible,
+    proformaVisible
+  };
+
+  console.log(JSON.stringify(result, null, 2));
+  const passed = result.solutionLinks === 6 && result.productsNavRemoved && result.assistantConfiguratorReady && result.fullAssistantReady && result.projectLines === 1 && result.projectQuantity === 1 && result.configuredMeasures && result.confirmationVisible && result.proformaVisible;
+  if (!passed) process.exitCode = 1;
+  await context.close();
+} finally {
+  await browser.close();
+}

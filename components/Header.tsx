@@ -76,7 +76,14 @@ export function Header() {
               <span>Mi proyecto</span>
               <b>{count}</b>
             </button>
-            <button className="menu-toggle" type="button" aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"} onClick={() => setMenuOpen((value) => !value)}>
+            <button
+              className="menu-toggle"
+              type="button"
+              aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}
+              aria-controls="mobile-menu"
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((value) => !value)}
+            >
               {menuOpen ? <X /> : <Menu />}
             </button>
           </div>
@@ -85,7 +92,7 @@ export function Header() {
 
       <AnimatePresence>
         {menuOpen && (
-          <motion.div className="mobile-nav" id="mobile-menu" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.nav className="mobile-nav" id="mobile-menu" aria-label="Navegación móvil" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <motion.div className="mobile-nav__sheet" initial={{ y: -28, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }} transition={{ duration: .42, ease: [0.2, .75, 0, 1] }}>
               <span className="eyebrow">Explora Industrial Remotos</span>
               <div className="mobile-nav__links">
@@ -98,13 +105,16 @@ export function Header() {
               <div className="mobile-nav__actions">
                 <a href={siteConfig.social.whatsapp} target="_blank" rel="noreferrer" onClick={() => setMenuOpen(false)}><MessageCircle size={17} /> Hablar por WhatsApp</a>
                 <Link href="/cotizar" onClick={() => setMenuOpen(false)}>Cotizar mi proyecto</Link>
+                <button type="button" onClick={() => { setMenuOpen(false); setDrawerOpen(true); }}>
+                  <BriefcaseBusiness size={17} /> Mi proyecto <b>{count}</b>
+                </button>
               </div>
               <div className="mobile-nav__footer">
                 <p>{siteConfig.hours}</p>
                 <div className="mobile-nav__socials"><a href={siteConfig.social.facebook} aria-label="Facebook" target="_blank" rel="noreferrer"><Facebook size={17} /></a><a href={siteConfig.social.instagram} aria-label="Instagram" target="_blank" rel="noreferrer"><Instagram size={17} /></a><a href={siteConfig.social.tiktok} aria-label="TikTok" target="_blank" rel="noreferrer"><Music2 size={17} /></a><a href={siteConfig.social.whatsapp} aria-label="WhatsApp" target="_blank" rel="noreferrer"><MessageCircle size={17} /></a></div>
               </div>
             </motion.div>
-          </motion.div>
+          </motion.nav>
         )}
       </AnimatePresence>
     </>

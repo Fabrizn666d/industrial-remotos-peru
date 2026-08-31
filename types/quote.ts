@@ -1,4 +1,4 @@
-import type { QuoteItem } from "@/types/catalog";
+import type { PendingPrice, QuoteItem } from "@/types/catalog";
 
 export type QuoteContact = {
   name: string;
@@ -15,14 +15,15 @@ export type QuoteDetails = {
 };
 
 export type SubmittedRequest = {
+  requestId: string;
   code: string;
   createdAt: string;
+  accessToken: string | null;
   contact: QuoteContact;
   details: QuoteDetails;
   files: string[];
   items: QuoteItem[];
-  total: number;
+  pricing: PendingPrice;
 };
 
-export const LAST_REQUEST_KEY = "irp-last-request-v1";
-
+export const LAST_REQUEST_KEY = "irp-last-request-v2";

@@ -1,0 +1,282 @@
+.selector {
+  width: 100%;
+  color: #000a13;
+}
+
+.stage {
+  position: relative;
+  min-height: clamp(360px, 44vw, 570px);
+  overflow: hidden;
+  border: 1px solid rgba(0, 32, 61, 0.15);
+  border-radius: 30px;
+  background: #071522;
+  box-shadow: 0 24px 70px rgba(0, 27, 54, 0.16);
+  isolation: isolate;
+}
+
+.stageImage {
+  object-fit: cover;
+  transition: opacity 240ms ease, transform 700ms cubic-bezier(0.2, 0.75, 0, 1);
+}
+
+.stage:hover .stageImage {
+  transform: scale(1.018);
+}
+
+.stageShade {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(0, 10, 19, 0.9) 0%, rgba(0, 10, 19, 0.48) 46%, rgba(0, 10, 19, 0.02) 76%),
+    linear-gradient(0deg, rgba(0, 10, 19, 0.34), transparent 45%);
+}
+
+.stageCopy {
+  position: absolute;
+  z-index: 2;
+  bottom: clamp(25px, 4vw, 52px);
+  left: clamp(24px, 4.5vw, 60px);
+  width: min(430px, calc(100% - 48px));
+  color: #fff;
+}
+
+.stageCopy > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #74baff;
+  font-size: 0.67rem;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.stageCopy > span::before {
+  width: 24px;
+  height: 1px;
+  background: currentColor;
+  content: "";
+}
+
+.stageCopy h3 {
+  margin: 13px 0 10px;
+  font-size: clamp(2rem, 4vw, 4rem);
+  font-weight: 570;
+  letter-spacing: -0.055em;
+  line-height: 0.98;
+}
+
+.stageCopy p {
+  max-width: 390px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.88rem;
+  line-height: 1.65;
+}
+
+.stageCopy a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  margin-top: 21px;
+  border-radius: 999px;
+  background: #1677ff;
+  padding: 0 18px;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 720;
+  box-shadow: 0 12px 28px rgba(22, 119, 255, 0.32);
+}
+
+.counter {
+  position: absolute;
+  z-index: 2;
+  right: 26px;
+  bottom: 25px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.counter i {
+  width: 28px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.48);
+}
+
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  border-bottom: 1px solid rgba(0, 32, 61, 0.13);
+}
+
+.tabs button {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  min-height: 86px;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 9px;
+  border: 0;
+  border-right: 1px solid rgba(0, 32, 61, 0.1);
+  background: transparent;
+  padding: 15px 12px;
+  color: #5b6b7e;
+  text-align: left;
+  transition: color 180ms ease, background 180ms ease;
+}
+
+.tabs button:last-child {
+  border-right: 0;
+}
+
+.tabs button::after {
+  position: absolute;
+  right: 12px;
+  bottom: -1px;
+  left: 12px;
+  height: 2px;
+  background: transparent;
+  content: "";
+}
+
+.tabs small {
+  color: #1677ff;
+  font-size: 0.58rem;
+  font-weight: 760;
+}
+
+.tabs span {
+  overflow: hidden;
+  font-size: 0.68rem;
+  font-weight: 690;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+}
+
+.tabs button:hover,
+.tabs .activeTab {
+  background: rgba(22, 119, 255, 0.055);
+  color: #000a13;
+}
+
+.tabs .activeTab::after {
+  background: #1677ff;
+}
+
+.dark {
+  color: #fff;
+}
+
+.dark .stage {
+  border-color: rgba(125, 188, 255, 0.22);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+}
+
+.dark .tabs {
+  border-color: rgba(125, 188, 255, 0.16);
+}
+
+.dark .tabs button {
+  border-color: rgba(125, 188, 255, 0.14);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.dark .tabs button:hover,
+.dark .tabs .activeTab {
+  background: rgba(22, 119, 255, 0.11);
+  color: #fff;
+}
+
+.srPanel {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 980px) {
+  .tabs {
+    grid-template-columns: none;
+    grid-auto-columns: minmax(150px, 1fr);
+    grid-auto-flow: column;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: inline mandatory;
+    scrollbar-width: none;
+  }
+
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tabs button {
+    scroll-snap-align: start;
+  }
+}
+
+@media (max-width: 700px) {
+  .stage {
+    min-height: 430px;
+    border-radius: 22px;
+  }
+
+  .stageImage {
+    object-position: center;
+  }
+
+  .stageShade {
+    background: linear-gradient(0deg, rgba(0, 10, 19, 0.94) 0%, rgba(0, 10, 19, 0.48) 58%, rgba(0, 10, 19, 0.06) 100%);
+  }
+
+  .stageCopy {
+    right: 21px;
+    bottom: 24px;
+    left: 21px;
+    width: auto;
+  }
+
+  .stageCopy h3 {
+    max-width: 330px;
+    font-size: clamp(2rem, 10vw, 2.75rem);
+  }
+
+  .stageCopy p {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 0.78rem;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .stageCopy a {
+    min-height: 42px;
+    margin-top: 17px;
+  }
+
+  .counter {
+    top: 18px;
+    right: 18px;
+    bottom: auto;
+  }
+
+  .tabs button {
+    min-height: 72px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stageImage,
+  .tabs button {
+    transition: none;
+  }
+}

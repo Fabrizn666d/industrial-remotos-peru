@@ -1,0 +1,22 @@
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import { ConfirmationScreen } from "@/components/ConfirmationScreen";
+
+export const metadata: Metadata = {
+  title: "Solicitud recibida",
+  description: "Confirmación y próximos pasos de tu solicitud de cotización.",
+  robots: { index: false, follow: false }
+};
+
+export default async function QuoteConfirmationPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  return (
+    <main id="contenido" className="confirmation-route">
+      <div className="page-shell">
+        <Suspense fallback={<div className="confirmation-loading">Preparando confirmación…</div>}>
+          <ConfirmationScreen code={decodeURIComponent(id)} />
+        </Suspense>
+      </div>
+    </main>
+  );
+}

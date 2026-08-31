@@ -1,4 +1,4 @@
-import { ArrowUpRight, Facebook, Instagram, Mail, MapPin, Music2, Phone } from "lucide-react";
+import { ArrowUpRight, Facebook, Instagram, MessageCircle, Music2, Phone } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { navItems, siteConfig } from "@/data/site";
@@ -23,8 +23,7 @@ export function Footer() {
         <div className="site-footer__brand">
           <Link href="/" aria-label="Industrial Remotos Perú"><Logo inverse /></Link>
           <p>Diseñamos, fabricamos e instalamos soluciones de acceso a medida para hogares, negocios e industrias.</p>
-          <a className="site-footer__contact-line" href="tel:+51987908444"><Phone size={16} />{siteConfig.phoneDisplay}</a>
-          <span className="site-footer__contact-line"><Mail size={16} />Correo: por confirmar</span>
+          <a className="site-footer__contact-line" href={`tel:+${siteConfig.whatsappNumber}`}><Phone size={16} />{siteConfig.phoneDisplay}</a>
         </div>
 
         <div className="site-footer__links">
@@ -36,14 +35,12 @@ export function Footer() {
           <h3>Legal</h3>
           <Link href="/politica-privacidad">Política de privacidad</Link>
           <Link href="/terminos">Términos y condiciones</Link>
-          <span>Libro de reclamaciones — por confirmar</span>
         </div>
 
         <div className="site-footer__details">
-          <h3>Datos legales</h3>
-          <div><small>Razón social</small><b>Por confirmar</b></div>
-          <div><small>RUC</small><b>Por confirmar</b></div>
-          <div><small>Dirección</small><b><MapPin size={14} />{siteConfig.location}</b></div>
+          <h3>Canales vigentes</h3>
+          <div><small>WhatsApp</small><b><MessageCircle size={14} /><a href={siteConfig.social.whatsapp} target="_blank" rel="noreferrer">Abrir conversación</a></b></div>
+          <div><small>Solicitud web</small><b><Link href="/contacto">Ir a contacto</Link></b></div>
         </div>
 
         <div className="site-footer__follow">

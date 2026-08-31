@@ -1,11 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { Footer } from "@/components/Footer";
-import { Header } from "@/components/Header";
-import { IntroLoader } from "@/components/IntroLoader";
-import { ProjectExperience } from "@/components/ProjectExperience";
-import { ProjectProvider } from "@/components/ProjectContext";
 import { siteConfig } from "@/data/site";
 
 const plusJakartaSans = localFont({
@@ -22,7 +17,7 @@ export const metadata: Metadata = {
     default: "Industrial Remotos Perú | Soluciones de acceso a medida",
     template: "%s | Industrial Remotos Perú"
   },
-  description: "Diseño, fabricación, automatización e instalación de puertas, coberturas y estructuras a medida en Lima y todo el Perú.",
+  description: "Diseño, fabricación, automatización e instalación de puertas, coberturas y estructuras desarrolladas a medida.",
   keywords: ["puertas automáticas Lima", "puertas seccionales", "puertas levadizas", "automatización de puertas", "Industrial Remotos Perú"],
   openGraph: {
     title: "Industrial Remotos Perú",
@@ -39,7 +34,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0B1E3A"
+  themeColor: "#000A13"
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -47,13 +42,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="es-PE">
       <body className={plusJakartaSans.variable}>
         <a className="skip-link" href="#contenido">Saltar al contenido</a>
-        <ProjectProvider>
-          <IntroLoader />
-          <Header />
-          {children}
-          <Footer />
-          <ProjectExperience />
-        </ProjectProvider>
+        {children}
       </body>
     </html>
   );

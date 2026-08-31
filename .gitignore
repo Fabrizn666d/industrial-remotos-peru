@@ -1,9 +1,15 @@
 node_modules
 .next
 out
+.data
+.env.*
+!.env.example
 .env
 .env.local
 npm-debug.log*
+*.log
+*.lnk
+tools/*.exe
 *.tsbuildinfo
 dev-server*.log
 .visual-check

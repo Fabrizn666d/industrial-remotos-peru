@@ -29,8 +29,7 @@ export const products: Product[] = [
     benefits: ["Paneles importados", "Funcionamiento silencioso", "Fabricación a medida", "Automatización disponible", "Instalación profesional"],
     finishes: doorFinishes,
     tiktokUrl,
-    evidence: "real",
-    price: 6890
+    evidence: "real"
   },
   {
     id: "levadizas",
@@ -45,8 +44,7 @@ export const products: Product[] = [
     benefits: ["Fabricación a medida", "Ahorro de espacio", "Motor de última generación", "Control remoto", "Sistema de seguridad"],
     finishes: doorFinishes,
     tiktokUrl,
-    evidence: "real",
-    price: 5990
+    evidence: "real"
   },
   {
     id: "corredizas",
@@ -61,8 +59,7 @@ export const products: Product[] = [
     benefits: ["Accesos amplios", "Estructura resistente", "Automatización confiable", "Acabados coordinados", "Soporte técnico"],
     finishes: doorFinishes,
     tiktokUrl,
-    evidence: "real",
-    price: 4990
+    evidence: "real"
   },
   {
     id: "batientes",
@@ -77,8 +74,7 @@ export const products: Product[] = [
     benefits: ["Diseño a medida", "Apertura automatizable", "Cierre seguro", "Acabados resistentes", "Instalación profesional"],
     finishes: doorFinishes,
     tiktokUrl,
-    evidence: "real",
-    price: 4590
+    evidence: "real"
   },
   {
     id: "peatonales",
@@ -93,8 +89,7 @@ export const products: Product[] = [
     benefits: ["Fabricación a medida", "Integración vehicular", "Cierre seguro", "Acabados coordinados", "Uso durable"],
     finishes: doorFinishes,
     tiktokUrl,
-    evidence: "real",
-    price: 2890
+    evidence: "real"
   },
   {
     id: "automatizacion",
@@ -109,8 +104,7 @@ export const products: Product[] = [
     benefits: ["Apertura remota", "Operación silenciosa", "Configuración segura", "Mantenimiento", "Soporte técnico"],
     finishes: [],
     tiktokUrl,
-    evidence: "real",
-    price: 1200
+    evidence: "real"
   },
   {
     id: "techos-coberturas",
@@ -125,8 +119,7 @@ export const products: Product[] = [
     benefits: ["Diseño según el espacio", "Estructura metálica", "Alternativas de cobertura", "Instalación profesional", "Evaluación técnica"],
     finishes: [finishes[3], finishes[4], finishes[5]],
     tiktokUrl,
-    evidence: "service",
-    price: 5280
+    evidence: "service"
   },
   {
     id: "ventanas-mamparas",
@@ -141,8 +134,7 @@ export const products: Product[] = [
     benefits: ["Diseño a medida", "Perfilería de aluminio", "Opciones de vidrio", "Sellado cuidado", "Instalación especializada"],
     finishes: [finishes[3], finishes[4], finishes[5]],
     tiktokUrl,
-    evidence: "service",
-    price: 2950
+    evidence: "service"
   },
   {
     id: "acero-barandas",
@@ -157,8 +149,7 @@ export const products: Product[] = [
     benefits: ["Fabricación a medida", "Acabados durables", "Fijaciones seguras", "Detalle técnico", "Instalación profesional"],
     finishes: [finishes[3], finishes[5]],
     tiktokUrl,
-    evidence: "service",
-    price: 1350
+    evidence: "service"
   },
   {
     id: "estructuras-especiales",
@@ -173,7 +164,6 @@ export const products: Product[] = [
     benefits: ["Evaluación técnica", "Fabricación a medida", "Materiales resistentes", "Montaje especializado", "Seguimiento de proyecto"],
     finishes: [finishes[3], finishes[4], finishes[5]],
     tiktokUrl,
-    evidence: "service",
-    price: 5680
+    evidence: "service"
   }
 ];

@@ -8,7 +8,6 @@ import { useEffect, useState } from "react";
 import { useProject } from "@/components/ProjectContext";
 import { RobotAvatar } from "@/components/RobotAvatar";
 import { products } from "@/data/products";
-import { formatPEN } from "@/lib/currency";
 
 const quickReplies = [
   "Quiero automatizar una puerta",
@@ -18,6 +17,16 @@ const quickReplies = [
   "Tengo un proyecto comercial o industrial",
   "No sé qué solución necesito"
 ];
+
+function projectItemSummary(item: ReturnType<typeof useProject>["items"][number]) {
+  const dimensions = item.configuration.dimensions;
+  const measures = dimensions?.width || dimensions?.height
+    ? `${dimensions.width ?? "?"} ${dimensions.unit} × ${dimensions.height ?? "?"} ${dimensions.unit}`
+    : "Medidas por definir";
+  return [measures, item.configuration.finish, item.configuration.design]
+    .filter((value): value is string => Boolean(value) && value !== "Por definir")
+    .join(" · ");
+}
 
 export function ProjectExperience() {
   const { items, count, drawerOpen, setDrawerOpen, removeItem, changeQuantity, clearProject } = useProject();
@@ -91,7 +100,7 @@ export function ProjectExperience() {
               ))}
             </div> : <div className="assistant-panel__recommendation">
               <span><Image src={recommendation.image} alt="" fill sizes="92px" className="object-cover" /></span>
-              <div><small>Solución sugerida</small><h3>{recommendation.name}</h3><p>{recommendation.description}</p><strong>Desde {formatPEN(recommendation.price)}</strong></div>
+              <div><small>Solución sugerida</small><h3>{recommendation.name}</h3><p>{recommendation.description}</p><strong>Precio por confirmar</strong></div>
             </div>}
             <div className="assistant-panel__actions">
               {selected && <button type="button" onClick={() => setSelected("")}><RotateCcw size={15} /> Cambiar respuesta</button>}
@@ -121,7 +130,7 @@ export function ProjectExperience() {
                         <span className="project-drawer__image"><Image src={item.image} alt="" fill sizes="96px" className="object-cover" /></span>
                         <div className="project-drawer__info">
                           <h3>{item.name}</h3>
-                          <p>{item.measures || "Medidas por definir"}{item.finish ? " · " + item.finish : ""}</p>
+                          <p>{projectItemSummary(item)}</p>
                           <div className="quantity-control">
                             <button type="button" onClick={() => changeQuantity(item.id, -1)} aria-label="Quitar una unidad"><Minus size={14} /></button>
                             <span>{item.quantity}</span>

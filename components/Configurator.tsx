@@ -6,7 +6,6 @@ import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useProject } from "@/components/ProjectContext";
 import { finishes, products } from "@/data/products";
-import { formatPEN } from "@/lib/currency";
 
 const steps = [
   { label: "Tipo", icon: Layers3 }, { label: "Medidas", icon: Ruler }, { label: "Diseño", icon: Sparkles }, { label: "Panel", icon: Maximize2 },
@@ -30,15 +29,18 @@ export function Configurator() {
   const [added, setAdded] = useState(false);
   const { addProduct } = useProject();
   const product = useMemo(() => products.find((item) => item.id === productId) ?? products[0], [productId]);
-  const estimatedPrice = useMemo(() => {
-    const area = Math.max(0, Number.parseFloat(width) * Number.parseFloat(height));
-    const areaAdjustment = Math.max(0, area - 7.68) * 350;
-    const finishAdjustment = Math.max(0, finishes.findIndex((item) => item.name === finish)) * 80;
-    const panelAdjustment = panel === "Panel de aluminio" ? 420 : panel === "Estructura metálica" ? 560 : 0;
-    const automationAdjustment = automation.startsWith("Motor") ? 780 : automation === "Control desde celular" ? 980 : 0;
-    return Math.round((product.price + areaAdjustment + finishAdjustment + panelAdjustment + automationAdjustment) / 10) * 10;
-  }, [automation, finish, height, panel, product.price, width]);
-  const add = () => { addProduct(product, { finish, measures: width + " m × " + height + " m", unitPrice: estimatedPrice }); setAdded(true); };
+  const add = () => {
+    addProduct(product, {
+      finish,
+      dimensions: { width, height, unit: "m" },
+      design,
+      panel,
+      automation,
+      accessories: [accessory],
+      installation
+    });
+    setAdded(true);
+  };
 
   return (
     <div className="configurator configurator-v2">
@@ -65,7 +67,7 @@ export function Configurator() {
           {active === 1 && <div className="measure-grid"><label>Ancho aproximado (m)<input inputMode="decimal" value={width} onChange={(event) => setWidth(event.target.value)} /></label><label>Alto aproximado (m)<input inputMode="decimal" value={height} onChange={(event) => setHeight(event.target.value)} /></label><p>Las medidas finales se confirman en visita técnica.</p></div>}
           {active === 2 && <ChoiceGrid options={["Liso horizontal", "Acanalado", "Con aplicaciones", "Diseño personalizado"]} value={design} setValue={setDesign} />}
           {active === 3 && <ChoiceGrid options={["Panel térmico", "Panel de aluminio", "Estructura metálica", "Por definir"]} value={panel} setValue={setPanel} />}
-          {active === 4 && <div className="control-callout"><Palette size={25} /><b>{finish}</b><p>Usa los swatches bajo el visor. El cambio actualiza el estimado automáticamente.</p></div>}
+          {active === 4 && <div className="control-callout"><Palette size={25} /><b>{finish}</b><p>Usa los swatches bajo el visor. El acabado quedará registrado para validación técnica.</p></div>}
           {active === 5 && <ChoiceGrid options={["Motor + 2 controles", "Control desde celular", "Sistema manual", "Por definir con el asesor"]} value={automation} setValue={setAutomation} />}
           {active === 6 && <ChoiceGrid options={["Control remoto", "Sensor de seguridad", "Luz de cortesía", "Batería de respaldo"]} value={accessory} setValue={setAccessory} />}
           {active === 7 && <ChoiceGrid options={["Lima metropolitana", "Callao", "Provincia", "Solo fabricación"]} value={installation} setValue={setInstallation} />}
@@ -73,7 +75,7 @@ export function Configurator() {
         </section>
       </div>
 
-      <div className="configurator__summary glass-panel"><div><small>Tipo</small><b>{product.name}</b></div><div><small>Medidas</small><b>{width} m × {height} m</b></div><div><small>Panel</small><b>{panel}</b></div><div><small>Acabado</small><b>{finish}</b></div><span><small>Precio estimado</small><b>{formatPEN(estimatedPrice)}</b></span><button type="button" onClick={add}>{added ? "Agregado" : "Agregar a mi proyecto"}<ArrowRight size={17} /></button></div>
+      <div className="configurator__summary glass-panel"><div><small>Tipo</small><b>{product.name}</b></div><div><small>Medidas</small><b>{width} m × {height} m</b></div><div><small>Panel</small><b>{panel}</b></div><div><small>Acabado</small><b>{finish}</b></div><span><small>Precio</small><b>Por cotizar</b></span><button type="button" onClick={add}>{added ? "Agregado" : "Agregar a mi proyecto"}<ArrowRight size={17} /></button></div>
     </div>
   );
 }
@@ -81,4 +83,3 @@ export function Configurator() {
 function ChoiceGrid({ options, value, setValue }: { options: string[]; value: string; setValue: (value: string) => void }) {
   return <div className="control-options">{options.map((option) => <button className={value === option ? "is-selected" : ""} type="button" onClick={() => setValue(option)} key={option}>{value === option && <Check size={15} />}<span>{option}</span></button>)}</div>;
 }
-

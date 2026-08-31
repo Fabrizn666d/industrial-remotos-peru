@@ -3,7 +3,6 @@
 import { Check, Plus } from "lucide-react";
 import { useState } from "react";
 import { useProject } from "@/components/ProjectContext";
-import { formatPEN } from "@/lib/currency";
 import type { Product } from "@/types/catalog";
 
 export function ProductDetailActions({ product }: { product: Product }) {
@@ -11,7 +10,7 @@ export function ProductDetailActions({ product }: { product: Product }) {
   const { addProduct } = useProject();
   return (
     <div className="detail-actions">
-      <div className="detail-price"><small>Precio referencial desde</small><strong>{formatPEN(product.price)}</strong></div>
+      <div className="detail-price"><small>Evaluación comercial</small><strong>Precio por confirmar</strong></div>
       {product.finishes.length > 0 && (
         <fieldset className="finish-selector">
           <legend>Colores y acabados disponibles</legend>

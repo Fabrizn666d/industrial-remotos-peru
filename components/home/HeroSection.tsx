@@ -34,7 +34,7 @@ export function HeroSection() {
 
       <div className="irp-shell irp-hero__layout">
         <div className="irp-hero__content">
-          <span className="irp-kicker"><i /> Fabricación e instalación en Lima y todo el Perú</span>
+          <span className="irp-kicker"><i /> Diseño, fabricación e instalación a medida</span>
           <h1>
             Soluciones de acceso<br />
             que combinan <em>seguridad,</em><br />
@@ -48,9 +48,9 @@ export function HeroSection() {
             <Link className="irp-button irp-button--glass" href="/proyectos"><Play size={15} fill="currentColor" /> Ver proyectos reales</Link>
           </div>
           <div className="irp-hero__proof">
-            <span><b>+450</b> proyectos ejecutados</span>
+            <span><b>Diseño a medida</b> según tu espacio y forma de uso</span>
             <i />
-            <span><b>7 años</b> creando accesos confiables</span>
+            <span><b>Asesoría técnica</b> antes de fabricar e instalar</span>
           </div>
         </div>
       </div>

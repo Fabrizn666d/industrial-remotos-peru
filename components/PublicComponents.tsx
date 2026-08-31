@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useProject } from "@/components/ProjectContext";
 import { Reveal } from "@/components/Reveal";
 import { projects } from "@/data/projects";
-import { formatPEN } from "@/lib/currency";
 import type { Product, Solution } from "@/types/catalog";
 
 export function SectionIntro({ eyebrow, title, copy, light = false, center = false }: { eyebrow: string; title: React.ReactNode; copy?: string; light?: boolean; center?: boolean }) {
@@ -41,15 +40,15 @@ export function ProductCard({ product, featured = false }: { product: Product; f
   const { addProduct } = useProject();
   return (
     <article className={"product-card " + (featured ? "product-card--featured" : "")}>
-      <Link className="product-card__media image-zoom" href={"/cotizar?producto=" + product.id}>
+      <Link className="product-card__media image-zoom" href={"/productos/" + product.id}>
         <Image src={product.image} alt={product.name + " de Industrial Remotos Perú"} fill sizes={featured ? "(min-width: 1024px) 52vw, 100vw" : "(min-width: 1024px) 30vw, 85vw"} className="object-cover" />
         <span>{product.evidence === "real" ? "Proyecto real" : "Servicio a medida"}</span>
       </Link>
       <div className="product-card__body">
         <small>{product.group.replace("automatizacion", "automatización")}</small>
-        <h3><Link href={"/cotizar?producto=" + product.id}>{product.name}</Link></h3>
+        <h3><Link href={"/productos/" + product.id}>{product.name}</Link></h3>
         <p>{product.description}</p>
-        <strong className="product-card__price">Desde {formatPEN(product.price)}</strong>
+        <strong className="product-card__price">Precio por confirmar</strong>
         <div className="product-card__actions">
           <Link href={"/cotizar?producto=" + product.id}>Configurar <ArrowRight size={16} /></Link>
           <button type="button" onClick={() => addProduct(product)} aria-label={"Agregar " + product.name + " a Mi proyecto"} title="Agregar a Mi proyecto"><Plus size={17} /><span>Mi proyecto</span></button>
@@ -81,12 +80,6 @@ export function SolutionCard({ solution, index }: { solution: Solution; index: n
 
 export function ProjectGrid({ limit }: { limit?: number }) {
   const visible = limit ? projects.slice(0, limit) : projects;
-  const specs = [
-    ["Seccional", "3.20 × 2.40 m", "Panel térmico", "Motor 800N", 6890],
-    ["Levadiza", "3.00 × 2.30 m", "Acero + madera", "Motor 600N", 5990],
-    ["Corrediza", "4.50 × 2.20 m", "Estructura metálica", "Motor 1000N", 4990],
-    ["Cobertura", "5.00 × 3.00 m", "Policarbonato", "Manual", 5280]
-  ] as const;
   return (
     <div className="project-grid">
       {visible.map((project, index) => (
@@ -96,7 +89,7 @@ export function ProjectGrid({ limit }: { limit?: number }) {
             <span className="project-card__shade" />
             <span className="project-card__copy"><small>{project.badge} · {project.location}</small><strong>{project.title}</strong></span>
             <i><ArrowRight size={17} /></i>
-            {limit && specs[index] && <span className="project-card__specs"><small>Configuración referencial</small><b>{specs[index][0]}</b><dl><div><dt>Medidas</dt><dd>{specs[index][1]}</dd></div><div><dt>Panel</dt><dd>{specs[index][2]}</dd></div><div><dt>Sistema</dt><dd>{specs[index][3]}</dd></div></dl><strong>Desde {formatPEN(specs[index][4])}</strong></span>}
+            {limit && <span className="project-card__specs"><small>Trabajo realizado</small><b>{project.title}</b><strong>Ver proyecto</strong></span>}
           </a>
         </Reveal>
       ))}

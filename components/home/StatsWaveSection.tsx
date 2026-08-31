@@ -1,16 +1,15 @@
 "use client";
 
 import { motion, useScroll, useTransform } from "framer-motion";
-import { BadgeCheck, BriefcaseBusiness, Medal, ShieldCheck, UsersRound } from "lucide-react";
+import { BadgeCheck, ClipboardCheck, PenLine, Ruler, Wrench } from "lucide-react";
 import { useRef } from "react";
-import { AnimatedCounter } from "@/components/home/AnimatedCounter";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 
 const stats = [
-  { icon: BriefcaseBusiness, number: 450, prefix: "+", label: "Proyectos realizados" },
-  { icon: Medal, number: 7, prefix: "+", label: "Años de experiencia" },
-  { icon: UsersRound, number: 100, suffix: "%", label: "Clientes satisfechos" },
-  { icon: ShieldCheck, text: "Garantía", label: "En todos nuestros trabajos" }
+  { icon: ClipboardCheck, title: "Asesoría", label: "Entendemos el espacio y el uso" },
+  { icon: PenLine, title: "Diseño", label: "Definimos sistema y materiales" },
+  { icon: Ruler, title: "Fabricación", label: "Desarrollamos cada solución a medida" },
+  { icon: Wrench, title: "Instalación", label: "Montaje y puesta en marcha" }
 ];
 
 export function StatsWaveSection() {
@@ -22,7 +21,7 @@ export function StatsWaveSection() {
   const haloX = useTransform(scrollYProgress, [0, 1], [-10, 18]);
 
   return (
-    <section ref={sectionRef} className="irp-stats" aria-label="Resultados y respaldo">
+    <section ref={sectionRef} className="irp-stats" aria-label="Cómo desarrollamos cada proyecto">
       <motion.svg className="irp-stats__shape irp-stats__shape--back" viewBox="0 0 1600 500" preserveAspectRatio="none" style={reduceMotion ? undefined : { y: waveBackY }} aria-hidden="true">
         <path d="M0 134C116 2 233 0 354 96c132 106 284 111 425 13 140-98 273-98 400 10 142 120 297 103 421-48v342c-158 105-343 35-523 42-251 10-416 104-659 40C256 448 113 481 0 431Z" />
       </motion.svg>
@@ -40,14 +39,14 @@ export function StatsWaveSection() {
       <div className="irp-shell irp-stats__content">
         <div className="irp-stats__intro">
           <BadgeCheck size={19} />
-          <span>Resultados que respaldan cada instalación</span>
+          <span>Un proceso técnico de principio a fin</span>
         </div>
         <div className="irp-stats__items">
-          {stats.map(({ icon: Icon, number, prefix, suffix, text, label }, index) => (
+          {stats.map(({ icon: Icon, title, label }, index) => (
             <article key={label}>
               <small>0{index + 1}</small>
               <i><Icon size={21} /></i>
-              <strong>{number !== undefined ? <AnimatedCounter value={number} prefix={prefix} suffix={suffix} /> : text}</strong>
+              <strong>{title}</strong>
               <p>{label}</p>
             </article>
           ))}

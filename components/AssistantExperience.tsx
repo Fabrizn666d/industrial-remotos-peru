@@ -6,7 +6,6 @@ import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
 import { RobotAvatar } from "@/components/RobotAvatar";
 import { products } from "@/data/products";
-import { formatPEN } from "@/lib/currency";
 
 const intents = [
   { label: "Quiero automatizar mi puerta", product: "automatizacion" },
@@ -47,8 +46,8 @@ export function AssistantExperience() {
       </section>
 
       <aside className="assistant-recommendation glass-panel" key={recommendation.id}>
-        <div className="assistant-recommendation__media"><Image src={recommendation.image} alt={recommendation.name} fill priority sizes="(min-width: 900px) 46vw, 92vw" className="object-cover" /><span>Recomendación reactiva</span></div>
-        <div className="assistant-recommendation__body"><span className="eyebrow eyebrow--light">{use || "Solución sugerida"}</span><h2>{recommendation.name}</h2><p>{recommendation.description}</p><ul>{recommendation.benefits.slice(0, 3).map((benefit) => <li key={benefit}><Check size={16} />{benefit}</li>)}</ul><div><small>Desde</small><strong>{formatPEN(recommendation.price)}</strong></div><Link className="button button--primary" href={configureUrl}>Abrir configuración recomendada <ArrowRight size={17} /></Link></div>
+        <div className="assistant-recommendation__media"><Image src={recommendation.image} alt={recommendation.name} fill priority sizes="(min-width: 900px) 46vw, 92vw" className="object-cover" /><span>Orientación inicial</span></div>
+        <div className="assistant-recommendation__body"><span className="eyebrow eyebrow--light">{use || "Solución sugerida"}</span><h2>{recommendation.name}</h2><p>{recommendation.description}</p><ul>{recommendation.benefits.slice(0, 3).map((benefit) => <li key={benefit}><Check size={16} />{benefit}</li>)}</ul><div><small>Evaluación comercial</small><strong>Precio por confirmar</strong></div><Link className="button button--primary" href={configureUrl}>Abrir configuración sugerida <ArrowRight size={17} /></Link></div>
       </aside>
     </div>
   );

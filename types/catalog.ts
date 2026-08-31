@@ -21,7 +21,6 @@ export type Product = {
   finishes: Finish[];
   tiktokUrl: string;
   evidence: "real" | "service";
-  price: number;
 };
 
 export type Solution = {
@@ -34,15 +33,38 @@ export type Solution = {
   icon: "door" | "roof" | "window" | "rail" | "structure" | "automation";
 };
 
+export type ApproximateDimensions = {
+  width?: string;
+  height?: string;
+  unit: "m";
+};
+
+export type QuoteItemConfiguration = {
+  subtype?: string;
+  dimensions?: ApproximateDimensions;
+  design?: string;
+  panel?: string;
+  finish?: string;
+  automation?: string;
+  accessories: string[];
+  installation?: string;
+  notes?: string;
+};
+
+export type PendingPrice = {
+  status: "pending";
+};
+
 export type QuoteItem = {
   id: string;
   productId: string;
   name: string;
   image: string;
   quantity: number;
-  finish?: string;
-  measures?: string;
-  unitPrice: number;
+  configuration: QuoteItemConfiguration;
+  price: PendingPrice;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type ProjectCategory = "seccionales" | "levadizas" | "corredizas" | "estructuras" | "automatizacion";

@@ -1,41 +1,60 @@
 # Industrial Remotos Perú — sistema de diseño
 
-Este archivo es la referencia obligatoria para toda interfaz pública del proyecto.
+Referencia visual compartida para Web, Cotiza y Control.
 
-## Tokens
+## Principios
 
-- Navy 900: `#0B1E3A`
-- Navy 800: `#0F2444`
-- Navy 950: `#071527`
-- Navy 700: `#132952`
-- Azul de acción: `#2563EB`
-- Azul glow: `#3B82F6`
-- Azul claro: `#60A5FA`
+- Presencia arquitectónica, técnica y sobria; no apariencia de ecommerce ni SaaS genérico.
+- La fotografía y el proyecto construido son protagonistas.
+- Una escena principal por sección; evitar mosaicos de tarjetas equivalentes.
+- Jerarquía clara, aire editorial y densidad funcional en Control.
+- Movimiento breve y con propósito. `prefers-reduced-motion` siempre prevalece.
+
+## Tokens base
+
+- Navy principal: `#000A13`
+- Navy de superficie: `#071A2B`
+- Navy intermedio: `#0C2942`
+- Azul de acción: `#1677FF`
+- Azul claro: `#6BB6FF`
+- Fondo claro: `#F3F7FB`
 - Superficie: `#FFFFFF`
-- Superficie suave: `#F5F7FA`
-- Texto principal: `#111827`
-- Texto secundario: `#6B7280`
-- Éxito: `#16A34A`
-- Glass fill: `rgba(255,255,255,0.04)`
-- Glass border: `rgba(255,255,255,0.08)`
-- Texto secundario sobre fondo oscuro: `#9CA8C4`
-- Overlay hero: `linear-gradient(180deg, rgba(11,30,58,0.85) 0%, rgba(11,30,58,0.2) 100%)`
+- Texto oscuro: `#000A13`
+- Texto secundario: `#5E6F82`
+- Verde: reservado para WhatsApp y estados positivos verificables.
 
-## Tipografía y forma
+## Tipografía
 
-- Familia única: Plus Jakarta Sans.
-- Pesos: 700/600 en títulos, 500 en labels, 400 en texto.
-- Eyebrows siempre en mayúsculas, 12–13 px y tracking aproximado de `.05em`.
-- Tarjetas y contenedores: radios de 12–16 px.
-- CTA: pill o radio mínimo de 10 px.
-- Elevación: `0 4px 20px rgba(15,23,42,0.08)`.
-- Padding de tarjetas: 24–32 px.
+- Única familia: Plus Jakarta Sans, alojada localmente.
+- Títulos editoriales: peso 520–620, tracking negativo moderado.
+- Texto: peso 400–520, altura de línea 1.55–1.75.
+- Eyebrows: 10–12 px, mayúsculas y tracking `0.10em–0.14em`.
 
-## Reglas de producto
+## Forma y elevación
 
-- Usar imágenes reales entregadas por Industrial Remotos Perú.
-- No usar crema, terracota, negro puro con verde ácido ni gradientes morados.
-- El cotizador y los precios son referenciales hasta recibir validación del asesor.
-- No duplicar componentes existentes: extender el sistema actual.
-- Home, soluciones, configurador, asistente, confirmación y proyectos usan fondo navy/glass/glow.
-- Catálogo, detalle, carrito, checkout y proforma conservan fondo claro por legibilidad transaccional.
+- Radios funcionales: 12–18 px.
+- Contenedores protagonistas: 22–30 px.
+- Botones principales tipo píldora solo cuando ayudan a reconocer la acción.
+- Sombras difusas, con poco contraste; los bordes separan superficies antes que la sombra.
+- No usar glassmorphism como lenguaje dominante.
+
+## Composición responsive
+
+- Diseñar explícitamente 320, 360, 375, 390, 430, 768, 1024, 1280, 1440 y 1920 px.
+- Móvil no es una reducción del escritorio: reorganizar controles, evitar alturas fijas y preservar el CTA.
+- Ningún carrusel horizontal puede ocultar la única vía de acceso a contenido o acciones.
+- Respetar `env(safe-area-inset-*)` en elementos fijos.
+
+## Reglas de confianza
+
+- No publicar precios, métricas, testimonios, garantías, certificaciones ni datos legales sin verificación.
+- Los estimados no confirmados se presentan como `Precio por confirmar`.
+- Activos temporales deben llevar procedencia/estado en datos; no se describen como obra real.
+- El configurador no se denomina 3D si la representación es 2D.
+- Los estados vacíos explican qué falta y qué acción puede realizarse.
+
+## Superficies
+
+- Web pública: editorial, visual y orientada a descubrir soluciones y evidencia.
+- Cotiza: visual dominante, configuración progresiva y resumen persistente.
+- Control: navegación compacta, tablas y formularios densos, trazabilidad visible y confirmación para operaciones irreversibles.

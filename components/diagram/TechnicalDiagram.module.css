@@ -1,0 +1,90 @@
+.figure {
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(0, 38, 73, 0.14);
+  border-radius: 20px;
+  background: #f8fbfe;
+  color: #1677ff;
+}
+
+.figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 10 / 7;
+}
+
+.frame {
+  fill: rgba(22, 119, 255, 0.035);
+  stroke: currentColor;
+  stroke-width: 10;
+}
+
+.panel {
+  fill: rgba(255, 255, 255, 0.72);
+  stroke: currentColor;
+  stroke-width: 5;
+}
+
+.movement {
+  stroke: currentColor;
+  stroke-width: 3;
+}
+
+.panelLabel {
+  fill: currentColor;
+  font-family: var(--font-plus-jakarta), sans-serif;
+  font-size: 28px;
+  font-weight: 760;
+}
+
+.dimension {
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+.dimensionLabel {
+  fill: #43566a;
+  font-family: var(--font-plus-jakarta), sans-serif;
+  font-size: 20px;
+  font-weight: 650;
+}
+
+.figure figcaption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid rgba(0, 38, 73, 0.1);
+  padding: 14px 17px;
+  color: #000a13;
+  font-size: 0.72rem;
+}
+
+.figure figcaption span {
+  color: #687b8e;
+  font-size: 0.65rem;
+  text-align: right;
+}
+
+.document {
+  border-color: #aab6c2;
+  border-radius: 0;
+  background: #fff;
+  color: #162c40;
+}
+
+.control {
+  background: #f5f8fb;
+}
+
+@media (max-width: 600px) {
+  .figure figcaption {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .figure figcaption span {
+    text-align: left;
+  }
+}

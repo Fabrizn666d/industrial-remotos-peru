@@ -13,21 +13,25 @@ export const HOME_INTRO_ASSETS = {
   video: "/NUEVO/Garage_door_opening_transition_1080p_20260921110657.mp4"
 } as const;
 
-// Tiempos editables de la secuencia (duración normal total: ~5.9 s).
+// Tiempos editables de la secuencia (duración normal total: ~9.9 s).
 const INTRO_TIMING = {
-  initialHoldMs: 850,
-  videoPlaybackRate: 2.4,
-  logoFadeDelayMs: 280,
-  finalCrossfadeAtSeconds: 8.4,
-  finalImageHoldMs: 160,
-  finalFallbackAtMs: 4700,
-  exitFallbackAtMs: 5200,
-  exitDurationMs: 720,
+  initialHoldMs: 800,
+  videoPlaybackRate: 1.2,
+  logoFadeAtVideoSeconds: 2.3,
+  finalCrossfadeAtSeconds: 9.6,
+  imageVideoCrossfadeMs: 320,
+  logoFadeDurationMs: 650,
+  finalCrossfadeMs: 280,
+  finalImageHoldMs: 180,
+  videoReadyFallbackMs: 6000,
+  playbackFallbackMs: 12500,
+  fallbackFinalHoldMs: 450,
+  exitDurationMs: 620,
   reducedMotionFinalAtMs: 700,
   reducedMotionExitAtMs: 1350
 } as const;
 
-type LoaderPhase = "intro" | "playing" | "final" | "leaving";
+type LoaderPhase = "intro" | "video-logo" | "playing" | "final" | "leaving";
 
 export function IntroLoader() {
   const pathname = usePathname();
@@ -57,6 +61,9 @@ export function IntroLoader() {
     const timers: number[] = [];
     let cancelled = false;
     let finished = false;
+    let holdElapsed = false;
+    let playbackStarted = false;
+    let videoAbandoned = false;
 
     const schedule = (callback: () => void, delay: number) => {
       const timer = window.setTimeout(callback, delay);
@@ -83,14 +90,25 @@ export function IntroLoader() {
     };
 
     const handleTimeUpdate = () => {
-      if (video && video.currentTime >= INTRO_TIMING.finalCrossfadeAtSeconds) {
+      if (!video) return;
+
+      if (video.currentTime >= INTRO_TIMING.finalCrossfadeAtSeconds) {
         showFinalScene();
+      } else if (video.currentTime >= INTRO_TIMING.logoFadeAtVideoSeconds) {
+        setPhase((current) => current === "video-logo" ? "playing" : current);
       }
     };
 
     const handleEnded = () => {
       showFinalScene();
       schedule(finish, INTRO_TIMING.finalImageHoldMs);
+    };
+
+    const abandonVideo = () => {
+      if (cancelled || finished || playbackStarted || videoAbandoned) return;
+      videoAbandoned = true;
+      showFinalScene();
+      schedule(finish, INTRO_TIMING.fallbackFinalHoldMs);
     };
 
     document.body.classList.add("loader-open");
@@ -107,28 +125,57 @@ export function IntroLoader() {
       video.addEventListener("timeupdate", handleTimeUpdate);
       video.addEventListener("ended", handleEnded);
 
-      schedule(() => {
+      const startVideoWhenReady = () => {
+        if (cancelled || finished || playbackStarted || videoAbandoned || !holdElapsed || video.readyState < 2) return;
+        playbackStarted = true;
+        video.defaultPlaybackRate = INTRO_TIMING.videoPlaybackRate;
+        video.playbackRate = INTRO_TIMING.videoPlaybackRate;
+
         void video.play().then(() => {
-          if (!cancelled && !finished) setPhase("playing");
+          if (!cancelled && !finished) setPhase("video-logo");
         }).catch(() => {
           // Si el navegador bloquea o no puede reproducir el MP4, la entrada
           // conserva su narrativa mediante el fundido interior -> exterior.
+          playbackStarted = false;
+          videoAbandoned = true;
           showFinalScene();
-          schedule(finish, 700);
+          schedule(finish, INTRO_TIMING.fallbackFinalHoldMs);
         });
+      };
+
+      const handleVideoReady = () => startVideoWhenReady();
+      video.addEventListener("loadeddata", handleVideoReady);
+      video.addEventListener("canplay", handleVideoReady);
+
+      schedule(() => {
+        holdElapsed = true;
+        startVideoWhenReady();
       }, INTRO_TIMING.initialHoldMs);
 
-      // Red de seguridad frente a buffering o eventos multimedia incompletos.
-      schedule(showFinalScene, INTRO_TIMING.finalFallbackAtMs);
-      schedule(finish, INTRO_TIMING.exitFallbackAtMs);
+      // Si el archivo no llega a estar listo, nunca dejamos un lienzo vacío:
+      // la imagen interior permanece y se usa el empalme estático de respaldo.
+      schedule(abandonVideo, INTRO_TIMING.videoReadyFallbackMs);
+      schedule(() => {
+        if (cancelled || finished) return;
+        showFinalScene();
+        schedule(finish, INTRO_TIMING.fallbackFinalHoldMs);
+      }, INTRO_TIMING.playbackFallbackMs);
+
+      return () => {
+        cancelled = true;
+        timers.forEach((timer) => window.clearTimeout(timer));
+        video.removeEventListener("loadeddata", handleVideoReady);
+        video.removeEventListener("canplay", handleVideoReady);
+        video.removeEventListener("timeupdate", handleTimeUpdate);
+        video.removeEventListener("ended", handleEnded);
+        video.pause();
+        document.body.classList.remove("loader-open");
+      };
     }
 
     return () => {
       cancelled = true;
       timers.forEach((timer) => window.clearTimeout(timer));
-      video?.removeEventListener("timeupdate", handleTimeUpdate);
-      video?.removeEventListener("ended", handleEnded);
-      video?.pause();
       document.body.classList.remove("loader-open");
     };
   }, [isHome, visible]);
@@ -136,7 +183,9 @@ export function IntroLoader() {
   if (!isHome || !visible) return null;
 
   const timingStyles = {
-    "--intro-logo-delay": `${INTRO_TIMING.logoFadeDelayMs}ms`,
+    "--intro-media-crossfade": `${INTRO_TIMING.imageVideoCrossfadeMs}ms`,
+    "--intro-logo-fade": `${INTRO_TIMING.logoFadeDurationMs}ms`,
+    "--intro-final-crossfade": `${INTRO_TIMING.finalCrossfadeMs}ms`,
     "--intro-exit-duration": `${INTRO_TIMING.exitDurationMs}ms`
   } as CSSProperties;
 
@@ -176,7 +225,6 @@ export function IntroLoader() {
           priority
           sizes="100vw"
         />
-        <div className="irp-entry-loader__light" />
       </div>
 
       <div className="irp-entry-loader__brand-stage" aria-hidden="true">
@@ -190,7 +238,6 @@ export function IntroLoader() {
             fetchPriority="high"
             decoding="sync"
           />
-          <span className="irp-entry-loader__accent" />
         </div>
       </div>
 

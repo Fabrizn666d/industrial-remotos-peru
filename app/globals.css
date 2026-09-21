@@ -1974,7 +1974,7 @@ body:has(.irp-home) .project-chip { height: 47px; font-size: 11px; }
   color: white;
 }
 
-.irp-hero__media { position: absolute; inset: -3% -1% -7%; }
+.irp-hero__media { position: absolute; inset: 0; }
 .irp-hero__media-frame { position: absolute; inset: 0; opacity: 1; transform: scale(1); transform-origin: 70% 50%; transition: opacity 1.15s ease, transform 1.35s cubic-bezier(.2,.75,0,1); }
 .irp-hero__media img { object-position: center 51%; filter: saturate(.84) contrast(1.04); }
 
@@ -2010,7 +2010,7 @@ body:has(.irp-home) .project-chip { height: 47px; font-size: 11px; }
 .irp-hero__content > p { transition-delay: .17s; }
 .irp-hero__actions { transition-delay: .25s; }
 .irp-hero__proof { transition-delay: .34s; }
-body.loader-open .irp-hero__media-frame { opacity: .72; transform: scale(1.045); }
+body.loader-open .irp-hero__media-frame { opacity: 1; transform: none; }
 body.loader-open .irp-hero__content .irp-kicker,
 body.loader-open .irp-hero__content h1,
 body.loader-open .irp-hero__content > p,
@@ -2242,7 +2242,7 @@ body:has(.irp-home) .quote-assistant__tip { bottom: 9px; font-size: 12px; }
   body:has(.irp-home) .header-quote-cta { display: none; }
 
   .irp-hero { height: max(760px, 100svh); min-height: 760px; max-height: 920px; }
-  .irp-hero__media { inset: 0 -42% -3% -24%; }
+  .irp-hero__media { inset: 0; }
   .irp-hero__media img { object-position: 58% 50%; filter: saturate(.8) contrast(1.05); }
   .irp-hero__cinema { background: linear-gradient(0deg, rgba(2,12,24,.99) 0%, rgba(2,13,26,.77) 58%, rgba(2,13,26,.34) 100%), linear-gradient(90deg, rgba(2,13,27,.62), rgba(2,13,27,.22)); }
   .irp-hero__ambient { top: 22%; left: 26%; width: 100%; }
@@ -3357,27 +3357,22 @@ body:not(:has(.adminBoundary)) main .irp-advisor__copy p {
   overflow: hidden;
   background: #e7e1d8;
   opacity: 1;
-  transform: scale(1);
-  transition:
-    opacity var(--intro-exit-duration, 720ms) cubic-bezier(.32,.72,0,1),
-    transform var(--intro-exit-duration, 720ms) cubic-bezier(.32,.72,0,1);
-  animation: irp-entry-loader-failsafe .01s linear 6.2s forwards;
+  transition: opacity var(--intro-exit-duration, 620ms) cubic-bezier(.32,.72,0,1);
+  animation: irp-entry-loader-failsafe .01s linear 15s forwards;
   isolation: isolate;
   overscroll-behavior: none;
   touch-action: none;
-  will-change: opacity, transform;
+  will-change: opacity;
 }
 
 .irp-entry-loader.is-leaving {
   pointer-events: none;
   opacity: 0;
-  transform: scale(1.008);
 }
 
 .irp-entry-loader__scene,
 .irp-entry-loader__image,
-.irp-entry-loader__video,
-.irp-entry-loader__light {
+.irp-entry-loader__video {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -3391,15 +3386,13 @@ body:not(:has(.adminBoundary)) main .irp-advisor__copy p {
   max-width: none;
   object-fit: cover;
   object-position: var(--intro-focus-x) 50%;
-  transform: scale(1.06);
-  transform-origin: var(--intro-focus-x) 50%;
   user-select: none;
 }
 
 .irp-entry-loader__image--interior {
   z-index: 1;
   opacity: 1;
-  transition: opacity .42s ease;
+  transition: opacity var(--intro-media-crossfade, 320ms) ease;
 }
 
 .irp-entry-loader__video {
@@ -3407,33 +3400,28 @@ body:not(:has(.adminBoundary)) main .irp-advisor__copy p {
   display: block;
   border: 0;
   opacity: 0;
-  transition: opacity .38s ease;
+  transition: opacity var(--intro-media-crossfade, 320ms) ease;
 }
 
 .irp-entry-loader__image--exterior {
   z-index: 3;
   opacity: 0;
-  transition: opacity .7s cubic-bezier(.32,.72,0,1);
+  filter: saturate(.94) contrast(1.015) brightness(1.025);
+  transition: opacity var(--intro-final-crossfade, 280ms) ease;
 }
 
+.irp-entry-loader.is-video-logo .irp-entry-loader__video,
 .irp-entry-loader.is-playing .irp-entry-loader__video,
 .irp-entry-loader.is-final .irp-entry-loader__video,
 .irp-entry-loader.is-leaving .irp-entry-loader__video { opacity: 1; }
 
+.irp-entry-loader.is-video-logo .irp-entry-loader__image--interior,
 .irp-entry-loader.is-playing .irp-entry-loader__image--interior,
 .irp-entry-loader.is-final .irp-entry-loader__image--interior,
 .irp-entry-loader.is-leaving .irp-entry-loader__image--interior { opacity: 0; }
 
 .irp-entry-loader.is-final .irp-entry-loader__image--exterior,
 .irp-entry-loader.is-leaving .irp-entry-loader__image--exterior { opacity: 1; }
-
-.irp-entry-loader__light {
-  z-index: 4;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.1), transparent 34%, rgba(255,255,255,.06)),
-    radial-gradient(circle at 50% 46%, rgba(255,255,255,.08), transparent 43%);
-  pointer-events: none;
-}
 
 .irp-entry-loader__brand-stage {
   position: absolute;
@@ -3444,70 +3432,31 @@ body:not(:has(.adminBoundary)) main .irp-advisor__copy p {
   padding: 24px;
   pointer-events: none;
   opacity: 1;
-  transform: translateY(0) scale(1);
-  transition:
-    opacity .64s cubic-bezier(.32,.72,0,1) var(--intro-logo-delay, 280ms),
-    transform .72s cubic-bezier(.32,.72,0,1) var(--intro-logo-delay, 280ms);
-  animation: irp-entry-brand-in .68s cubic-bezier(.2,.75,0,1) both;
+  transition: opacity var(--intro-logo-fade, 650ms) ease;
+  animation: irp-entry-brand-in .55s ease both;
 }
 
 .irp-entry-loader.is-playing .irp-entry-loader__brand-stage,
 .irp-entry-loader.is-final .irp-entry-loader__brand-stage,
 .irp-entry-loader.is-leaving .irp-entry-loader__brand-stage {
   opacity: 0;
-  transform: translateY(-10px) scale(.975);
 }
 
 .irp-entry-loader__brand {
-  position: relative;
-  display: grid;
-  width: clamp(270px, 25vw, 370px);
-  height: clamp(205px, 18vw, 270px);
-  place-items: center;
-  overflow: hidden;
-  border: 1px solid rgba(255,255,255,.88);
-  border-radius: 30px;
-  background: rgba(255,255,255,.78);
-  box-shadow: 0 24px 70px rgba(33,43,53,.18), inset 0 1px rgba(255,255,255,.96);
-  backdrop-filter: blur(15px) saturate(1.08);
+  width: clamp(320px, 28vw, 420px);
+  aspect-ratio: 1;
 }
 
 .irp-entry-loader__logo {
   display: block;
-  width: 86%;
-  height: 86%;
-  object-fit: contain;
-  filter: drop-shadow(0 8px 15px rgba(0,32,77,.09));
-}
-
-.irp-entry-loader__accent {
-  position: absolute;
-  right: 31%;
-  bottom: 18px;
-  left: 31%;
-  height: 2px;
-  overflow: hidden;
-  border-radius: 99px;
-  background: rgba(17,107,218,.14);
-}
-
-.irp-entry-loader__accent::after {
-  display: block;
   width: 100%;
   height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, transparent, #147eea 22%, #55adff 78%, transparent);
-  content: "";
-  transform-origin: left;
-  animation: irp-entry-accent 1.05s .2s cubic-bezier(.32,.72,0,1) both;
+  object-fit: contain;
+  filter: drop-shadow(0 5px 8px rgba(0,20,48,.13));
 }
 
 @keyframes irp-entry-brand-in {
-  from { opacity: 0; transform: translateY(10px) scale(.975); }
-}
-
-@keyframes irp-entry-accent {
-  from { transform: scaleX(0); }
+  from { opacity: 0; }
 }
 
 @keyframes irp-entry-loader-failsafe {
@@ -3555,14 +3504,14 @@ body.loader-open .quote-assistant,
 body:has(.irp-entry-loader:not(.is-leaving)) .quote-assistant { visibility: hidden; opacity: 0; }
 
 /* El mismo encuadre se usa en el último frame y en el hero para evitar flashes. */
-.irp-hero__media { inset: -3%; }
+.irp-hero__media { inset: 0; }
 .irp-hero__media-frame { transform-origin: 50% 50%; }
 .irp-hero__media img {
   object-position: 50% 50%;
   filter: saturate(.94) contrast(1.015) brightness(1.025);
 }
 body.loader-open .irp-hero__media-frame,
-body:has(.irp-entry-loader:not(.is-leaving)) .irp-hero__media-frame { opacity: 1; transform: scale(1); }
+body:has(.irp-entry-loader:not(.is-leaving)) .irp-hero__media-frame { opacity: 1; transform: none; }
 
 .irp-hero__cinema {
   background:
@@ -3576,13 +3525,10 @@ body:has(.irp-entry-loader:not(.is-leaving)) .irp-hero__media-frame { opacity: 1
 @media (max-width: 767px) {
   .irp-entry-loader { --intro-focus-x: 72%; }
   .irp-entry-loader__brand {
-    width: min(292px, 78vw);
-    height: min(214px, 57vw);
-    border-radius: 24px;
+    width: min(330px, 82vw);
   }
-  .irp-entry-loader__accent { right: 29%; bottom: 14px; left: 29%; }
 
-  .irp-hero__media { inset: -3%; }
+  .irp-hero__media { inset: 0; }
   .irp-hero__media img { object-position: 72% 50%; }
   .irp-hero__cinema {
     background:

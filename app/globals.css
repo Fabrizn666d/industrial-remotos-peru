@@ -2856,18 +2856,19 @@ body:has(.irp-home) .header-whatsapp-cta:hover { filter: brightness(1.08); trans
 body:has(.irp-home) .header-quote-cta { min-height: 44px; padding-inline: 18px; font-size: 13px; }
 body:has(.irp-home) .project-chip { height: 44px; border-color: rgba(255,255,255,.16); background: #000A13; font-size: 12px; }
 
-/* Same choreography and hierarchy as the IBEX loader: flat curtain + centered mark reveal. */
-.irp-ibex-loader { position: fixed; z-index: 500; inset: 0; overflow: hidden; color: #000A13; pointer-events: auto; background: transparent; animation: irp-ibex-loader-failsafe .01s linear 3s forwards; }
-.irp-ibex-loader__curtain { position: absolute; z-index: 1; inset: 0; background: #000A13; box-shadow: inset 0 -1px rgba(104,181,255,.18); will-change: transform; }
-.irp-ibex-loader__brand-stage { position: absolute; z-index: 2; inset: 0; display: grid; place-items: center; pointer-events: none; }
-.irp-ibex-loader__brand { position: relative; width: clamp(13rem, 26vw, 29rem); transform-origin: center; will-change: transform; }
-.irp-ibex-loader__brand .brand-logo { width: 100%; height: auto; aspect-ratio: 1.474 / 1; }
-.irp-ibex-loader.is-leaving .irp-ibex-loader__curtain { animation: irp-ibex-loader-curtain .72s cubic-bezier(.2,.75,0,1) .08s forwards; }
-.irp-ibex-loader.is-leaving .irp-ibex-loader__brand { animation: irp-ibex-loader-logo-out .65s cubic-bezier(.2,.75,0,1) forwards; }
-@keyframes irp-ibex-loader-curtain {
-  to { transform: translateY(-100%); }
+/* Exact IBEX loader choreography: the mark travels first, then the curtain follows it upward. */
+.irp-ibex-loader { position: fixed; z-index: 999; inset: 0; overflow: hidden; pointer-events: auto; background: transparent; animation: irp-ibex-loader-failsafe .01s linear 7s forwards; }
+.irp-ibex-loader__curtain {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: #00163a url("/images/loader/desktop.png") center / cover no-repeat;
+  box-shadow: inset 0 -1px rgba(104,181,255,.2);
+  will-change: transform;
 }
-@keyframes irp-ibex-loader-logo-out { to { transform: translate3d(var(--irp-loader-x, 0px), var(--irp-loader-y, -18vh), 0) scale(var(--irp-loader-scale, .42)); } }
+.irp-ibex-loader__brand-stage { position: absolute; z-index: 2; inset: 0; display: grid; place-items: center; pointer-events: none; }
+.irp-ibex-loader__brand { position: relative; width: min(35rem, 44vw); aspect-ratio: 1.474 / 1; transform-origin: center; will-change: transform, opacity; }
+.irp-ibex-loader__brand-image { position: absolute; top: 50%; left: 50%; width: 100%; max-width: none; height: auto; transform: translate(-50%, -50%); user-select: none; }
 @keyframes irp-ibex-loader-failsafe { to { visibility: hidden; opacity: 0; pointer-events: none; } }
 
 @media (max-width: 1180px) {
@@ -2888,17 +2889,8 @@ body:has(.irp-home) .project-chip { height: 44px; border-color: rgba(255,255,255
   body:has(.irp-home) .header-whatsapp-cta { width: 39px; min-height: 39px; justify-content: center; padding: 0; }
   body:has(.irp-home) .header-whatsapp-cta span { display: none; }
   body:has(.irp-home) .project-chip { display: inline-flex; }
-  /* Keep the same logo-to-header travel ratio as desktop. Previously the
-     smaller mobile mark made the loader look like a separate animation. */
-  .irp-ibex-loader { z-index: 999; }
-  .irp-ibex-loader__brand { width: min(15rem, 62vw); }
-  .irp-ibex-loader__brand-stage { padding-bottom: 18px; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .irp-ibex-loader { display: none; animation: none !important; }
-  .irp-ibex-loader__brand,
-  .irp-ibex-loader__curtain { animation: none !important; }
+  .irp-ibex-loader__curtain { background-image: url("/images/loader/mobile.png"); }
+  .irp-ibex-loader__brand { width: min(20.625rem, 80vw); }
 }
 
 /* Wider editorial canvas and social actions anchored inside the hero, not the navigation. */

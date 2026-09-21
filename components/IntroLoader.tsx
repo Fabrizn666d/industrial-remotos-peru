@@ -1,116 +1,101 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Logo } from "@/components/Logo";
+import gsap from "gsap";
 
-const MAX_READY_WAIT_MS = 1100;
-const MIN_VISIBLE_MS = 240;
-const EXIT_DURATION_MS = 850;
+const LOADER_HOLD_MS = 650;
 
 export function IntroLoader() {
   const [visible, setVisible] = useState(true);
-  const [leaving, setLeaving] = useState(false);
+  const loaderRef = useRef<HTMLDivElement>(null);
+  const curtainRef = useRef<HTMLDivElement>(null);
   const brandRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const loader = loaderRef.current;
+    const curtain = curtainRef.current;
+    const brand = brandRef.current;
+    const brandImage = brand?.querySelector<HTMLElement>("img");
+    if (!loader || !curtain || !brand || !brandImage) return;
+
     let cancelled = false;
-    let completed = false;
-    let readinessTimer = 0;
-    let minimumTimer = 0;
-    let exitTimer = 0;
-    let reducedMotionFrame = 0;
-    let clearHeroListeners = () => {};
-    const startedAt = window.performance.now();
+    let timeline: gsap.core.Timeline | null = null;
+    let headerLogo: HTMLElement | null = null;
 
     document.body.classList.add("loader-open");
+    document.body.classList.remove("intro-complete");
+    gsap.set(curtain, { yPercent: 0 });
+    gsap.set(brand, { x: 0, y: 0, scale: 1, autoAlpha: 1 });
+    gsap.set(brandImage, { filter: "none" });
 
-    const complete = () => {
-      if (cancelled || completed) return;
-      completed = true;
-      clearHeroListeners();
-      document.body.classList.remove("loader-open");
-      document.body.classList.add("intro-complete");
-      setVisible(false);
-      window.dispatchEvent(new Event("irp:intro-complete"));
-    };
+    const reveal = () => {
+      if (cancelled) return;
 
-    const beginExit = () => {
-      if (cancelled || completed || exitTimer) return;
+      headerLogo = document.querySelector<HTMLElement>(".site-header__logo");
+      const loaderRect = brand.getBoundingClientRect();
+      const targetRect = headerLogo?.getBoundingClientRect();
+      const destination = targetRect
+        ? {
+            x: targetRect.left + targetRect.width / 2 - (loaderRect.left + loaderRect.width / 2),
+            y: targetRect.top + targetRect.height / 2 - (loaderRect.top + loaderRect.height / 2),
+            scale: targetRect.width / loaderRect.width,
+          }
+        : { x: 0, y: 0, scale: 0.5 };
+      const heroMedia = document.querySelector<HTMLElement>(".irp-hero__media-frame");
 
-      const brand = brandRef.current;
-      const headerLogo = document.querySelector<HTMLElement>(".site-header__logo");
-      if (brand && headerLogo) {
-        const source = brand.getBoundingClientRect();
-        const target = headerLogo.getBoundingClientRect();
-        brand.style.setProperty("--irp-loader-x", `${target.left + target.width / 2 - (source.left + source.width / 2)}px`);
-        brand.style.setProperty("--irp-loader-y", `${target.top + target.height / 2 - (source.top + source.height / 2)}px`);
-        brand.style.setProperty("--irp-loader-scale", `${Math.min(target.width / source.width, target.height / source.height)}`);
+      if (headerLogo) gsap.set(headerLogo, { autoAlpha: 0 });
+
+      timeline = gsap.timeline({
+        delay: 0.18,
+        onStart: () => {
+          document.body.classList.remove("loader-open");
+        },
+        onComplete: () => {
+          if (cancelled) return;
+          document.body.classList.remove("loader-open");
+          document.body.classList.add("intro-complete");
+          if (headerLogo) gsap.set(headerLogo, { autoAlpha: 1, clearProps: "visibility,opacity" });
+          setVisible(false);
+          window.dispatchEvent(new Event("irp:intro-complete"));
+        },
+      })
+        .to(brand, { ...destination, duration: 2.05, ease: "power4.inOut" }, 0)
+        .to(curtain, { yPercent: -100, duration: 2.15, ease: "power3.inOut" }, 0.42)
+        .to(brandImage, { filter: "brightness(0) invert(1)", duration: 0.78, ease: "power2.inOut" }, 1.3);
+
+      if (heroMedia) {
+        timeline.fromTo(heroMedia, { scale: 1.07 }, { scale: 1, duration: 2.3, ease: "power3.out" }, 0.5);
       }
-
-      clearHeroListeners();
-      setLeaving(true);
-      exitTimer = window.setTimeout(complete, EXIT_DURATION_MS);
     };
 
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      reducedMotionFrame = window.requestAnimationFrame(complete);
-    } else {
-      const fontsReady = document.fonts?.ready.then(() => undefined).catch(() => undefined) ?? Promise.resolve();
-      const heroReady = new Promise<void>((resolve) => {
-        const heroImage = document.querySelector<HTMLImageElement>(".irp-hero__media img");
-        if (!heroImage || (heroImage.complete && heroImage.naturalWidth > 0)) {
-          resolve();
-          return;
-        }
-
-        const settle = () => {
-          clearHeroListeners();
-          resolve();
-        };
-        clearHeroListeners = () => {
-          heroImage.removeEventListener("load", settle);
-          heroImage.removeEventListener("error", settle);
-        };
-        heroImage.addEventListener("load", settle, { once: true });
-        heroImage.addEventListener("error", settle, { once: true });
-      });
-      const readyOrTimedOut = Promise.race([
-        Promise.allSettled([fontsReady, heroReady]),
-        new Promise<void>((resolve) => {
-          readinessTimer = window.setTimeout(resolve, MAX_READY_WAIT_MS);
-        }),
-      ]);
-
-      void readyOrTimedOut.then(() => {
-        if (cancelled) return;
-        window.clearTimeout(readinessTimer);
-        const remaining = Math.max(0, MIN_VISIBLE_MS - (window.performance.now() - startedAt));
-        if (remaining > 0) {
-          minimumTimer = window.setTimeout(beginExit, remaining);
-        } else {
-          beginExit();
-        }
-      });
-    }
+    const timer = window.setTimeout(reveal, LOADER_HOLD_MS);
 
     return () => {
       cancelled = true;
-      window.clearTimeout(readinessTimer);
-      window.clearTimeout(minimumTimer);
-      window.clearTimeout(exitTimer);
-      window.cancelAnimationFrame(reducedMotionFrame);
-      clearHeroListeners();
+      window.clearTimeout(timer);
+      timeline?.kill();
       document.body.classList.remove("loader-open");
+      if (headerLogo) gsap.set(headerLogo, { autoAlpha: 1, clearProps: "visibility,opacity" });
     };
   }, []);
 
   if (!visible) return null;
 
   return (
-    <div className={`irp-ibex-loader ${leaving ? "is-leaving" : ""}`} aria-label="Cargando Industrial Remotos Perú" role="status">
-      <div className="irp-ibex-loader__curtain" />
+    <div ref={loaderRef} className="irp-ibex-loader" aria-label="Cargando Industrial Remotos Perú" role="status">
+      <div ref={curtainRef} className="irp-ibex-loader__curtain" />
       <div className="irp-ibex-loader__brand-stage">
-        <div ref={brandRef} className="irp-ibex-loader__brand"><Logo inverse priority /></div>
+        <div ref={brandRef} className="irp-ibex-loader__brand">
+          <img
+            className="irp-ibex-loader__brand-image"
+            src="/images/loader/logo.png"
+            alt="Industrial Perú Remotos — Garantía y confianza"
+            width={1254}
+            height={1254}
+            fetchPriority="high"
+            decoding="sync"
+          />
+        </div>
       </div>
       <span className="sr-only" aria-live="polite">Preparando la experiencia</span>
     </div>

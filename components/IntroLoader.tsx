@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
 
@@ -15,17 +14,12 @@ export const HOME_INTRO_ASSETS = {
 const INTRO_TIMING = {
   initialHoldMs: 800,
   logoFadeAtVideoSeconds: 2.3,
-  mediaCrossfadeMs: 320,
   logoFadeMs: 650,
-  finalCrossfadeMs: 280,
-  finalStillMs: 320,
-  exitMs: 620
+  lastFrameHoldMs: 600,
+  heroCrossfadeMs: 1000
 } as const;
 
-type LoaderPhase = "intro" | "video-logo" | "playing" | "final" | "leaving";
-type VideoStatus = "WAITING" | "PLAYING" | "ENDED" | "ERROR";
-
-const showVideoStatus = process.env.NODE_ENV === "development";
+type LoaderPhase = "intro" | "video-logo" | "playing" | "ended" | "revealing";
 
 export function IntroLoader() {
   const pathname = usePathname();
@@ -34,14 +28,12 @@ export function IntroLoader() {
   const playRequestedRef = useRef(false);
   const [visible, setVisible] = useState(isHome);
   const [phase, setPhase] = useState<LoaderPhase>("intro");
-  const [videoStatus, setVideoStatus] = useState<VideoStatus>("WAITING");
 
   const showRealVideoError = useCallback((error: unknown) => {
     if (process.env.NODE_ENV === "development") {
       console.error("[IntroLoader] No se pudo reproducir el video de apertura.", error);
     }
-    setVideoStatus("ERROR");
-    setPhase("final");
+    setPhase("ended");
   }, []);
 
   const startVideo = useCallback(() => {
@@ -63,7 +55,6 @@ export function IntroLoader() {
     }
 
     setPhase("intro");
-    setVideoStatus("WAITING");
     setVisible(true);
   }, [isHome]);
 
@@ -84,15 +75,15 @@ export function IntroLoader() {
     };
   }, [isHome, startVideo, visible]);
 
-  // Esta fase solo puede comenzar desde onEnded o desde un error real.
+  // El último frame permanece inmóvil antes de revelar el Hero definitivo.
   useEffect(() => {
-    if (phase !== "final") return;
+    if (phase !== "ended") return;
 
     const revealTimer = window.setTimeout(() => {
-      setPhase("leaving");
+      setPhase("revealing");
       document.body.classList.remove("loader-open");
       document.body.classList.add("intro-complete");
-    }, INTRO_TIMING.finalStillMs);
+    }, INTRO_TIMING.lastFrameHoldMs);
 
     return () => {
       window.clearTimeout(revealTimer);
@@ -100,18 +91,17 @@ export function IntroLoader() {
   }, [phase]);
 
   useEffect(() => {
-    if (phase !== "leaving") return;
+    if (phase !== "revealing") return;
 
     const unmountTimer = window.setTimeout(() => {
       setVisible(false);
       window.dispatchEvent(new Event("irp:intro-complete"));
-    }, INTRO_TIMING.exitMs);
+    }, INTRO_TIMING.heroCrossfadeMs);
 
     return () => window.clearTimeout(unmountTimer);
   }, [phase]);
 
   const handlePlaying = () => {
-    setVideoStatus("PLAYING");
     setPhase((current) => current === "intro" ? "video-logo" : current);
   };
 
@@ -123,8 +113,7 @@ export function IntroLoader() {
   };
 
   const handleEnded = () => {
-    setVideoStatus("ENDED");
-    setPhase("final");
+    setPhase("ended");
   };
 
   const handleVideoElementError = () => {
@@ -134,10 +123,8 @@ export function IntroLoader() {
   if (!isHome || !visible) return null;
 
   const timingStyles = {
-    "--intro-media-crossfade": `${INTRO_TIMING.mediaCrossfadeMs}ms`,
     "--intro-logo-fade": `${INTRO_TIMING.logoFadeMs}ms`,
-    "--intro-final-crossfade": `${INTRO_TIMING.finalCrossfadeMs}ms`,
-    "--intro-exit-duration": `${INTRO_TIMING.exitMs}ms`
+    "--intro-exit-duration": `${INTRO_TIMING.heroCrossfadeMs}ms`
   } as CSSProperties;
 
   return (
@@ -149,14 +136,6 @@ export function IntroLoader() {
       role="status"
     >
       <div className="irp-entry-loader__scene" aria-hidden="true">
-        <Image
-          className="irp-entry-loader__image irp-entry-loader__image--interior"
-          src={HOME_INTRO_ASSETS.interior}
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-        />
         <video
           ref={videoRef}
           className="irp-entry-loader__video"
@@ -171,14 +150,6 @@ export function IntroLoader() {
           onTimeUpdate={handleTimeUpdate}
           onEnded={handleEnded}
           onError={handleVideoElementError}
-        />
-        <Image
-          className="irp-entry-loader__image irp-entry-loader__image--exterior"
-          src={HOME_INTRO_ASSETS.exterior}
-          alt=""
-          fill
-          priority
-          sizes="100vw"
         />
       </div>
 
@@ -195,12 +166,6 @@ export function IntroLoader() {
           />
         </div>
       </div>
-
-      {showVideoStatus && (
-        <span className={`irp-entry-loader__status is-${videoStatus.toLowerCase()}`}>
-          VIDEO: {videoStatus}
-        </span>
-      )}
 
       <span className="sr-only">Abriendo el acceso</span>
     </div>

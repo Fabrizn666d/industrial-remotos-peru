@@ -3364,13 +3364,13 @@ body:not(:has(.adminBoundary)) main .irp-advisor__copy p {
   will-change: opacity;
 }
 
-.irp-entry-loader.is-leaving {
+.irp-entry-loader.is-revealing {
+  z-index: 1;
   pointer-events: none;
   opacity: 0;
 }
 
 .irp-entry-loader__scene,
-.irp-entry-loader__image,
 .irp-entry-loader__video {
   position: absolute;
   inset: 0;
@@ -3380,7 +3380,6 @@ body:not(:has(.adminBoundary)) main .irp-advisor__copy p {
 
 .irp-entry-loader__scene { background: #e7e1d8; }
 
-.irp-entry-loader__image,
 .irp-entry-loader__video {
   max-width: none;
   object-fit: cover;
@@ -3388,39 +3387,11 @@ body:not(:has(.adminBoundary)) main .irp-advisor__copy p {
   user-select: none;
 }
 
-.irp-entry-loader__image--interior {
-  z-index: 1;
-  opacity: 1;
-  transition: opacity var(--intro-media-crossfade, 320ms) ease;
-}
-
 .irp-entry-loader__video {
-  z-index: 2;
   display: block;
   border: 0;
-  opacity: 0;
-  transition: opacity var(--intro-media-crossfade, 320ms) ease;
+  opacity: 1;
 }
-
-.irp-entry-loader__image--exterior {
-  z-index: 3;
-  opacity: 0;
-  filter: saturate(.94) contrast(1.015) brightness(1.025);
-  transition: opacity var(--intro-final-crossfade, 280ms) ease;
-}
-
-.irp-entry-loader.is-video-logo .irp-entry-loader__video,
-.irp-entry-loader.is-playing .irp-entry-loader__video,
-.irp-entry-loader.is-final .irp-entry-loader__video,
-.irp-entry-loader.is-leaving .irp-entry-loader__video { opacity: 1; }
-
-.irp-entry-loader.is-video-logo .irp-entry-loader__image--interior,
-.irp-entry-loader.is-playing .irp-entry-loader__image--interior,
-.irp-entry-loader.is-final .irp-entry-loader__image--interior,
-.irp-entry-loader.is-leaving .irp-entry-loader__image--interior { opacity: 0; }
-
-.irp-entry-loader.is-final .irp-entry-loader__image--exterior,
-.irp-entry-loader.is-leaving .irp-entry-loader__image--exterior { opacity: 1; }
 
 .irp-entry-loader__brand-stage {
   position: absolute;
@@ -3436,8 +3407,8 @@ body:not(:has(.adminBoundary)) main .irp-advisor__copy p {
 }
 
 .irp-entry-loader.is-playing .irp-entry-loader__brand-stage,
-.irp-entry-loader.is-final .irp-entry-loader__brand-stage,
-.irp-entry-loader.is-leaving .irp-entry-loader__brand-stage {
+.irp-entry-loader.is-ended .irp-entry-loader__brand-stage,
+.irp-entry-loader.is-revealing .irp-entry-loader__brand-stage {
   opacity: 0;
 }
 
@@ -3454,28 +3425,7 @@ body:not(:has(.adminBoundary)) main .irp-advisor__copy p {
   filter: drop-shadow(0 5px 8px rgba(0,20,48,.13));
 }
 
-@keyframes irp-entry-brand-in {
-  from { opacity: 0; }
-}
-
-.irp-entry-loader__status {
-  position: absolute;
-  z-index: 6;
-  bottom: 16px;
-  left: 16px;
-  border: 1px solid rgba(255,255,255,.28);
-  border-radius: 5px;
-  background: rgba(0,10,19,.78);
-  padding: 5px 8px;
-  color: #ffd166;
-  font: 700 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  letter-spacing: .04em;
-  pointer-events: none;
-}
-
-.irp-entry-loader__status.is-playing { color: #70e39b; }
-.irp-entry-loader__status.is-ended { color: #75baff; }
-.irp-entry-loader__status.is-error { color: #ff8585; }
+@keyframes irp-entry-brand-in { from { opacity: 0; } }
 
 /* Hero y navegación permanecen ocultos hasta el último empalme del loader. */
 body:has(.irp-home) .site-header {
@@ -3489,10 +3439,10 @@ body:has(.irp-home) .site-header {
 
 body:has(.irp-home) .site-header--scrolled { background: rgba(0,10,19,.94); }
 
-body:has(.irp-entry-loader:not(.is-leaving)) { overflow: hidden; }
+body:has(.irp-entry-loader) { overflow: hidden; }
 
 body.loader-open:has(.irp-home) .site-header,
-body:has(.irp-entry-loader:not(.is-leaving)) .site-header {
+body:has(.irp-entry-loader:not(.is-revealing)) .site-header {
   visibility: hidden;
   pointer-events: none;
   opacity: 0;
@@ -3504,18 +3454,18 @@ body.loader-open .irp-hero__content h1,
 body.loader-open .irp-hero__content > p,
 body.loader-open .irp-hero__actions,
 body.loader-open .irp-hero__proof,
-body:has(.irp-entry-loader:not(.is-leaving)) .irp-hero__content .irp-kicker,
-body:has(.irp-entry-loader:not(.is-leaving)) .irp-hero__content h1,
-body:has(.irp-entry-loader:not(.is-leaving)) .irp-hero__content > p,
-body:has(.irp-entry-loader:not(.is-leaving)) .irp-hero__actions,
-body:has(.irp-entry-loader:not(.is-leaving)) .irp-hero__proof {
+body:has(.irp-entry-loader:not(.is-revealing)) .irp-hero__content .irp-kicker,
+body:has(.irp-entry-loader:not(.is-revealing)) .irp-hero__content h1,
+body:has(.irp-entry-loader:not(.is-revealing)) .irp-hero__content > p,
+body:has(.irp-entry-loader:not(.is-revealing)) .irp-hero__actions,
+body:has(.irp-entry-loader:not(.is-revealing)) .irp-hero__proof {
   visibility: hidden;
   opacity: 0;
   transform: translateY(30px);
 }
 
 body.loader-open .quote-assistant,
-body:has(.irp-entry-loader:not(.is-leaving)) .quote-assistant { visibility: hidden; opacity: 0; }
+body:has(.irp-entry-loader) .quote-assistant { visibility: hidden; opacity: 0; }
 
 /* El mismo encuadre se usa en el último frame y en el hero para evitar flashes. */
 .irp-hero__media { inset: 0; }
@@ -3525,14 +3475,33 @@ body:has(.irp-entry-loader:not(.is-leaving)) .quote-assistant { visibility: hidd
   filter: saturate(.94) contrast(1.015) brightness(1.025);
 }
 body.loader-open .irp-hero__media-frame,
-body:has(.irp-entry-loader:not(.is-leaving)) .irp-hero__media-frame { opacity: 1; transform: none; }
+body:has(.irp-entry-loader) .irp-hero__media-frame { opacity: 1; transform: none; }
 
 .irp-hero__cinema {
+  z-index: 2;
+  opacity: 1;
   background:
     linear-gradient(90deg, rgba(0,10,19,.7) 0%, rgba(0,10,19,.55) 27%, rgba(0,10,19,.27) 47%, rgba(0,10,19,.06) 68%, transparent 80%),
     linear-gradient(0deg, rgba(0,10,19,.34), transparent 43%),
     linear-gradient(180deg, rgba(0,10,19,.16), transparent 29%);
+  transition: opacity 1100ms cubic-bezier(.32,.72,0,1);
 }
+
+body:has(.irp-entry-loader:not(.is-revealing)) .irp-hero__cinema {
+  opacity: 0;
+  transition-delay: 0ms;
+}
+
+body:has(.irp-entry-loader.is-revealing) .irp-hero__cinema {
+  opacity: 1;
+  transition-delay: 180ms;
+}
+
+body.intro-complete .irp-hero__content .irp-kicker { transition-delay: .12s; }
+body.intro-complete .irp-hero__content h1 { transition-delay: .24s; }
+body.intro-complete .irp-hero__content > p { transition-delay: .36s; }
+body.intro-complete .irp-hero__actions { transition-delay: .48s; }
+body.intro-complete .irp-hero__proof { transition-delay: .6s; }
 
 .irp-hero__content h1 { text-shadow: 0 3px 28px rgba(0,8,18,.28); }
 

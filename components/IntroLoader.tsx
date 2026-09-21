@@ -1,103 +1,200 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import gsap from "gsap";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 
-const LOADER_HOLD_MS = 650;
+// Assets reales de /public/NUEVO. Mantenerlos centralizados evita que el
+// fotograma final del loader y el fondo del hero se desincronicen.
+export const HOME_INTRO_ASSETS = {
+  logo: "/NUEVO/ChatGPT Image 19 sept 2026, 19_13_22.png",
+  exterior: "/NUEVO/ChatGPT Image 21 sept 2026, 11_01_15.png",
+  interior: "/NUEVO/ChatGPT Image 21 sept 2026, 11_01_55.png",
+  video: "/NUEVO/Garage_door_opening_transition_1080p_20260921110657.mp4"
+} as const;
+
+// Tiempos editables de la secuencia (duración normal total: ~5.9 s).
+const INTRO_TIMING = {
+  initialHoldMs: 850,
+  videoPlaybackRate: 2.4,
+  logoFadeDelayMs: 280,
+  finalCrossfadeAtSeconds: 8.4,
+  finalImageHoldMs: 160,
+  finalFallbackAtMs: 4700,
+  exitFallbackAtMs: 5200,
+  exitDurationMs: 720,
+  reducedMotionFinalAtMs: 700,
+  reducedMotionExitAtMs: 1350
+} as const;
+
+type LoaderPhase = "intro" | "playing" | "final" | "leaving";
 
 export function IntroLoader() {
-  const [visible, setVisible] = useState(true);
-  const loaderRef = useRef<HTMLDivElement>(null);
-  const curtainRef = useRef<HTMLDivElement>(null);
-  const brandRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
+  const isHome = pathname === "/";
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [visible, setVisible] = useState(isHome);
+  const [phase, setPhase] = useState<LoaderPhase>("intro");
+
+  // El layout del sitio persiste entre rutas. Al volver al home se prepara una
+  // secuencia nueva; en cualquier otra ruta el loader no llega a renderizarse.
+  useEffect(() => {
+    if (isHome) {
+      setPhase("intro");
+      setVisible(true);
+      return;
+    }
+
+    setVisible(false);
+    document.body.classList.remove("loader-open", "intro-complete");
+  }, [isHome]);
 
   useEffect(() => {
-    const loader = loaderRef.current;
-    const curtain = curtainRef.current;
-    const brand = brandRef.current;
-    const brandImage = brand?.querySelector<HTMLElement>("img");
-    if (!loader || !curtain || !brand || !brandImage) return;
+    if (!isHome || !visible) return;
 
+    const video = videoRef.current;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const timers: number[] = [];
     let cancelled = false;
-    let timeline: gsap.core.Timeline | null = null;
-    let headerLogo: HTMLElement | null = null;
+    let finished = false;
 
-    document.body.classList.add("loader-open");
-    document.body.classList.remove("intro-complete");
-    gsap.set(curtain, { yPercent: 0 });
-    gsap.set(brand, { x: 0, y: 0, scale: 1, autoAlpha: 1 });
-    gsap.set(brandImage, { filter: "none" });
+    const schedule = (callback: () => void, delay: number) => {
+      const timer = window.setTimeout(callback, delay);
+      timers.push(timer);
+      return timer;
+    };
 
-    const reveal = () => {
-      if (cancelled) return;
+    const showFinalScene = () => {
+      if (!cancelled && !finished) setPhase("final");
+    };
 
-      headerLogo = document.querySelector<HTMLElement>(".site-header__logo");
-      const loaderRect = brand.getBoundingClientRect();
-      const targetRect = headerLogo?.getBoundingClientRect();
-      const destination = targetRect
-        ? {
-            x: targetRect.left + targetRect.width / 2 - (loaderRect.left + loaderRect.width / 2),
-            y: targetRect.top + targetRect.height / 2 - (loaderRect.top + loaderRect.height / 2),
-            scale: targetRect.width / loaderRect.width,
-          }
-        : { x: 0, y: 0, scale: 0.5 };
-      const heroMedia = document.querySelector<HTMLElement>(".irp-hero__media-frame");
+    const finish = () => {
+      if (cancelled || finished) return;
+      finished = true;
+      setPhase("leaving");
+      document.body.classList.remove("loader-open");
+      document.body.classList.add("intro-complete");
 
-      if (headerLogo) gsap.set(headerLogo, { autoAlpha: 0 });
+      schedule(() => {
+        if (cancelled) return;
+        setVisible(false);
+        window.dispatchEvent(new Event("irp:intro-complete"));
+      }, INTRO_TIMING.exitDurationMs);
+    };
 
-      timeline = gsap.timeline({
-        delay: 0.18,
-        onStart: () => {
-          document.body.classList.remove("loader-open");
-        },
-        onComplete: () => {
-          if (cancelled) return;
-          document.body.classList.remove("loader-open");
-          document.body.classList.add("intro-complete");
-          if (headerLogo) gsap.set(headerLogo, { autoAlpha: 1, clearProps: "visibility,opacity" });
-          setVisible(false);
-          window.dispatchEvent(new Event("irp:intro-complete"));
-        },
-      })
-        .to(brand, { ...destination, duration: 2.05, ease: "power4.inOut" }, 0)
-        .to(curtain, { yPercent: -100, duration: 2.15, ease: "power3.inOut" }, 0.42)
-        .to(brandImage, { filter: "brightness(0) invert(1)", duration: 0.78, ease: "power2.inOut" }, 1.3);
-
-      if (heroMedia) {
-        timeline.fromTo(heroMedia, { scale: 1.07 }, { scale: 1, duration: 2.3, ease: "power3.out" }, 0.5);
+    const handleTimeUpdate = () => {
+      if (video && video.currentTime >= INTRO_TIMING.finalCrossfadeAtSeconds) {
+        showFinalScene();
       }
     };
 
-    const timer = window.setTimeout(reveal, LOADER_HOLD_MS);
+    const handleEnded = () => {
+      showFinalScene();
+      schedule(finish, INTRO_TIMING.finalImageHoldMs);
+    };
+
+    document.body.classList.add("loader-open");
+    document.body.classList.remove("intro-complete");
+
+    if (reduceMotion || !video) {
+      schedule(showFinalScene, INTRO_TIMING.reducedMotionFinalAtMs);
+      schedule(finish, INTRO_TIMING.reducedMotionExitAtMs);
+    } else {
+      video.muted = true;
+      video.defaultPlaybackRate = INTRO_TIMING.videoPlaybackRate;
+      video.playbackRate = INTRO_TIMING.videoPlaybackRate;
+      video.currentTime = 0;
+      video.addEventListener("timeupdate", handleTimeUpdate);
+      video.addEventListener("ended", handleEnded);
+
+      schedule(() => {
+        void video.play().then(() => {
+          if (!cancelled && !finished) setPhase("playing");
+        }).catch(() => {
+          // Si el navegador bloquea o no puede reproducir el MP4, la entrada
+          // conserva su narrativa mediante el fundido interior -> exterior.
+          showFinalScene();
+          schedule(finish, 700);
+        });
+      }, INTRO_TIMING.initialHoldMs);
+
+      // Red de seguridad frente a buffering o eventos multimedia incompletos.
+      schedule(showFinalScene, INTRO_TIMING.finalFallbackAtMs);
+      schedule(finish, INTRO_TIMING.exitFallbackAtMs);
+    }
 
     return () => {
       cancelled = true;
-      window.clearTimeout(timer);
-      timeline?.kill();
+      timers.forEach((timer) => window.clearTimeout(timer));
+      video?.removeEventListener("timeupdate", handleTimeUpdate);
+      video?.removeEventListener("ended", handleEnded);
+      video?.pause();
       document.body.classList.remove("loader-open");
-      if (headerLogo) gsap.set(headerLogo, { autoAlpha: 1, clearProps: "visibility,opacity" });
     };
-  }, []);
+  }, [isHome, visible]);
 
-  if (!visible) return null;
+  if (!isHome || !visible) return null;
+
+  const timingStyles = {
+    "--intro-logo-delay": `${INTRO_TIMING.logoFadeDelayMs}ms`,
+    "--intro-exit-duration": `${INTRO_TIMING.exitDurationMs}ms`
+  } as CSSProperties;
 
   return (
-    <div ref={loaderRef} className="irp-ibex-loader" aria-label="Cargando Industrial Remotos Perú" role="status">
-      <div ref={curtainRef} className="irp-ibex-loader__curtain" />
-      <div className="irp-ibex-loader__brand-stage">
-        <div ref={brandRef} className="irp-ibex-loader__brand">
+    <div
+      className={`irp-entry-loader is-${phase}`}
+      style={timingStyles}
+      aria-label="Preparando Industrial Remotos Perú"
+      aria-live="polite"
+      role="status"
+    >
+      <div className="irp-entry-loader__scene" aria-hidden="true">
+        <Image
+          className="irp-entry-loader__image irp-entry-loader__image--interior"
+          src={HOME_INTRO_ASSETS.interior}
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+        />
+        <video
+          ref={videoRef}
+          className="irp-entry-loader__video"
+          src={HOME_INTRO_ASSETS.video}
+          poster={HOME_INTRO_ASSETS.interior}
+          preload="auto"
+          muted
+          playsInline
+          disablePictureInPicture
+          tabIndex={-1}
+        />
+        <Image
+          className="irp-entry-loader__image irp-entry-loader__image--exterior"
+          src={HOME_INTRO_ASSETS.exterior}
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+        />
+        <div className="irp-entry-loader__light" />
+      </div>
+
+      <div className="irp-entry-loader__brand-stage" aria-hidden="true">
+        <div className="irp-entry-loader__brand">
           <img
-            className="irp-ibex-loader__brand-image"
-            src="/images/loader/logo.png"
-            alt="Industrial Perú Remotos — Garantía y confianza"
+            className="irp-entry-loader__logo"
+            src={HOME_INTRO_ASSETS.logo}
+            alt=""
             width={1254}
             height={1254}
             fetchPriority="high"
             decoding="sync"
           />
+          <span className="irp-entry-loader__accent" />
         </div>
       </div>
-      <span className="sr-only" aria-live="polite">Preparando la experiencia</span>
+
+      <span className="sr-only">Abriendo el acceso</span>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { ArrowRight, Play } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
+import { HOME_INTRO_ASSETS } from "@/components/IntroLoader";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 
 export function HeroSection() {
@@ -20,8 +21,8 @@ export function HeroSection() {
       <motion.div className="irp-hero__media" style={reduceMotion ? undefined : { y: mediaY }}>
         <div className="irp-hero__media-frame">
           <Image
-            src="/images/hero-terrace-sunset.png"
-            alt="Proyecto de terraza y puerta automática al atardecer"
+            src={HOME_INTRO_ASSETS.exterior}
+            alt="Casa moderna con acceso vehicular automatizado abierto"
             fill
             priority
             sizes="100vw"

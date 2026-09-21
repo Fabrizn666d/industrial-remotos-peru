@@ -3358,7 +3358,6 @@ body:not(:has(.adminBoundary)) main .irp-advisor__copy p {
   background: #e7e1d8;
   opacity: 1;
   transition: opacity var(--intro-exit-duration, 620ms) cubic-bezier(.32,.72,0,1);
-  animation: irp-entry-loader-failsafe .01s linear 15s forwards;
   isolation: isolate;
   overscroll-behavior: none;
   touch-action: none;
@@ -3459,9 +3458,24 @@ body:not(:has(.adminBoundary)) main .irp-advisor__copy p {
   from { opacity: 0; }
 }
 
-@keyframes irp-entry-loader-failsafe {
-  to { visibility: hidden; pointer-events: none; opacity: 0; }
+.irp-entry-loader__status {
+  position: absolute;
+  z-index: 6;
+  bottom: 16px;
+  left: 16px;
+  border: 1px solid rgba(255,255,255,.28);
+  border-radius: 5px;
+  background: rgba(0,10,19,.78);
+  padding: 5px 8px;
+  color: #ffd166;
+  font: 700 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: .04em;
+  pointer-events: none;
 }
+
+.irp-entry-loader__status.is-playing { color: #70e39b; }
+.irp-entry-loader__status.is-ended { color: #75baff; }
+.irp-entry-loader__status.is-error { color: #ff8585; }
 
 /* Hero y navegación permanecen ocultos hasta el último empalme del loader. */
 body:has(.irp-home) .site-header {

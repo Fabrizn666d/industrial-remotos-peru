@@ -37,9 +37,9 @@ export function HeroSection() {
         <div className="irp-hero__content">
           <span className="irp-kicker"><i /> Diseño, fabricación e instalación a medida</span>
           <h1>
-            Soluciones de acceso<br />
-            que combinan <em>seguridad,</em><br />
-            diseño y <em>automatización.</em>
+            <span className="irp-hero__title-line">Soluciones de acceso</span>
+            <span className="irp-hero__title-line">que combinan <em>seguridad,</em></span>
+            <span className="irp-hero__title-line">diseño y <em>automatización.</em></span>
           </h1>
           <p>
             Puertas automáticas, techos, ventanas, mamparas y estructuras metálicas a medida para tu hogar o negocio.

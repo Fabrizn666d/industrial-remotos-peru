@@ -2,32 +2,87 @@
 
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Play } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
-import { useRef } from "react";
-import { HOME_INTRO_ASSETS } from "@/components/IntroLoader";
+import { useEffect, useRef, useState } from "react";
+import { HOME_INTRO_EVENTS, type FinalFrameEventDetail } from "@/components/IntroLoader";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 
 export function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
+  const finalFrameUrlRef = useRef<string | null>(null);
+  const [finalFrameUrl, setFinalFrameUrl] = useState<string | null>(null);
   const reduceMotion = usePrefersReducedMotion();
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end start"] });
   const mediaY = useTransform(scrollYProgress, [0, 1], ["0%", "8%"]);
   const glowX = useTransform(scrollYProgress, [0, 1], ["0%", "3%"]);
   const waveY = useTransform(scrollYProgress, [0, 1], [0, -12]);
 
+  useEffect(() => {
+    let active = true;
+
+    const handleFinalFrame = async (event: Event) => {
+      const { blob } = (event as CustomEvent<FinalFrameEventDetail>).detail;
+      const objectUrl = URL.createObjectURL(blob);
+      const frame = new window.Image();
+      frame.src = objectUrl;
+
+      try {
+        await frame.decode();
+        if (!active) {
+          URL.revokeObjectURL(objectUrl);
+          return;
+        }
+
+        if (finalFrameUrlRef.current) URL.revokeObjectURL(finalFrameUrlRef.current);
+        finalFrameUrlRef.current = objectUrl;
+        setFinalFrameUrl(objectUrl);
+      } catch (error) {
+        URL.revokeObjectURL(objectUrl);
+        if (process.env.NODE_ENV === "development") {
+          console.error("[HeroSection] No se pudo preparar el último fotograma capturado.", error);
+        }
+        window.dispatchEvent(new Event(HOME_INTRO_EVENTS.finalFrameReady));
+      }
+    };
+
+    window.addEventListener(HOME_INTRO_EVENTS.finalFrame, handleFinalFrame);
+
+    return () => {
+      active = false;
+      window.removeEventListener(HOME_INTRO_EVENTS.finalFrame, handleFinalFrame);
+      if (finalFrameUrlRef.current) URL.revokeObjectURL(finalFrameUrlRef.current);
+      finalFrameUrlRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!finalFrameUrl) return;
+
+    let secondFrame = 0;
+    const firstFrame = window.requestAnimationFrame(() => {
+      secondFrame = window.requestAnimationFrame(() => {
+        window.dispatchEvent(new Event(HOME_INTRO_EVENTS.finalFrameReady));
+      });
+    });
+
+    return () => {
+      window.cancelAnimationFrame(firstFrame);
+      window.cancelAnimationFrame(secondFrame);
+    };
+  }, [finalFrameUrl]);
+
   return (
     <section ref={sectionRef} className="irp-hero" id="inicio">
       <motion.div className="irp-hero__media" style={reduceMotion ? undefined : { y: mediaY }}>
         <div className="irp-hero__media-frame">
-          <Image
-            src={HOME_INTRO_ASSETS.exterior}
-            alt="Casa moderna con acceso vehicular automatizado abierto"
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover"
-          />
+          {finalFrameUrl && (
+            <img
+              className="irp-hero__final-frame"
+              src={finalFrameUrl}
+              alt="Casa moderna con acceso vehicular automatizado abierto"
+              decoding="sync"
+            />
+          )}
         </div>
       </motion.div>
       <div className="irp-hero__cinema" />

@@ -3407,14 +3407,21 @@ body:not(:has(.adminBoundary)) main .irp-advisor__copy p {
   padding: 24px;
   pointer-events: none;
   opacity: 1;
-  transition: opacity var(--intro-logo-fade, 650ms) ease;
-  animation: irp-entry-brand-in .55s ease both;
+  transform: scale(1);
+  filter: blur(0);
+  transition:
+    opacity var(--intro-logo-fade, 1000ms) cubic-bezier(.22,1,.36,1),
+    transform var(--intro-logo-fade, 1000ms) cubic-bezier(.22,1,.36,1),
+    filter var(--intro-logo-fade, 1000ms) cubic-bezier(.22,1,.36,1);
+  will-change: opacity, transform, filter;
 }
 
 .irp-entry-loader.is-logo-hidden .irp-entry-loader__brand-stage,
 .irp-entry-loader.is-hero-reveal .irp-entry-loader__brand-stage,
 .irp-entry-loader.is-finished .irp-entry-loader__brand-stage {
   opacity: 0;
+  transform: scale(.975);
+  filter: blur(3px);
 }
 
 .irp-entry-loader__brand {
@@ -3430,15 +3437,13 @@ body:not(:has(.adminBoundary)) main .irp-advisor__copy p {
   filter: drop-shadow(0 5px 8px rgba(0,20,48,.13));
 }
 
-@keyframes irp-entry-brand-in { from { opacity: 0; } }
-
 /* El Hero se construye sobre los últimos segundos del video. */
 body:has(.irp-home) .site-header {
   background: linear-gradient(180deg, rgba(0,10,19,.58), rgba(0,10,19,.16));
   transition:
-    opacity 760ms cubic-bezier(.16,1,.3,1),
-    transform 760ms cubic-bezier(.16,1,.3,1),
-    filter 760ms cubic-bezier(.16,1,.3,1),
+    opacity 850ms cubic-bezier(.16,1,.3,1),
+    transform 850ms cubic-bezier(.16,1,.3,1),
+    filter 850ms cubic-bezier(.16,1,.3,1),
     background .4s ease,
     box-shadow .4s ease;
   will-change: opacity, transform, filter;
@@ -3449,11 +3454,10 @@ body:has(.irp-home) .site-header--scrolled { background: rgba(0,10,19,.94); }
 body:has(.irp-entry-loader) { overflow: hidden; }
 
 body:has(.irp-entry-loader.is-playing) .site-header {
-  visibility: hidden;
   pointer-events: none;
   opacity: 0;
-  transform: translateY(-30px);
-  filter: blur(8px);
+  transform: translateY(-32px);
+  filter: blur(10px);
 }
 
 .irp-hero__content h1 {
@@ -3470,10 +3474,11 @@ body:has(.irp-entry-loader.is-playing) .site-header {
   opacity: 1;
   transform: translate3d(0, 0, 0);
   filter: blur(0);
+  pointer-events: auto;
   transition:
-    opacity 780ms cubic-bezier(.16,1,.3,1),
-    transform 820ms cubic-bezier(.16,1,.3,1),
-    filter 780ms cubic-bezier(.16,1,.3,1);
+    opacity 820ms cubic-bezier(.16,1,.3,1),
+    transform 850ms cubic-bezier(.16,1,.3,1),
+    filter 820ms cubic-bezier(.16,1,.3,1);
   will-change: opacity, transform, filter;
 }
 
@@ -3481,7 +3486,6 @@ body:has(.irp-entry-loader.is-playing) .site-header {
 .irp-hero__content > .irp-kicker { display: inline-flex; }
 
 body:has(.irp-entry-loader.is-playing) .irp-hero__content h1 {
-  visibility: visible;
   opacity: 1;
   transform: none;
 }
@@ -3491,9 +3495,9 @@ body:has(.irp-entry-loader.is-playing) .irp-hero__title-line,
 body:has(.irp-entry-loader.is-playing) .irp-hero__content > p,
 body:has(.irp-entry-loader.is-playing) .irp-hero__actions,
 body:has(.irp-entry-loader.is-playing) .irp-hero__proof {
-  visibility: hidden;
+  pointer-events: none;
   opacity: 0;
-  transform: translate3d(-50px, 8px, 0);
+  transform: translate3d(-55px, 8px, 0);
   filter: blur(9px);
 }
 
@@ -3507,6 +3511,16 @@ body:has(.irp-entry-loader) .quote-assistant { visibility: hidden; opacity: 0; }
   object-position: 50% 50%;
   filter: saturate(.94) contrast(1.015) brightness(1.025);
 }
+.irp-hero__media .irp-hero__final-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  object-position: 50% 50%;
+  filter: none;
+}
 body.loader-open .irp-hero__media-frame,
 body:has(.irp-entry-loader) .irp-hero__media-frame { opacity: 1; transform: none; }
 
@@ -3517,7 +3531,7 @@ body:has(.irp-entry-loader) .irp-hero__media-frame { opacity: 1; transform: none
     linear-gradient(90deg, rgba(0,10,19,.7) 0%, rgba(0,10,19,.55) 27%, rgba(0,10,19,.27) 47%, rgba(0,10,19,.06) 68%, transparent 80%),
     linear-gradient(0deg, rgba(0,10,19,.34), transparent 43%),
     linear-gradient(180deg, rgba(0,10,19,.16), transparent 29%);
-  transition: opacity 1100ms cubic-bezier(.32,.72,0,1);
+  transition: opacity 1200ms cubic-bezier(.16,1,.3,1);
 }
 
 body:has(.irp-entry-loader.is-playing) .irp-hero__cinema {
@@ -3525,13 +3539,14 @@ body:has(.irp-entry-loader.is-playing) .irp-hero__cinema {
   transition-delay: 0ms;
 }
 
-body.intro-complete .irp-hero__content .irp-kicker { transition-delay: 180ms; }
-body.intro-complete .irp-hero__title-line:nth-child(1) { transition-delay: 300ms; }
-body.intro-complete .irp-hero__title-line:nth-child(2) { transition-delay: 420ms; }
-body.intro-complete .irp-hero__title-line:nth-child(3) { transition-delay: 540ms; }
-body.intro-complete .irp-hero__content > p { transition-delay: 680ms; }
-body.intro-complete .irp-hero__actions { transition-delay: 820ms; }
-body.intro-complete .irp-hero__proof { transition-delay: 980ms; }
+body.intro-complete .irp-hero__cinema { transition-delay: 100ms; }
+body.intro-complete .irp-hero__content .irp-kicker { transition-delay: 250ms; }
+body.intro-complete .irp-hero__title-line:nth-child(1) { transition-delay: 380ms; }
+body.intro-complete .irp-hero__title-line:nth-child(2) { transition-delay: 500ms; }
+body.intro-complete .irp-hero__title-line:nth-child(3) { transition-delay: 620ms; }
+body.intro-complete .irp-hero__content > p { transition-delay: 820ms; }
+body.intro-complete .irp-hero__actions { transition-delay: 1050ms; }
+body.intro-complete .irp-hero__proof { transition-delay: 1250ms; }
 
 .irp-hero__wave { opacity: 1; transition: opacity 700ms ease; }
 body:has(.irp-entry-loader.is-playing) .irp-hero__wave { opacity: 0; }
@@ -3549,6 +3564,7 @@ body.intro-complete .irp-hero__wave { transition-delay: 760ms; }
 
   .irp-hero__media { inset: 0; }
   .irp-hero__media img { object-position: 72% 50%; }
+  .irp-hero__media .irp-hero__final-frame { object-position: 72% 50%; }
   .irp-hero__cinema {
     background:
       linear-gradient(0deg, rgba(0,10,19,.72) 0%, rgba(0,10,19,.46) 49%, rgba(0,10,19,.13) 82%, rgba(0,10,19,.08) 100%),

@@ -5,17 +5,24 @@ import { type CSSProperties, useCallback, useEffect, useRef, useState } from "re
 
 export const HOME_INTRO_ASSETS = {
   logo: "/NUEVO/ChatGPT Image 19 sept 2026, 19_13_22.png",
-  exterior: "/NUEVO/ChatGPT Image 21 sept 2026, 11_01_15.png",
-  interior: "/NUEVO/ChatGPT Image 21 sept 2026, 11_01_55.png",
   video: "/NUEVO/Garage_door_opening_transition_1080p_20260921110657.mp4"
 } as const;
 
+export const HOME_INTRO_EVENTS = {
+  finalFrame: "irp:final-frame",
+  finalFrameReady: "irp:final-frame-ready"
+} as const;
+
+export type FinalFrameEventDetail = {
+  blob: Blob;
+};
+
 // Tiempos centrales de la secuencia para poder afinarlos sin tocar la lógica.
 const INTRO_TIMING = {
-  playbackRate: 1.3,
-  logoFadeAtVideoSeconds: 2.15,
-  logoFadeMs: 600,
-  heroRevealLeadSeconds: 2.2,
+  playbackRate: 1.4,
+  logoFadeAtVideoSeconds: 1.8,
+  logoFadeMs: 1000,
+  heroRevealLeadSeconds: 3.4,
   finalCrossfadeMs: 600
 } as const;
 
@@ -25,6 +32,7 @@ export function IntroLoader() {
   const pathname = usePathname();
   const isHome = pathname === "/";
   const videoRef = useRef<HTMLVideoElement>(null);
+  const finishingRef = useRef(false);
   const [visible, setVisible] = useState(isHome);
   const [phase, setPhase] = useState<LoaderPhase>("playing");
   const [logoHidden, setLogoHidden] = useState(false);
@@ -65,6 +73,7 @@ export function IntroLoader() {
 
     setPhase("playing");
     setLogoHidden(false);
+    finishingRef.current = false;
     setVisible(true);
   }, [isHome]);
 
@@ -117,9 +126,53 @@ export function IntroLoader() {
     }
   };
 
-  const handleEnded = () => {
+  const captureFinalFrame = useCallback(async (video: HTMLVideoElement) => {
+    await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const context = canvas.getContext("2d");
+    if (!context || canvas.width === 0 || canvas.height === 0) {
+      throw new Error("No fue posible preparar la captura del último fotograma.");
+    }
+
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const blob = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(
+        (result) => result ? resolve(result) : reject(new Error("El último fotograma no produjo una imagen válida.")),
+        "image/jpeg",
+        0.96
+      );
+    });
+
+    await new Promise<void>((resolve) => {
+      window.addEventListener(HOME_INTRO_EVENTS.finalFrameReady, () => resolve(), { once: true });
+      window.dispatchEvent(new CustomEvent<FinalFrameEventDetail>(HOME_INTRO_EVENTS.finalFrame, {
+        detail: { blob }
+      }));
+    });
+  }, []);
+
+  const handleEnded = async () => {
+    if (finishingRef.current) return;
+    finishingRef.current = true;
+
     revealHero();
-    setPhase("finished");
+    const video = videoRef.current;
+
+    try {
+      if (!video) throw new Error("El elemento de video no está disponible para capturar su último fotograma.");
+      await captureFinalFrame(video);
+    } catch (error) {
+      if (process.env.NODE_ENV === "development") {
+        console.error("[IntroLoader] No se pudo capturar el último fotograma del video.", error);
+      }
+    } finally {
+      setPhase("finished");
+    }
   };
 
   const handleVideoElementError = () => {
@@ -146,7 +199,6 @@ export function IntroLoader() {
           ref={videoRef}
           className="irp-entry-loader__video"
           src={HOME_INTRO_ASSETS.video}
-          poster={HOME_INTRO_ASSETS.interior}
           preload="auto"
           autoPlay
           muted

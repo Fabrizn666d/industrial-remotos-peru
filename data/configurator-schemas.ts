@@ -322,6 +322,27 @@ export const configuratorSchemas: Record<ConfiguratorFamily, ConfiguratorSchema>
       installationStep(fabricationInstallationOptions),
       notesStep
     ]
+  },
+  "puertas-principales": {
+    family: "puertas-principales", productGroup: "puertas-principales", version: 1,
+    steps: [solutionStep, dimensionsStep("Indica las medidas del acceso peatonal"), {
+      id: "entry-type", kind: "choice", label: "Tipo", title: "Selecciona el tipo de puerta", description: "La composición final se valida con el espacio.", icon: "design", answerKey: "subtype", defaultValue: "Por definir",
+      options: ["Por definir", "Metálica exterior", "Decorativa", "Contraplacada"].map((value) => ({ value, label: value }))
+    }, finishStep, installationStep(fabricationInstallationOptions), notesStep]
+  },
+  cerco: {
+    family: "cerco", productGroup: "cerco", version: 1,
+    steps: [solutionStep, dimensionsStep("Indica el perímetro aproximado", "Metros lineales (m)", "Altura disponible (m)"), {
+      id: "property-type", kind: "choice", label: "Inmueble", title: "¿Dónde se instalará?", description: "La configuración se determina después de revisar el perímetro.", icon: "design", answerKey: "subtype", defaultValue: "Por definir",
+      options: ["Por definir", "Vivienda", "Comercio", "Condominio", "Industrial"].map((value) => ({ value, label: value }))
+    }, installationStep([{ value: "Por definir", label: "Por definir" }, { value: "Incluir instalación", label: "Incluir instalación" }]), notesStep]
+  },
+  drywall: {
+    family: "drywall", productGroup: "drywall", version: 1,
+    steps: [solutionStep, dimensionsStep("Indica el área o dimensiones aproximadas"), {
+      id: "drywall-type", kind: "choice", label: "Tipo", title: "Selecciona la intervención", description: "El sistema final depende del ambiente y soporte existente.", icon: "design", answerKey: "subtype", defaultValue: "Por definir",
+      options: ["Por definir", "División", "Cielorraso", "Revestimiento"].map((value) => ({ value, label: value }))
+    }, finishStep, installationStep(fabricationInstallationOptions), notesStep]
   }
 };
 
@@ -331,7 +352,10 @@ export const configuratorFamilyByProductGroup: Record<ProductGroup, Configurator
   techos: "techos",
   ventanas: "mamparas",
   acero: "acero",
-  estructuras: "estructuras"
+  estructuras: "estructuras",
+  "puertas-principales": "puertas-principales",
+  cerco: "cerco",
+  drywall: "drywall"
 };
 
 export function getConfiguratorSchema(productGroup: ProductGroup) {

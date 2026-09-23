@@ -80,7 +80,7 @@ export const products: Product[] = [
     id: "peatonales",
     name: "Puertas peatonales",
     shortName: "Peatonales",
-    group: "puertas",
+    group: "puertas-principales",
     description: "Accesos independientes, seguros y visualmente integrados.",
     longDescription: "Puertas peatonales que complementan el diseño del ingreso y brindan un acceso diario cómodo, seguro y durable.",
     audiences: ["residencial", "comercial", "industrial"],
@@ -114,12 +114,12 @@ export const products: Product[] = [
     description: "Soluciones de sombra y protección hechas para cada espacio.",
     longDescription: "Diseñamos coberturas, soluciones sol y sombra y estructuras con policarbonato después de una evaluación técnica del área.",
     audiences: ["residencial", "comercial", "industrial"],
-    image: "/images/reales/puerta-36.jpg",
-    gallery: ["/images/reales/puerta-36.jpg", "/images/reales/puerta-37.jpg", "/images/reales/puerta-41.jpg"],
+    image: "/images/placeholders/techo-cobertura-temporal.png",
+    gallery: ["/images/placeholders/techo-cobertura-temporal.png"],
     benefits: ["Diseño según el espacio", "Estructura metálica", "Alternativas de cobertura", "Instalación profesional", "Evaluación técnica"],
     finishes: [finishes[3], finishes[4], finishes[5]],
     tiktokUrl,
-    evidence: "service"
+    evidence: "reference"
   },
   {
     id: "ventanas-mamparas",
@@ -129,12 +129,12 @@ export const products: Product[] = [
     description: "Aluminio y vidrio para iluminar y conectar ambientes.",
     longDescription: "Sistemas configurados según vano, tipo de apertura, perfilería y vidrio. La solución final se define durante la asesoría técnica.",
     audiences: ["residencial", "comercial"],
-    image: "/images/reales/puerta-13.jpg",
-    gallery: ["/images/reales/puerta-13.jpg", "/images/reales/puerta-11.jpg", "/images/reales/puerta-14.jpg"],
+    image: "/images/placeholders/mampara-instalado-temporal.png",
+    gallery: ["/images/placeholders/mampara-instalado-temporal.png"],
     benefits: ["Diseño a medida", "Perfilería de aluminio", "Opciones de vidrio", "Sellado cuidado", "Instalación especializada"],
     finishes: [finishes[3], finishes[4], finishes[5]],
     tiktokUrl,
-    evidence: "service"
+    evidence: "reference"
   },
   {
     id: "acero-barandas",
@@ -144,12 +144,12 @@ export const products: Product[] = [
     description: "Elementos metálicos precisos, limpios y durables.",
     longDescription: "Barandas, pasamanos y complementos desarrollados después de medir el espacio y definir el sistema de fijación.",
     audiences: ["residencial", "comercial", "industrial"],
-    image: "/images/reales/puerta-37.jpg",
-    gallery: ["/images/reales/puerta-37.jpg", "/images/reales/puerta-36.jpg", "/images/reales/puerta-41.jpg"],
+    image: "/images/placeholders/baranda-acero-temporal.png",
+    gallery: ["/images/placeholders/baranda-acero-temporal.png"],
     benefits: ["Fabricación a medida", "Acabados durables", "Fijaciones seguras", "Detalle técnico", "Instalación profesional"],
     finishes: [finishes[3], finishes[5]],
     tiktokUrl,
-    evidence: "service"
+    evidence: "reference"
   },
   {
     id: "estructuras-especiales",
@@ -159,11 +159,56 @@ export const products: Product[] = [
     description: "Soluciones metálicas para necesidades especiales.",
     longDescription: "Evaluamos proyectos residenciales, comerciales e industriales que requieren estructura, fabricación y montaje a medida.",
     audiences: ["residencial", "comercial", "industrial"],
-    image: "/images/reales/puerta-41.jpg",
-    gallery: ["/images/reales/puerta-41.jpg", "/images/reales/puerta-36.jpg", "/images/reales/puerta-37.jpg"],
+    image: "/images/placeholders/estructura-metalica-temporal.png",
+    gallery: ["/images/placeholders/estructura-metalica-temporal.png"],
     benefits: ["Evaluación técnica", "Fabricación a medida", "Materiales resistentes", "Montaje especializado", "Seguimiento de proyecto"],
     finishes: [finishes[3], finishes[4], finishes[5]],
     tiktokUrl,
-    evidence: "service"
+    evidence: "reference"
+  },
+  {
+    id: "puertas-principales",
+    name: "Puertas principales",
+    shortName: "Puerta principal",
+    group: "puertas-principales",
+    description: "Accesos peatonales exteriores desarrollados para la fachada y el uso diario.",
+    longDescription: "Configuramos medidas, material, acabado y sistema de cierre como una solución independiente del acceso vehicular.",
+    audiences: ["residencial", "comercial"],
+    image: "/images/placeholders/puerta-contraplacada-temporal.png",
+    gallery: ["/images/placeholders/puerta-contraplacada-temporal.png"],
+    benefits: ["Diseño según el vano", "Material y acabado por definir", "Opciones de cerradura", "Instalación evaluada"],
+    finishes: doorFinishes,
+    tiktokUrl,
+    evidence: "reference"
+  },
+  {
+    id: "cerco-electrico",
+    name: "Cerco eléctrico",
+    shortName: "Cerco eléctrico",
+    group: "cerco",
+    description: "Protección perimetral configurada según el inmueble y su recorrido.",
+    longDescription: "Registramos metros lineales, tipo de inmueble, ubicación y necesidad de control para preparar una evaluación técnica sin inventar precios.",
+    audiences: ["residencial", "comercial", "industrial"],
+    image: "/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_53 (5).png",
+    gallery: ["/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_53 (5).png"],
+    benefits: ["Evaluación del perímetro", "Configuración según el inmueble", "Energizador por definir", "Instalación especializada"],
+    finishes: [],
+    tiktokUrl,
+    evidence: "reference"
+  },
+  {
+    id: "drywall-cielorrasos",
+    name: "Drywall y cielorrasos",
+    shortName: "Drywall",
+    group: "drywall",
+    description: "Divisiones, cielorrasos y revestimientos ligeros para acondicionar espacios.",
+    longDescription: "Recopilamos área, tipo de intervención, nivel de acabado y ubicación para preparar una propuesta sujeta a revisión en obra.",
+    audiences: ["residencial", "comercial"],
+    image: "/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_53 (6).png",
+    gallery: ["/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_53 (6).png"],
+    benefits: ["Distribución a medida", "Acabado por definir", "Soluciones para muros y techos", "Evaluación del ambiente"],
+    finishes: [finishes[4]],
+    tiktokUrl,
+    evidence: "reference"
   }
 ];

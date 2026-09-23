@@ -14,7 +14,9 @@ function readPreferences(): Preferences | null {
 
 function loadAnalytics() {
   const id = process.env.NEXT_PUBLIC_ANALYTICS_ID?.trim();
-  if (!id || document.querySelector(`[data-irp-analytics="${id}"]`)) return;
+  if (!id) return;
+  (window as unknown as Record<string, unknown>)[`ga-disable-${id}`] = false;
+  if (document.querySelector(`[data-irp-analytics="${id}"]`)) return;
   const script = document.createElement("script");
   script.async = true;
   script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(id)}`;
@@ -47,7 +49,7 @@ export function PrivacyRuntime() {
       const value = params.get(key)?.slice(0, 180);
       return value ? [[key, value]] : [];
     }));
-    if (Object.keys(utm).length) sessionStorage.setItem(UTM_KEY, JSON.stringify(utm));
+    if (Object.keys(utm).length) sessionStorage.setItem(UTM_KEY, JSON.stringify({ ...utm, landingPage: `${location.pathname}${location.search}`.slice(0, 1000) }));
 
     const open = () => { openerRef.current = document.activeElement as HTMLElement; setConfiguring(true); };
     window.addEventListener("irp:open-cookie-settings", open);
@@ -99,7 +101,13 @@ export function PrivacyRuntime() {
     const next: Preferences = { necessary: true, analytics, optional, savedAt: new Date().toISOString() };
     localStorage.setItem(CONSENT_KEY, JSON.stringify(next));
     setPreferences(next); setDraft({ analytics, optional }); setConfiguring(false);
+    const analyticsId = process.env.NEXT_PUBLIC_ANALYTICS_ID?.trim();
     if (analytics) loadAnalytics();
+    else if (analyticsId) {
+      (window as unknown as Record<string, unknown>)[`ga-disable-${analyticsId}`] = true;
+      const win = window as Window & { gtag?: (...args: unknown[]) => void };
+      win.gtag?.("consent", "update", { analytics_storage: "denied" });
+    }
     window.dispatchEvent(new CustomEvent("irp:analytics", { detail: { name: "cookie_consent", parameters: { analytics: Number(analytics), optional: Number(optional) } } }));
   }
 

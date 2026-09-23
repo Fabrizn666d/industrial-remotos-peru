@@ -4,6 +4,7 @@ import { ArrowRight, CheckCircle2, LoaderCircle, MessageCircle, RotateCcw } from
 import { FormEvent, useRef, useState } from "react";
 import { products } from "@/data/products";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
+import { readSessionAttribution } from "@/lib/attribution";
 
 type State = { kind: "idle" | "submitting" } | { kind: "success"; code: string; whatsappUrl: string } | { kind: "error"; message: string };
 
@@ -22,8 +23,7 @@ export function ContactExperience({ compact = false }: { compact?: boolean }) {
     const product = String(data.get("product") || "");
     const notes = String(data.get("message") || "");
     const message = ["Hola, Industrial Remotos Perú. Quisiera conversar sobre un proyecto.", "", `Nombre: ${name}`, `Teléfono: ${phone}`, `Ubicación: ${location}`, `Solución: ${product}`, `Mensaje: ${notes || "Por completar"}`].join("\n");
-    let attribution: Record<string, string> = {};
-    try { attribution = JSON.parse(sessionStorage.getItem("irp_utm_v1") || "{}"); } catch { attribution = {}; }
+    const attribution = readSessionAttribution();
 
     try {
       const response = await fetch("/api/requests", {
@@ -32,8 +32,8 @@ export function ContactExperience({ compact = false }: { compact?: boolean }) {
           clientSubmissionId: submissionId.current,
           contact: { name, email: String(data.get("email") || ""), phone, whatsapp: phone },
           details: { projectType: product, location, notes: notes || undefined },
-          items: [{ name: product, quantity: 1, configuration: { ...attribution, channel: "Formulario de contacto" } }],
-          attachmentNames: [], source: "CONTACT"
+          items: [{ name: product, quantity: 1, configuration: { channel: "Formulario de contacto" } }],
+          attachmentNames: [], ...(attribution ? { attribution } : {}), source: "CONTACT"
         })
       });
       const result = await response.json() as { code?: string; error?: string };

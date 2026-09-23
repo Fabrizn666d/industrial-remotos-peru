@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ProjectsExperience } from "@/components/ProjectsExperience";
 
-export const metadata: Metadata = { title: "Proyectos realizados", description: "Trabajos reales de Industrial Remotos Perú en Lima, Callao y otras ciudades." };
+export const metadata: Metadata = { title: "Proyectos realizados", description: "Trabajos registrados de Industrial Remotos Perú.", alternates: { canonical: "/proyectos" } };
 
 export default function ProjectsPage() {
   return (

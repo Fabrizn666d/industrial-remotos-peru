@@ -9,6 +9,7 @@ import { useProject } from "@/components/ProjectContext";
 import { products } from "@/data/products";
 import { LAST_REQUEST_KEY, type QuoteContact, type QuoteDetails, type SubmittedRequest } from "@/types/quote";
 import type { QuoteItem, QuoteItemConfiguration } from "@/types/catalog";
+import { readSessionAttribution } from "@/lib/attribution";
 
 const steps = [
   { label: "Mi proyecto", icon: ShoppingBag },
@@ -100,8 +101,7 @@ export function CheckoutExperience() {
     setSubmitError("");
     submissionId.current ??= crypto.randomUUID();
 
-    let attribution: Record<string, string> = {};
-    try { attribution = JSON.parse(sessionStorage.getItem("irp_utm_v1") || "{}"); } catch { attribution = {}; }
+    const attribution = readSessionAttribution();
     const payload = {
       clientSubmissionId: submissionId.current,
       contact: {
@@ -121,9 +121,10 @@ export function CheckoutExperience() {
         productId: item.productId,
         name: item.name,
         quantity: item.quantity,
-        configuration: { ...compactConfiguration(item.configuration), ...attribution }
+        configuration: compactConfiguration(item.configuration)
       })),
       attachmentNames: [],
+      ...(attribution ? { attribution } : {}),
       source: "CONFIGURATOR" as const
     };
 

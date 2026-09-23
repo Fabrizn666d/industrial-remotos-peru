@@ -59,12 +59,22 @@ export const RequestItemInputSchema = z.object({
   notes: optionalText(1000)
 }).strict();
 
+export const RequestAttributionSchema = z.object({
+  source: optionalText(180),
+  medium: optionalText(180),
+  campaign: optionalText(180),
+  content: optionalText(180),
+  term: optionalText(180),
+  landingPage: optionalText(1000)
+}).strict();
+
 export const PublicRequestSubmissionSchema = z.object({
   clientSubmissionId: z.string().uuid(),
   contact: RequestContactSchema,
   details: RequestDetailsSchema,
   items: z.array(RequestItemInputSchema).min(1).max(50),
   attachmentNames: z.array(shortText(240)).max(8).default([]),
+  attribution: RequestAttributionSchema.optional(),
   source: z.enum(["CONFIGURATOR", "CONTACT", "ADMIN_IMPORT"]).default("CONFIGURATOR")
 }).strict();
 export type PublicRequestSubmission = z.infer<typeof PublicRequestSubmissionSchema>;

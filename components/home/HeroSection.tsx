@@ -21,6 +21,8 @@ export function HeroSection() {
   const [phase, setPhase] = useState<IntroStateEventDetail["phase"]>("playing");
   const [logoHidden, setLogoHidden] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
+  const [skipIntro, setSkipIntro] = useState(false);
+  const [videoError, setVideoError] = useState(false);
   const reduceMotion = usePrefersReducedMotion();
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end start"] });
   const mediaY = useTransform(scrollYProgress, [0, 1], ["0%", "8%"]);
@@ -51,6 +53,7 @@ export function HeroSection() {
       if (process.env.NODE_ENV === "development") {
         console.error("[HeroSection] No se pudo reproducir el video de apertura.", error);
       }
+      setVideoError(true);
       revealHero();
       setVideoEnded(true);
     });
@@ -59,9 +62,17 @@ export function HeroSection() {
   useEffect(() => {
     const advisorImage = new window.Image();
     advisorImage.src = HERO_ADVISOR_ASSET;
+    const exteriorImage = new window.Image();
+    exteriorImage.src = HOME_INTRO_ASSETS.exterior;
   }, []);
 
   useEffect(() => {
+    if (sessionStorage.getItem("irp-intro-v4") === "seen") {
+      setSkipIntro(true);
+      setVideoEnded(true);
+      revealHero();
+      return;
+    }
     document.body.classList.add("loader-open");
     document.body.classList.remove("intro-complete");
     startVideo();
@@ -70,7 +81,7 @@ export function HeroSection() {
       videoRef.current?.pause();
       document.body.classList.remove("loader-open", "intro-complete");
     };
-  }, [startVideo]);
+  }, [revealHero, startVideo]);
 
   useEffect(() => {
     const detail: IntroStateEventDetail = { phase, logoHidden, complete: videoEnded };
@@ -79,6 +90,7 @@ export function HeroSection() {
 
   useEffect(() => {
     if (!videoEnded) return;
+    sessionStorage.setItem("irp-intro-v4", "seen");
     revealHero();
     window.dispatchEvent(new Event("irp:intro-complete"));
   }, [revealHero, videoEnded]);
@@ -89,9 +101,10 @@ export function HeroSection() {
 
     if (
       phase === "playing"
-      && video.currentTime >= HOME_INTRO_TIMING.logoDockAtVideoSeconds
+      && video.currentTime >= HOME_INTRO_TIMING.logoFadeAtVideoSeconds
     ) {
-      setPhase("logo-docking");
+      setLogoHidden(true);
+      setPhase("logo-fading");
     }
 
     if (
@@ -104,12 +117,24 @@ export function HeroSection() {
   };
 
   const handleEnded = () => setVideoEnded(true);
+  const handleVideoError = () => {
+    setVideoError(true);
+    setVideoEnded(true);
+  };
 
   return (
     <section ref={sectionRef} className="irp-hero" id="inicio">
       <motion.div className="irp-hero__media" style={reduceMotion ? undefined : { y: mediaY }}>
         <div className="irp-hero__media-frame">
-          <video
+          {(skipIntro || videoError) && <Image
+            className="irp-hero__fallback"
+            src={HOME_INTRO_ASSETS.exterior}
+            alt="Casa moderna con acceso automatizado abierto"
+            fill
+            priority
+            sizes="100vw"
+          />}
+          {!skipIntro && !videoError && <video
             ref={videoRef}
             className="irp-hero__video"
             src={HOME_INTRO_ASSETS.video}
@@ -124,15 +149,19 @@ export function HeroSection() {
             onPlaying={applyPlaybackRate}
             onTimeUpdate={handleTimeUpdate}
             onEnded={handleEnded}
-          />
+            onError={handleVideoError}
+          />}
         </div>
       </motion.div>
       <div className="irp-hero__cinema" />
       <motion.div className="irp-hero__ambient" style={reduceMotion ? undefined : { x: glowX }} />
 
       {(phase === "hero-reveal" || videoEnded) && (
-        <motion.div
+        <motion.a
           className="irp-hero__advisor"
+          href="/asistente"
+          data-analytics="irp_start"
+          aria-label="Abrir IRP Asistente"
           initial={{ opacity: 0, x: 280, y: 24, scale: .965, filter: "blur(14px)", clipPath: "inset(0 0 0 100% round 24px)" }}
           animate={{ opacity: 1, x: 0, y: 0, scale: 1, filter: "blur(0px)", clipPath: "inset(0 0 0 0% round 24px)" }}
           transition={{
@@ -147,9 +176,8 @@ export function HeroSection() {
             width={1086}
             height={1448}
             sizes="(max-width: 767px) 215px, (max-width: 1080px) 430px, 680px"
-            unoptimized
           />
-        </motion.div>
+        </motion.a>
       )}
 
       <div className="irp-shell irp-hero__layout">

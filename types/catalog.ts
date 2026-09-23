@@ -1,5 +1,5 @@
 export type ProductAudience = "residencial" | "comercial" | "industrial";
-export type ProductGroup = "puertas" | "techos" | "ventanas" | "acero" | "estructuras" | "automatizacion";
+export type ProductGroup = "puertas" | "puertas-principales" | "techos" | "ventanas" | "acero" | "estructuras" | "cerco" | "drywall" | "automatizacion";
 
 export type Finish = {
   name: string;
@@ -20,7 +20,7 @@ export type Product = {
   benefits: string[];
   finishes: Finish[];
   tiktokUrl: string;
-  evidence: "real" | "service";
+  evidence: "real" | "reference";
 };
 
 export type Solution = {
@@ -30,7 +30,7 @@ export type Solution = {
   description: string;
   image: string;
   href: string;
-  icon: "door" | "roof" | "window" | "rail" | "structure" | "automation";
+  icon: "door" | "entry" | "roof" | "window" | "rail" | "structure" | "fence" | "drywall" | "automation";
 };
 
 export type ApproximateDimensions = {

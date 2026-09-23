@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowRight, Building2, DoorOpen, Fence, MessageCircle, PanelsTopLeft, SunMedium, Wrench } from "lucide-react";
+import { ArrowRight, Building2, DoorOpen, Fence, MessageCircle, PanelsTopLeft, ShieldCheck, SunMedium, Wrench } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { solutions } from "@/data/solutions";
@@ -7,10 +7,12 @@ import { siteConfig } from "@/data/site";
 
 export const metadata: Metadata = {
   title: "Soluciones",
-  description: "Puertas, coberturas, mamparas, acero y estructuras fabricadas a medida."
+  description: "Puertas, coberturas, mamparas, acero, estructuras, cerco eléctrico y drywall a medida.",
+  alternates: { canonical: "/soluciones" },
+  openGraph: { title: "Soluciones | Industrial Remotos Perú", description: "Ocho familias de soluciones configurables para hogares, comercios e industria.", url: "/soluciones" }
 };
 
-const solutionIcons = [DoorOpen, SunMedium, PanelsTopLeft, Fence, Building2, Wrench];
+const solutionIcons = { door: DoorOpen, entry: DoorOpen, roof: SunMedium, window: PanelsTopLeft, rail: Fence, structure: Building2, fence: ShieldCheck, drywall: PanelsTopLeft, automation: Wrench } as const;
 
 export default function SolutionsPage() {
   return (
@@ -41,10 +43,10 @@ export default function SolutionsPage() {
       <section className="solutions-catalog-v3" aria-label="Nuestras soluciones">
         <div className="solutions-shell">
           <div className="solutions-grid-v3">
-            {solutions.map((solution, index) => {
-              const Icon = solutionIcons[index] ?? DoorOpen;
+            {solutions.map((solution) => {
+              const Icon = solutionIcons[solution.icon] ?? DoorOpen;
               return <article className="solution-card-v3" key={solution.id}>
-                <Link href={solution.href} aria-label={`Explorar ${solution.title}`}>
+                <Link href={solution.href} aria-label={`Explorar ${solution.title}`} data-analytics="service_open">
                   <span className="solution-card-v3__media">
                     <Image src={solution.image} alt={solution.title} fill sizes="(min-width: 1100px) 29vw, (min-width: 700px) 45vw, 92vw" className="object-cover" />
                     <i><Icon size={15} /></i>

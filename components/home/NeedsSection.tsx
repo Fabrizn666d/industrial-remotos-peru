@@ -40,37 +40,37 @@ const services = [
     name: "Cerco Eléctrico",
     description: "Protección perimetral para tu tranquilidad.",
     image: "/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_53 (5).png",
-    href: "/soluciones/trabajos-especiales",
+    href: "/soluciones/cerco-electrico",
     icon: "fence"
   },
   {
     name: "Drywall",
     description: "Espacios versátiles y acabados de alto nivel.",
     image: "/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_53 (6).png",
-    href: "/soluciones/trabajos-especiales",
+    href: "/soluciones/drywall-cielorrasos",
     icon: "wall"
   }
 ] as const;
 
 const processSteps = [
   {
-    title: "Asesoría",
-    description: "Te orientamos en la mejor solución",
+    title: "Orientación técnica",
+    description: "Decisiones claras desde el inicio",
     icon: UserRoundCheck
   },
   {
-    title: "Diseño",
-    description: "Adaptado a tu espacio y estilo",
+    title: "Proyecto a medida",
+    description: "Adaptado al espacio y forma de uso",
     icon: PencilRuler
   },
   {
-    title: "Fabricación",
-    description: "Con estándares de alta calidad",
+    title: "Solución integrada",
+    description: "Diseño, fabricación y montaje coordinados",
     icon: Cog
   },
   {
-    title: "Instalación",
-    description: "Por un equipo especializado",
+    title: "Acompañamiento",
+    description: "Un equipo durante todo el proyecto",
     icon: Wrench
   }
 ] as const;
@@ -120,7 +120,7 @@ export function NeedsSection() {
       </div>
 
       <div className={styles.shell}>
-        <motion.ol className={styles.processBand} variants={processReveal} aria-label="Nuestro proceso de trabajo">
+        <motion.ol className={styles.processBand} variants={processReveal} aria-label="Beneficios de trabajar con nosotros">
           {processSteps.map(({ title, description, icon: Icon }) => (
             <li key={title} className={styles.processStep}>
               <Icon aria-hidden="true" />
@@ -159,7 +159,6 @@ export function NeedsSection() {
                       alt={service.name}
                       fill
                       sizes="(min-width: 1100px) 210px, (min-width: 768px) 220px, 38vw"
-                      unoptimized
                     />
                   </span>
                   <span className={styles.icon} aria-hidden="true"><ServiceIcon type={service.icon} /></span>

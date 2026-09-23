@@ -2,13 +2,15 @@ import { mkdir } from "node:fs/promises";
 import { chromium } from "playwright-core";
 
 const outputDirectory = process.cwd() + "\\.visual-check";
-const baseUrl = process.env.SITE_URL || "http://127.0.0.1:3010";
+const baseUrl = process.env.SITE_URL || "http://127.0.0.1:3000";
 const executablePath = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const viewports = [
+  ["desktop-1920", 1920, 1080],
   ["desktop-1440", 1440, 900],
   ["desktop-1366", 1366, 768],
   ["desktop-1280", 1280, 800],
   ["tablet-landscape", 1024, 768],
+  ["tablet-768", 768, 1024],
   ["mobile-430", 430, 932],
   ["mobile-412", 412, 915],
   ["mobile-390", 390, 844],
@@ -16,7 +18,7 @@ const viewports = [
   ["mobile-360", 360, 800],
   ["mobile-320", 320, 720]
 ];
-const routes = ["/", "/soluciones", "/soluciones/puertas-automatizacion", "/soluciones/techos-coberturas", "/soluciones/ventanas-mamparas", "/soluciones/acero-barandas", "/soluciones/estructuras-metalicas", "/soluciones/trabajos-especiales", "/proyectos", "/cotizar", "/nosotros", "/contacto", "/libro-reclamaciones", "/mi-proyecto", "/asistente", "/cotizar/finalizar", "/cotizar/confirmacion/COT-IRP-00284", "/proforma"];
+const routes = ["/", "/soluciones", "/soluciones/puertas-automatizacion", "/soluciones/puertas-principales", "/soluciones/techos-coberturas", "/soluciones/ventanas-mamparas", "/soluciones/acero-barandas", "/soluciones/estructuras-metalicas", "/soluciones/cerco-electrico", "/soluciones/drywall-cielorrasos", "/productos", "/proyectos", "/cotizar", "/nosotros", "/contacto", "/libro-reclamaciones", "/mi-proyecto", "/asistente", "/cotizar/finalizar", "/cotizar/confirmacion/COT-IRP-00284", "/proforma"];
 
 await mkdir(outputDirectory, { recursive: true });
 const browser = await chromium.launch({ executablePath, headless: true });
@@ -57,7 +59,7 @@ try {
   for (const [name, width, height] of viewports) {
     const context = await browser.newContext({ viewport: { width, height }, reducedMotion: "reduce", locale: "es-PE" });
     await context.addInitScript(() => {
-      sessionStorage.setItem("irp-intro-v3", "seen");
+      sessionStorage.setItem("irp-intro-v4", "seen");
       localStorage.setItem("irp_cookie_consent_v1", JSON.stringify({ necessary: true, analytics: false, optional: false, savedAt: new Date().toISOString() }));
     });
     const page = await context.newPage();

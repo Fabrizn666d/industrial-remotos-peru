@@ -1,6 +1,6 @@
 "use client";
 
-import { ClipboardList, FileText, LayoutDashboard, LogOut, Menu, Package, X } from "lucide-react";
+import { BookOpenCheck, ClipboardList, FileText, LayoutDashboard, LogOut, Menu, Package, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -10,6 +10,7 @@ import styles from "./admin.module.css";
 const navigation = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/admin/solicitudes", label: "Solicitudes", icon: ClipboardList, exact: false },
+  { href: "/admin/reclamos", label: "Reclamos", icon: BookOpenCheck, exact: false },
   { href: "/admin/cotizaciones", label: "Cotizaciones", icon: FileText, exact: false },
   { href: "/admin/configuracion/productos-cotizacion", label: "Productos de cotización", icon: Package, exact: false }
 ] as const;

@@ -12,6 +12,6 @@ const help: SearchEntry[] = [
 export const searchIndex: SearchEntry[] = [
   ...solutionPages.map((item) => ({ title: item.title, type: "Solución" as const, summary: item.summary, href: `/soluciones/${item.slug}`, keywords: `${item.benefits.join(" ")} ${item.uses.join(" ")}` })),
   ...products.map((item) => ({ title: item.name, type: "Producto" as const, summary: item.description, href: `/productos/${item.id}`, keywords: `${item.group} ${item.audiences.join(" ")} ${item.benefits.join(" ")}` })),
-  ...projects.map((item) => ({ title: item.title, type: "Proyecto" as const, summary: item.description, href: "/proyectos", keywords: `${item.category} ${item.location}` })),
+  ...projects.map((item) => ({ title: item.title, type: "Proyecto" as const, summary: item.description, href: `/proyectos/${item.slug}`, keywords: `${item.category} ${item.location}` })),
   ...help
 ];

@@ -34,9 +34,11 @@ export const navItems = [
 
 export const serviceNavItems = [
   { label: "Puertas y automatización", href: "/soluciones/puertas-automatizacion" },
+  { label: "Puertas principales", href: "/soluciones/puertas-principales" },
   { label: "Techos y coberturas", href: "/soluciones/techos-coberturas" },
   { label: "Ventanas y mamparas", href: "/soluciones/ventanas-mamparas" },
   { label: "Acero inoxidable y barandas", href: "/soluciones/acero-barandas" },
   { label: "Estructuras metálicas", href: "/soluciones/estructuras-metalicas" },
-  { label: "Trabajos especiales", href: "/soluciones/trabajos-especiales" }
+  { label: "Cerco eléctrico", href: "/soluciones/cerco-electrico" },
+  { label: "Drywall y cielorrasos", href: "/soluciones/drywall-cielorrasos" }
 ] as const;

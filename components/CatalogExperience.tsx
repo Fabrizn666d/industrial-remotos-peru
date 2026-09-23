@@ -9,11 +9,14 @@ import type { ProductAudience, ProductGroup } from "@/types/catalog";
 
 const groups: Array<{ value: "todos" | ProductGroup; label: string }> = [
   { value: "todos", label: "Todos" },
-  { value: "puertas", label: "Puertas" },
+  { value: "puertas", label: "Puertas automáticas" },
+  { value: "puertas-principales", label: "Puertas principales" },
   { value: "techos", label: "Techos" },
   { value: "ventanas", label: "Ventanas y mamparas" },
   { value: "acero", label: "Acero y barandas" },
   { value: "estructuras", label: "Estructuras" },
+  { value: "cerco", label: "Cerco eléctrico" },
+  { value: "drywall", label: "Drywall" },
   { value: "automatizacion", label: "Automatización" }
 ];
 

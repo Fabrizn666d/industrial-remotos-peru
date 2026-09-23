@@ -127,6 +127,10 @@
 .status_MANUFACTURING,.status_INSTALLATION { background: #e9f3f7; color: #27708d; }
 .status_REJECTED { background: #feecec; color: #b72c35; }
 .status_ARCHIVED { background: #eff1f3; color: #69737e; }
+.complaint_RECEIVED { background: #e8f3ff; color: #0871dc; }
+.complaint_IN_REVIEW { background: #fff4da; color: #986500; }
+.complaint_ANSWERED { background: #e7f8f4; color: #087c63; }
+.complaint_CLOSED { background: #eff1f3; color: #596675; }
 .quoteStatus_DRAFT { background: #fff3d7; color: #946300; }
 .quoteStatus_ISSUED { background: #e5f7ed; color: #14794a; }
 .quoteStatus_VOID { background: #feecee; color: #b52f3a; }
@@ -174,6 +178,14 @@
 .projectSummary { padding: 23px; }
 .projectSummary h2 { margin: 8px 0 7px; color: #0d1d30; font-size: 17px; }
 .projectSummary p { margin: 0; color: #667588; font-size: 11px; line-height: 1.7; white-space: pre-wrap; }
+.complaintCopy { display: grid; gap: 1px; background: #e5ecf3; }
+.complaintCopy article { background: white; padding: 22px; }
+.complaintCopy small { color: #7b8999; font-size: 8px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
+.complaintCopy p { margin: 8px 0 0; color: #26384c; font-size: 11px; line-height: 1.75; white-space: pre-wrap; }
+.statusControl { display: grid; gap: 9px; }
+.statusControl label { display: grid; gap: 7px; color: #718094; font-size: 9px; font-weight: 700; }
+.statusControl select { height: 42px; border: 1px solid #d8e2ec; border-radius: 9px; background: white; padding: 0 11px; color: #24374c; }
+.statusControl small { color: #b4232e; font-size: 9px; }
 
 .itemList > article { display: grid; grid-template-columns: 48px minmax(0,1fr); gap: 16px; border-top: 1px solid #e8edf3; padding: 22px; }
 .itemList > article:first-child { border-top: 0; }

@@ -4,16 +4,18 @@ const browser = await chromium.launch({ executablePath: "C:\\Program Files\\Goog
 const baseUrl = process.env.SITE_URL || "http://127.0.0.1:3000";
 const routes = [
   "puertas-automatizacion",
+  "puertas-principales",
   "techos-coberturas",
   "ventanas-mamparas",
   "acero-barandas",
   "estructuras-metalicas",
-  "trabajos-especiales"
+  "cerco-electrico",
+  "drywall-cielorrasos"
 ];
 
 for (const [name, width, height] of [["desktop", 1440, 900], ["mobile", 390, 844]]) {
   const context = await browser.newContext({ viewport: { width, height }, locale: "es-PE" });
-  await context.addInitScript(() => sessionStorage.setItem("irp-intro-v3", "seen"));
+  await context.addInitScript(() => sessionStorage.setItem("irp-intro-v4", "seen"));
   const page = await context.newPage();
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
@@ -40,7 +42,7 @@ for (const [name, width, height] of [["desktop", 1440, 900], ["mobile", 390, 844
 const redirectPage = await browser.newPage();
 await redirectPage.goto(`${baseUrl}/productos/seccionales`, { waitUntil: "networkidle" });
 const redirectedTo = new URL(redirectPage.url()).pathname;
-console.log(JSON.stringify({ oldRouteRedirectedTo: redirectedTo }));
-if (redirectedTo !== "/soluciones/puertas-automatizacion") process.exitCode = 1;
+console.log(JSON.stringify({ catalogProductRoute: redirectedTo }));
+if (redirectedTo !== "/productos/seccionales") process.exitCode = 1;
 
 await browser.close();

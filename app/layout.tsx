@@ -33,7 +33,6 @@ export const metadata: Metadata = {
     description: "Soluciones de acceso que combinan seguridad, diseño y automatización.",
     images: ["/images/reales/portada-puerta-seccional.jpg"]
   },
-  alternates: { canonical: "/" },
   manifest: "/manifest.webmanifest",
   icons: { icon: "/brand-mark.svg", apple: "/logo-original-transparent.png" }
 };

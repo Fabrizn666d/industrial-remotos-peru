@@ -8,7 +8,8 @@ await mkdir(path.join(standaloneRoot, ".next"), { recursive: true });
 await Promise.all([
   cp(path.join(root, "public"), path.join(standaloneRoot, "public"), {
     recursive: true,
-    force: true
+    force: true,
+    filter: (source) => !source.toLowerCase().endsWith(".zip")
   }),
   cp(path.join(root, ".next", "static"), path.join(standaloneRoot, ".next", "static"), {
     recursive: true,

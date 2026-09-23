@@ -1,150 +1,78 @@
 export type SolutionPage = {
-  slug: string;
-  title: string;
-  shortTitle: string;
-  eyebrow: string;
-  summary: string;
-  description: string;
-  heroImage: string;
-  gallery: string[];
-  benefits: string[];
-  uses: string[];
-  quoteProduct: string;
-  options: Array<{
-    title: string;
-    description: string;
-    image: string;
-    quoteProduct: string;
-  }>;
+  slug: string; title: string; shortTitle: string; eyebrow: string; summary: string; description: string;
+  heroImage: string; gallery: string[]; detailGallery: string[]; verifiedReal: boolean;
+  benefits: string[]; uses: string[]; quoteProduct: string;
+  options: Array<{ title: string; description: string; image: string; quoteProduct: string; features: string[] }>;
+  miniFields: Array<{ key: string; label: string; type: "text" | "number" | "select"; options?: string[]; placeholder?: string }>;
+  faqs: Array<{ question: string; answer: string }>;
 };
+
+const ref = {
+  entry: "/images/placeholders/puerta-contraplacada-temporal.png",
+  roof: "/images/placeholders/techo-cobertura-temporal.png",
+  glass: "/images/placeholders/mampara-instalado-temporal.png",
+  rail: "/images/placeholders/baranda-acero-temporal.png",
+  structure: "/images/placeholders/estructura-metalica-temporal.png",
+  fence: "/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_53 (5).png",
+  drywall: "/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_53 (6).png"
+} as const;
+
+const dimensions = [
+  { key: "width", label: "Ancho aproximado (m)", type: "number" as const, placeholder: "Ej. 3.20" },
+  { key: "height", label: "Alto o largo aproximado (m)", type: "number" as const, placeholder: "Ej. 2.40" }
+];
 
 export const solutionPages: SolutionPage[] = [
   {
-    slug: "puertas-automatizacion",
-    title: "Puertas y automatización",
-    shortTitle: "Puertas",
-    eyebrow: "Accesos inteligentes",
-    summary: "Diseñamos y fabricamos accesos seguros que combinan estructura, acabado y automatización.",
-    description: "Cada puerta se desarrolla según las medidas del vano, el uso diario y la arquitectura del ingreso. Integramos fabricación metálica, paneles, motores y controles para entregar una solución completa.",
-    heroImage: "/images/reales/portada-puerta-seccional.jpg",
-    gallery: ["/images/reales/puerta-22.jpg", "/images/reales/puerta-17.jpg", "/images/reales/puerta-38.jpg"],
-    benefits: ["Fabricación a medida", "Automatización confiable", "Acabados coordinados", "Instalación y puesta en marcha"],
-    uses: ["Viviendas y condominios", "Comercios y estacionamientos", "Almacenes e industria", "Accesos vehiculares y peatonales"],
-    quoteProduct: "seccionales",
+    slug: "puertas-automatizacion", title: "Puertas automáticas y de garaje", shortTitle: "Puertas automáticas", eyebrow: "Accesos vehiculares",
+    summary: "Puertas seccionales, levadizas, corredizas y batientes fabricadas a medida, con automatización y control cuando el proyecto lo requiere.",
+    description: "Partimos del vano, la frecuencia de uso y la arquitectura del ingreso para definir estructura, movimiento, acabado y sistema de operación.",
+    heroImage: "/images/reales/portada-puerta-seccional.jpg", gallery: ["/images/reales/puerta-22.jpg", "/images/reales/puerta-17.jpg", "/images/reales/puerta-38.jpg"], detailGallery: ["/images/reales/puerta-34.jpg", "/images/reales/puerta-27.jpg", "/images/reales/puerta-24.jpg"], verifiedReal: true,
+    benefits: ["Fabricación a medida", "Operación según el espacio", "Automatización evaluada", "Instalación profesional"], uses: ["Viviendas", "Comercios", "Condominios", "Industria"], quoteProduct: "seccionales",
     options: [
-      { title: "Puertas seccionales", description: "Apertura vertical, operación silenciosa y una presencia arquitectónica limpia.", image: "/images/reales/portada-puerta-seccional.jpg", quoteProduct: "seccionales" },
-      { title: "Puertas levadizas", description: "Una alternativa funcional para aprovechar el ingreso y liberar espacio lateral.", image: "/images/reales/puerta-22.jpg", quoteProduct: "levadizas" },
-      { title: "Puertas corredizas", description: "Recorrido lateral estable para accesos amplios residenciales o industriales.", image: "/images/reales/puerta-17.jpg", quoteProduct: "corredizas" },
-      { title: "Puertas batientes", description: "Una o más hojas robustas, manuales o automatizadas, fabricadas para el vano.", image: "/images/reales/puerta-23.jpg", quoteProduct: "batientes" },
-      { title: "Puertas peatonales", description: "Accesos independientes que mantienen seguridad y coherencia con la fachada.", image: "/images/reales/puerta-29.jpg", quoteProduct: "peatonales" },
-      { title: "Automatización y control", description: "Motores, mandos y sistemas de seguridad para puertas nuevas o existentes.", image: "/images/reales/puerta-34.jpg", quoteProduct: "automatizacion" }
-    ]
+      { title: "Seccionales", description: "Apertura vertical por paneles.", image: "/images/reales/portada-puerta-seccional.jpg", quoteProduct: "seccionales", features: ["Recorrido vertical", "Paneles modulares"] },
+      { title: "Levadizas", description: "Hoja fabricada para elevarse y liberar el acceso.", image: "/images/reales/puerta-22.jpg", quoteProduct: "levadizas", features: ["Fabricación a medida", "Uso residencial o comercial"] },
+      { title: "Corredizas y batientes", description: "Alternativas laterales o por hojas.", image: "/images/reales/puerta-17.jpg", quoteProduct: "corredizas", features: ["Accesos amplios", "Automatización opcional"] }
+    ],
+    miniFields: [...dimensions, { key: "subtype", label: "Tipo de puerta", type: "select", options: ["Seccional", "Levadiza", "Corrediza", "Batiente", "Por definir"] }, { key: "finish", label: "Acabado", type: "text", placeholder: "Color o referencia" }, { key: "automation", label: "Operación", type: "select", options: ["Automatizada", "Manual", "Por definir"] }, { key: "use", label: "Uso", type: "select", options: ["Residencial", "Comercial", "Industrial"] }],
+    faqs: [{ question: "¿Las medidas pueden ser aproximadas?", answer: "Sí. Sirven para iniciar la evaluación y se confirman antes de fabricar." }, { question: "¿Pueden automatizar una puerta existente?", answer: "Primero se revisan estructura, peso, recorrido y estado para determinar compatibilidad." }]
   },
   {
-    slug: "techos-coberturas",
-    title: "Techos y coberturas",
-    shortTitle: "Techos",
-    eyebrow: "Sombra y protección",
-    summary: "Coberturas diseñadas para proteger, dar sombra y ampliar el uso de terrazas, patios y áreas comerciales.",
-    description: "Evaluamos el área, la orientación, los puntos de apoyo y el uso del ambiente para definir una estructura proporcionada y durable. Trabajamos alternativas abiertas, translúcidas o completamente cubiertas.",
-    heroImage: "/images/reales/puerta-36.jpg",
-    gallery: ["/images/reales/puerta-37.jpg", "/images/reales/puerta-41.jpg", "/images/reales/puerta-35.jpg"],
-    benefits: ["Diseño según el espacio", "Estructura metálica a medida", "Alternativas de cobertura", "Montaje profesional"],
-    uses: ["Terrazas y patios", "Cocheras", "Áreas comerciales", "Pasadizos y zonas comunes"],
-    quoteProduct: "techos-coberturas",
-    options: [
-      { title: "Sol y sombra", description: "Estructuras ligeras que filtran la luz y generan ambientes confortables.", image: "/images/reales/puerta-36.jpg", quoteProduct: "techos-coberturas" },
-      { title: "Coberturas translúcidas", description: "Protección frente al clima sin perder el ingreso de iluminación natural.", image: "/images/reales/puerta-37.jpg", quoteProduct: "techos-coberturas" },
-      { title: "Techos estructurales", description: "Soluciones de mayor escala calculadas según apoyos, luces y condiciones del lugar.", image: "/images/reales/puerta-41.jpg", quoteProduct: "techos-coberturas" }
-    ]
+    slug: "puertas-principales", title: "Puertas principales", shortTitle: "Puertas principales", eyebrow: "Accesos peatonales",
+    summary: "Puertas exteriores metálicas o decorativas configuradas de forma independiente al acceso de garaje.", description: "Definimos dimensiones, material, acabado y sistema de cierre según el ingreso y el uso cotidiano.",
+    heroImage: ref.entry, gallery: [ref.entry, ref.entry, ref.entry], detailGallery: [ref.entry, ref.entry, ref.entry], verifiedReal: false,
+    benefits: ["Diseño según el vano", "Material por definir", "Opciones de cerradura", "Instalación evaluada"], uses: ["Fachadas residenciales", "Ingresos peatonales", "Comercios", "Accesos interiores"], quoteProduct: "puertas-principales",
+    options: [{ title: "Metálica exterior", description: "Acceso resistente para fachada.", image: ref.entry, quoteProduct: "puertas-principales", features: ["A medida", "Acabado por elegir"] }, { title: "Decorativa", description: "Composición alineada con la arquitectura.", image: ref.entry, quoteProduct: "puertas-principales", features: ["Diseño personalizado", "Herrajes por definir"] }, { title: "Contraplacada", description: "Alternativa para ambientes donde corresponda.", image: ref.entry, quoteProduct: "puertas-principales", features: ["Acabado por confirmar", "Uso evaluado"] }],
+    miniFields: [...dimensions, { key: "subtype", label: "Tipo", type: "select", options: ["Metálica exterior", "Decorativa", "Contraplacada", "Por definir"] }, { key: "finish", label: "Material / acabado", type: "text", placeholder: "Describe color o referencia" }, { key: "lock", label: "Cerradura o sistema", type: "text", placeholder: "Convencional, digital o por definir" }, { key: "location", label: "Ubicación", type: "text", placeholder: "Distrito / ciudad" }],
+    faqs: [{ question: "¿Es lo mismo que una puerta de garaje?", answer: "No. Este servicio corresponde al acceso peatonal principal y se configura por separado." }, { question: "¿Puedo enviar una referencia?", answer: "Sí. La referencia ayuda a orientar diseño y acabado sin sustituir la evaluación técnica." }]
   },
   {
-    slug: "ventanas-mamparas",
-    title: "Ventanas y mamparas",
-    shortTitle: "Mamparas",
-    eyebrow: "Luz y amplitud",
-    summary: "Sistemas de aluminio y vidrio que conectan ambientes y aprovechan mejor la iluminación natural.",
-    description: "Definimos la solución a partir de las medidas del vano, el tipo de apertura, la perfilería y el vidrio requerido. El resultado busca equilibrio entre transparencia, aislamiento y facilidad de uso.",
-    heroImage: "/images/reales/puerta-13.jpg",
-    gallery: ["/images/reales/puerta-11.jpg", "/images/reales/puerta-14.jpg", "/images/reales/puerta-12.jpg"],
-    benefits: ["Fabricación personalizada", "Perfilería de aluminio", "Opciones de vidrio", "Sellado e instalación especializada"],
-    uses: ["Salas y terrazas", "Oficinas", "Locales comerciales", "Divisiones interiores"],
-    quoteProduct: "ventanas-mamparas",
-    options: [
-      { title: "Mamparas corredizas", description: "Grandes paños de vidrio con apertura cómoda para integrar interior y exterior.", image: "/images/reales/puerta-13.jpg", quoteProduct: "ventanas-mamparas" },
-      { title: "Ventanas de aluminio", description: "Sistemas adaptados al vano, al flujo de aire y al acabado del ambiente.", image: "/images/reales/puerta-11.jpg", quoteProduct: "ventanas-mamparas" },
-      { title: "Divisiones de vidrio", description: "Separación visualmente ligera para oficinas, comercios y espacios residenciales.", image: "/images/reales/puerta-14.jpg", quoteProduct: "ventanas-mamparas" }
-    ]
+    slug: "techos-coberturas", title: "Techos y coberturas", shortTitle: "Techos", eyebrow: "Sombra y protección", summary: "Sol y sombra, policarbonato y coberturas metálicas para terrazas, patios y cocheras.", description: "Revisamos área, apoyos, orientación y uso para definir estructura y cobertura.", heroImage: ref.roof, gallery: [ref.roof, ref.roof, ref.roof], detailGallery: [ref.roof, ref.structure, ref.roof], verifiedReal: false, benefits: ["Diseño según el espacio", "Estructura a medida", "Cobertura por definir", "Montaje coordinado"], uses: ["Terrazas", "Patios", "Cocheras", "Áreas comerciales"], quoteProduct: "techos-coberturas",
+    options: [{ title: "Sol y sombra", description: "Control parcial de luz.", image: ref.roof, quoteProduct: "techos-coberturas", features: ["Terrazas y patios", "Diseño a medida"] }, { title: "Policarbonato", description: "Cobertura translúcida sujeta a evaluación.", image: ref.roof, quoteProduct: "techos-coberturas", features: ["Ingreso de luz", "Estructura compatible"] }, { title: "Cobertura estructural", description: "Solución para áreas de mayor exigencia.", image: ref.structure, quoteProduct: "estructuras-especiales", features: ["Apoyos evaluados", "Fabricación especial"] }], miniFields: [...dimensions, { key: "subtype", label: "Cobertura", type: "select", options: ["Sol y sombra", "Policarbonato", "Metálica", "Por definir"] }, { key: "structure", label: "Estructura existente", type: "select", options: ["Sí", "No", "Por revisar"] }, { key: "finish", label: "Acabado", type: "text", placeholder: "Color o referencia" }, { key: "location", label: "Ubicación", type: "text", placeholder: "Distrito / ciudad" }], faqs: [{ question: "¿Qué cobertura conviene?", answer: "Depende de luz, lluvia, apoyos y uso. Se define después de revisar el espacio." }, { question: "¿Trabajan medidas aproximadas?", answer: "Sí, para iniciar. El dimensionamiento final requiere verificación." }]
   },
   {
-    slug: "acero-barandas",
-    title: "Acero inoxidable y barandas",
-    shortTitle: "Acero y barandas",
-    eyebrow: "Detalle durable",
-    summary: "Barandas, pasamanos y piezas metálicas desarrolladas con precisión para proteger y acompañar la arquitectura.",
-    description: "Medimos el espacio, definimos anclajes, alturas y modulación, y fabricamos cada elemento para que la instalación sea segura y visualmente ordenada.",
-    heroImage: "/images/reales/puerta-37.jpg",
-    gallery: ["/images/reales/puerta-36.jpg", "/images/reales/puerta-41.jpg", "/images/reales/puerta-33.jpg"],
-    benefits: ["Detalle a medida", "Fijaciones seguras", "Acabados resistentes", "Montaje especializado"],
-    uses: ["Escaleras", "Balcones y terrazas", "Rampas y pasadizos", "Locales y edificios"],
-    quoteProduct: "acero-barandas",
-    options: [
-      { title: "Barandas", description: "Sistemas metálicos o combinados con vidrio para interiores y exteriores.", image: "/images/reales/puerta-37.jpg", quoteProduct: "acero-barandas" },
-      { title: "Pasamanos", description: "Elementos continuos con anclajes definidos según el recorrido y el soporte.", image: "/images/reales/puerta-36.jpg", quoteProduct: "acero-barandas" },
-      { title: "Detalles especiales", description: "Piezas, remates y complementos metálicos fabricados para necesidades específicas.", image: "/images/reales/puerta-41.jpg", quoteProduct: "acero-barandas" }
-    ]
+    slug: "ventanas-mamparas", title: "Mamparas y ventanas", shortTitle: "Mamparas", eyebrow: "Aluminio y vidrio", summary: "Mamparas corredizas, ventanas y divisiones de vidrio configuradas para cada vano.", description: "El sistema se define según apertura, perfilería, vidrio y relación con el ambiente.", heroImage: ref.glass, gallery: [ref.glass, ref.glass, ref.glass], detailGallery: [ref.glass, ref.glass, ref.glass], verifiedReal: false, benefits: ["Medidas personalizadas", "Apertura por definir", "Perfilería y vidrio evaluados", "Instalación especializada"], uses: ["Terrazas", "Oficinas", "Locales", "Divisiones interiores"], quoteProduct: "ventanas-mamparas",
+    options: [{ title: "Mamparas corredizas", description: "Conectan ambientes con apertura lateral.", image: ref.glass, quoteProduct: "ventanas-mamparas", features: ["Cantidad de hojas", "Vidrio por definir"] }, { title: "Ventanas", description: "Sistemas adaptados al vano.", image: ref.glass, quoteProduct: "ventanas-mamparas", features: ["Apertura configurable", "Perfilería de aluminio"] }, { title: "Divisiones", description: "Separación ligera para interiores.", image: ref.glass, quoteProduct: "ventanas-mamparas", features: ["Uso interior", "Configuración a medida"] }], miniFields: [...dimensions, { key: "subtype", label: "Sistema", type: "select", options: ["Mampara", "Ventana", "División", "Por definir"] }, { key: "design", label: "Apertura / cantidad de hojas", type: "text", placeholder: "Ej. corrediza de 2 hojas" }, { key: "profile", label: "Color de perfilería", type: "text", placeholder: "Negro, aluminio, por definir" }, { key: "glass", label: "Tipo de vidrio", type: "text", placeholder: "Por definir con asesor" }], faqs: [{ question: "¿Qué vidrio utilizan?", answer: "Se define según dimensiones, ubicación y necesidad; no se prescribe sin evaluación." }, { question: "¿Puedo indicar el color de perfilería?", answer: "Sí. Se registra como preferencia y se confirma disponibilidad." }]
   },
   {
-    slug: "estructuras-metalicas",
-    title: "Estructuras metálicas",
-    shortTitle: "Estructuras",
-    eyebrow: "Ingeniería a medida",
-    summary: "Diseñamos, fabricamos y montamos estructuras resistentes para ampliar, cubrir o resolver nuevos espacios.",
-    description: "Cada proyecto parte de una evaluación de medidas, apoyos y uso. Organizamos la fabricación y el montaje para lograr una estructura firme, proporcionada y compatible con la arquitectura existente.",
-    heroImage: "/images/reales/puerta-41.jpg",
-    gallery: ["/images/reales/puerta-36.jpg", "/images/reales/puerta-37.jpg", "/images/reales/puerta-40.jpg"],
-    benefits: ["Evaluación técnica", "Fabricación controlada", "Materiales resistentes", "Montaje por etapas"],
-    uses: ["Ampliaciones", "Áreas industriales", "Comercios", "Viviendas y espacios comunes"],
-    quoteProduct: "estructuras-especiales",
-    options: [
-      { title: "Estructuras para coberturas", description: "Soportes y pórticos concebidos para cubrir terrazas, patios y áreas de trabajo.", image: "/images/reales/puerta-41.jpg", quoteProduct: "estructuras-especiales" },
-      { title: "Marcos y cerramientos", description: "Estructuras que ordenan vanos, fachadas y divisiones con fabricación precisa.", image: "/images/reales/puerta-40.jpg", quoteProduct: "estructuras-especiales" },
-      { title: "Fabricación especial", description: "Componentes metálicos resueltos según planos, medidas y condiciones reales de obra.", image: "/images/reales/puerta-37.jpg", quoteProduct: "estructuras-especiales" }
-    ]
+    slug: "acero-barandas", title: "Acero inoxidable y barandas", shortTitle: "Barandas", eyebrow: "Seguridad y detalle", summary: "Barandas y pasamanos en acero o combinados con vidrio cuando corresponde.", description: "Medimos recorrido, anclajes y ubicación para definir una solución segura y ordenada.", heroImage: ref.rail, gallery: [ref.rail, ref.rail, ref.rail], detailGallery: [ref.rail, ref.glass, ref.rail], verifiedReal: false, benefits: ["Metros lineales registrados", "Anclajes evaluados", "Acabado por definir", "Montaje especializado"], uses: ["Escaleras", "Balcones", "Rampas", "Pasadizos"], quoteProduct: "acero-barandas",
+    options: [{ title: "Baranda de acero", description: "Configuración metálica a medida.", image: ref.rail, quoteProduct: "acero-barandas", features: ["Recorrido medido", "Acabado por definir"] }, { title: "Acero y vidrio", description: "Combinación sujeta a evaluación.", image: ref.glass, quoteProduct: "acero-barandas", features: ["Vidrio compatible", "Anclajes definidos"] }, { title: "Pasamanos", description: "Apoyo continuo para recorridos.", image: ref.rail, quoteProduct: "acero-barandas", features: ["Interior o exterior", "Longitud personalizada"] }], miniFields: [{ key: "width", label: "Metros lineales aproximados", type: "number", placeholder: "Ej. 8" }, { key: "subtype", label: "Tipo", type: "select", options: ["Baranda", "Pasamanos", "Acero y vidrio", "Por definir"] }, { key: "finish", label: "Material / acabado", type: "text", placeholder: "Acero, vidrio o por definir" }, { key: "location", label: "Ubicación", type: "text", placeholder: "Escalera, balcón, rampa..." }], faqs: [{ question: "¿Necesitan medir en obra?", answer: "Sí. Los metros iniciales orientan, pero anclajes y recorrido se verifican antes de fabricar." }, { question: "¿Puede combinarse con vidrio?", answer: "Cuando el espacio y el sistema de fijación lo permiten, se evalúa como alternativa." }]
   },
   {
-    slug: "trabajos-especiales",
-    title: "Trabajos especiales",
-    shortTitle: "Especiales",
-    eyebrow: "Proyectos únicos",
-    summary: "Resolvemos necesidades que combinan fabricación, automatización, montaje y adaptación en obra.",
-    description: "Cuando una necesidad no encaja en una solución estándar, revisamos el contexto completo. Nuestro equipo propone una ruta de trabajo realista, coordina materiales y desarrolla los componentes necesarios.",
-    heroImage: "/images/reales/puerta-34.jpg",
-    gallery: ["/images/reales/puerta-41.jpg", "/images/reales/puerta-37.jpg", "/images/reales/puerta-40.jpg"],
-    benefits: ["Diagnóstico inicial", "Diseño de la solución", "Fabricación combinada", "Coordinación de instalación"],
-    uses: ["Adaptaciones existentes", "Prototipos funcionales", "Integraciones automáticas", "Necesidades comerciales e industriales"],
-    quoteProduct: "estructuras-especiales",
-    options: [
-      { title: "Adaptaciones en obra", description: "Ajustes y complementos para integrar una nueva solución a lo ya construido.", image: "/images/reales/puerta-40.jpg", quoteProduct: "estructuras-especiales" },
-      { title: "Integraciones automáticas", description: "Mecánica, motores y control coordinados en una sola propuesta de funcionamiento.", image: "/images/reales/puerta-34.jpg", quoteProduct: "automatizacion" },
-      { title: "Fabricaciones singulares", description: "Piezas y estructuras que requieren una evaluación y un desarrollo específico.", image: "/images/reales/puerta-41.jpg", quoteProduct: "estructuras-especiales" }
-    ]
+    slug: "estructuras-metalicas", title: "Estructuras metálicas", shortTitle: "Estructuras", eyebrow: "Fabricación especial", summary: "Estructuras, soportes y cerramientos desarrollados para una necesidad concreta.", description: "Recopilamos uso, dimensiones y condiciones del lugar; el dimensionamiento se realiza después de la evaluación técnica.", heroImage: ref.structure, gallery: [ref.structure, ref.structure, ref.structure], detailGallery: [ref.structure, ref.structure, ref.structure], verifiedReal: false, benefits: ["Evaluación técnica", "Fabricación controlada", "Montaje coordinado", "Alcance documentado"], uses: ["Coberturas", "Soportes", "Cerramientos", "Fabricación especial"], quoteProduct: "estructuras-especiales",
+    options: [{ title: "Soportes y pórticos", description: "Estructura para nuevas soluciones.", image: ref.structure, quoteProduct: "estructuras-especiales", features: ["Uso definido", "Medidas aproximadas"] }, { title: "Cerramientos", description: "Marcos y divisiones metálicas.", image: ref.structure, quoteProduct: "estructuras-especiales", features: ["Fabricación a medida", "Montaje evaluado"] }, { title: "Especial", description: "Necesidad que requiere revisión particular.", image: ref.structure, quoteProduct: "estructuras-especiales", features: ["Descripción libre", "Revisión comercial"] }], miniFields: [...dimensions, { key: "subtype", label: "Uso de la estructura", type: "text", placeholder: "Describe brevemente" }, { key: "location", label: "Ubicación", type: "text", placeholder: "Distrito / ciudad" }, { key: "description", label: "Condición o necesidad", type: "text", placeholder: "Apoyos, cerramiento o referencia" }], faqs: [{ question: "¿El cotizador calcula la estructura?", answer: "No. Registra información inicial; el dimensionamiento y precio requieren evaluación." }, { question: "¿Puedo adjuntar planos después?", answer: "Sí. El equipo puede solicitarlos durante la revisión comercial." }]
+  },
+  {
+    slug: "cerco-electrico", title: "Cerco eléctrico", shortTitle: "Cerco eléctrico", eyebrow: "Protección perimetral", summary: "Sistemas de protección perimetral para viviendas, comercios e instalaciones de mayor recorrido.", description: "Registramos perímetro, tipo de inmueble y ubicación para definir configuración, energizador y accesorios con evaluación técnica.", heroImage: ref.fence, gallery: [ref.fence, ref.fence, ref.fence], detailGallery: [ref.fence, ref.fence, ref.fence], verifiedReal: false, benefits: ["Perímetro por definir", "Configuración según inmueble", "Control y accesorios evaluados", "Instalación especializada"], uses: ["Viviendas", "Comercios", "Condominios", "Perímetros industriales"], quoteProduct: "cerco-electrico",
+    options: [{ title: "Residencial", description: "Protección para vivienda.", image: ref.fence, quoteProduct: "cerco-electrico", features: ["Metros lineales", "Ubicación"] }, { title: "Comercial", description: "Configuración para negocio o local.", image: ref.fence, quoteProduct: "cerco-electrico", features: ["Accesos considerados", "Control por definir"] }, { title: "Perímetro amplio", description: "Evaluación para recorridos mayores.", image: ref.fence, quoteProduct: "cerco-electrico", features: ["Levantamiento requerido", "Sistema por calcular"] }], miniFields: [{ key: "width", label: "Metros lineales aproximados", type: "number", placeholder: "Ej. 25" }, { key: "subtype", label: "Tipo de inmueble", type: "select", options: ["Vivienda", "Comercio", "Condominio", "Industrial"] }, { key: "configuration", label: "Configuración aproximada", type: "text", placeholder: "Cantidad de líneas o por definir" }, { key: "location", label: "Ubicación", type: "text", placeholder: "Distrito / ciudad" }], faqs: [{ question: "¿Cuántas líneas necesita el cerco?", answer: "Se determina según el inmueble y la evaluación técnica; el formulario no fija una configuración." }, { question: "¿El precio depende de los metros?", answer: "Los metros son un dato importante, pero también influyen soportes, accesos y condiciones del lugar." }]
+  },
+  {
+    slug: "drywall-cielorrasos", title: "Drywall y cielorrasos", shortTitle: "Drywall", eyebrow: "Acondicionamiento interior", summary: "Divisiones, cielorrasos y revestimientos ligeros adaptados al ambiente.", description: "Registramos área, tipo de intervención, acabado y ubicación para preparar una propuesta sin asumir condiciones de obra.", heroImage: ref.drywall, gallery: [ref.drywall, ref.drywall, ref.drywall], detailGallery: [ref.drywall, ref.drywall, ref.drywall], verifiedReal: false, benefits: ["Área aproximada", "Solución por ambiente", "Acabado por definir", "Instalación evaluada"], uses: ["Divisiones", "Cielorrasos", "Revestimientos", "Acondicionamiento comercial"], quoteProduct: "drywall-cielorrasos",
+    options: [{ title: "Divisiones", description: "Distribución interior ligera.", image: ref.drywall, quoteProduct: "drywall-cielorrasos", features: ["Área aproximada", "Uso del ambiente"] }, { title: "Cielorrasos", description: "Solución superior para acondicionar ambientes.", image: ref.drywall, quoteProduct: "drywall-cielorrasos", features: ["Altura por revisar", "Acabado por definir"] }, { title: "Revestimientos", description: "Intervención sobre superficies cuando corresponde.", image: ref.drywall, quoteProduct: "drywall-cielorrasos", features: ["Estado del soporte", "Alcance evaluado"] }], miniFields: [{ key: "width", label: "Área aproximada (m²)", type: "number", placeholder: "Ej. 18" }, { key: "subtype", label: "Tipo", type: "select", options: ["División", "Cielorraso", "Revestimiento", "Por definir"] }, { key: "finish", label: "Acabado esperado", type: "text", placeholder: "Describe brevemente" }, { key: "location", label: "Ubicación", type: "text", placeholder: "Distrito / ciudad" }], faqs: [{ question: "¿El área puede ser estimada?", answer: "Sí. Se usa para iniciar la solicitud y se confirma al revisar el ambiente." }, { question: "¿Incluye acabado final?", answer: "El alcance se define en la propuesta según el tipo de sistema y terminación solicitada." }]
   }
 ];
 
-export const oldProductToSolution: Record<string, string> = {
-  seccionales: "puertas-automatizacion",
-  levadizas: "puertas-automatizacion",
-  corredizas: "puertas-automatizacion",
-  batientes: "puertas-automatizacion",
-  peatonales: "puertas-automatizacion",
-  automatizacion: "puertas-automatizacion",
-  "techos-coberturas": "techos-coberturas",
-  "ventanas-mamparas": "ventanas-mamparas",
-  "acero-barandas": "acero-barandas",
-  "estructuras-especiales": "estructuras-metalicas"
-};
+export const oldProductToSolution: Record<string, string> = Object.fromEntries(solutionPages.map((item) => [item.quoteProduct, item.slug]));
+Object.assign(oldProductToSolution, { levadizas: "puertas-automatizacion", corredizas: "puertas-automatizacion", batientes: "puertas-automatizacion", peatonales: "puertas-principales", automatizacion: "puertas-automatizacion" });
 
-export function findSolutionPage(slug: string) {
-  return solutionPages.find((solution) => solution.slug === slug);
-}
+export function findSolutionPage(slug: string) { return solutionPages.find((solution) => solution.slug === slug); }

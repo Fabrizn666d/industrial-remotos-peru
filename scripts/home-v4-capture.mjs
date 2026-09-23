@@ -14,7 +14,7 @@ async function captureLoader() {
 
 async function capture(name, viewport, fullPage = false) {
   const context = await browser.newContext({ viewport, locale: "es-PE" });
-  await context.addInitScript(() => sessionStorage.setItem("irp-intro-v3", "seen"));
+  await context.addInitScript(() => sessionStorage.setItem("irp-intro-v4", "seen"));
   const page = await context.newPage();
   const errors = [];
   page.on("console", (message) => message.type() === "error" && errors.push(message.text()));

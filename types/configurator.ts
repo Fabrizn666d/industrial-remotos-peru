@@ -1,6 +1,6 @@
 import type { ProductGroup } from "@/types/catalog";
 
-export type ConfiguratorFamily = "puertas" | "automatizacion" | "techos" | "mamparas" | "acero" | "estructuras";
+export type ConfiguratorFamily = "puertas" | "puertas-principales" | "automatizacion" | "techos" | "mamparas" | "acero" | "estructuras" | "cerco" | "drywall";
 
 export type ConfiguratorIcon =
   | "solution"

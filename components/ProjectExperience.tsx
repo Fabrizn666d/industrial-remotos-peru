@@ -10,12 +10,15 @@ import { RobotAvatar } from "@/components/RobotAvatar";
 import { products } from "@/data/products";
 
 const quickReplies = [
-  "Quiero automatizar una puerta",
-  "Necesito un techo para terraza o patio",
-  "Busco ventanas o mamparas",
-  "Necesito barandas o pasamanos",
-  "Tengo un proyecto comercial o industrial",
-  "No sé qué solución necesito"
+  { label: "Puerta automática / garaje", product: "seccionales" },
+  { label: "Puerta principal", product: "puertas-principales" },
+  { label: "Techo o cobertura", product: "techos-coberturas" },
+  { label: "Mampara o ventana", product: "ventanas-mamparas" },
+  { label: "Baranda o acero", product: "acero-barandas" },
+  { label: "Estructura metálica", product: "estructuras-especiales" },
+  { label: "Cerco eléctrico", product: "cerco-electrico" },
+  { label: "Drywall o cielorraso", product: "drywall-cielorrasos" },
+  { label: "No sé qué solución necesito", product: "estructuras-especiales" }
 ];
 
 function projectItemSummary(item: ReturnType<typeof useProject>["items"][number]) {
@@ -55,11 +58,7 @@ export function ProjectExperience() {
     return () => window.removeEventListener("keydown", onKey);
   }, [setDrawerOpen]);
 
-  const selectedProduct = selected.includes("automatizar") ? "automatizacion"
-    : selected.includes("techo") ? "techos-coberturas"
-      : selected.includes("ventanas") ? "ventanas-mamparas"
-        : selected.includes("barandas") ? "acero-barandas"
-          : "estructuras-especiales";
+  const selectedProduct = quickReplies.find((reply) => reply.label === selected)?.product ?? "estructuras-especiales";
   const recommendation = products.find((product) => product.id === selectedProduct) || products[0];
 
   return (
@@ -94,8 +93,8 @@ export function ProjectExperience() {
             </div>
             {!selected ? <div className="assistant-panel__choices">
               {quickReplies.map((reply) => (
-                <button type="button" key={reply} onClick={() => setSelected(reply)}>
-                  <MessageCircle size={15} />{reply}
+                <button type="button" key={reply.label} onClick={() => setSelected(reply.label)}>
+                  <MessageCircle size={15} />{reply.label}
                 </button>
               ))}
             </div> : <div className="assistant-panel__recommendation">

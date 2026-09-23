@@ -5,7 +5,7 @@ const baseUrl = process.env.SITE_URL || "http://127.0.0.1:3000";
 
 for (const [name, width, height] of [["desktop", 1440, 900], ["mobile", 390, 844]]) {
   const context = await browser.newContext({ viewport: { width, height }, locale: "es-PE" });
-  await context.addInitScript(() => sessionStorage.setItem("irp-intro-v3", "seen"));
+  await context.addInitScript(() => sessionStorage.setItem("irp-intro-v4", "seen"));
   const page = await context.newPage();
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));

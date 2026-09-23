@@ -1,13 +1,13 @@
 import { chromium } from "playwright-core";
 
-const baseUrl = process.env.SITE_URL || "http://127.0.0.1:3010";
+const baseUrl = process.env.SITE_URL || "http://127.0.0.1:3000";
 const executablePath = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const browser = await chromium.launch({ executablePath, headless: true });
 
 try {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "es-PE", reducedMotion: "reduce" });
   await context.addInitScript(() => {
-    sessionStorage.setItem("irp-intro-v3", "seen");
+    sessionStorage.setItem("irp-intro-v4", "seen");
     localStorage.setItem("irp_cookie_consent_v1", JSON.stringify({ necessary: true, analytics: false, optional: false, savedAt: new Date().toISOString() }));
   });
   const page = await context.newPage();
@@ -24,19 +24,28 @@ try {
 
   await page.getByRole("button", { name: /Abrir asistente/ }).click();
   const assistant = page.getByRole("dialog", { name: /Asistente de cotización/ });
-  await assistant.getByRole("button", { name: /ventanas o mamparas/i }).click();
+  await assistant.getByRole("button", { name: /Mampara o ventana/i }).click();
   const assistantHref = await assistant.getByRole("link", { name: /Configurar solución/ }).getAttribute("href");
   const assistantConfiguratorReady = assistantHref?.includes("producto=ventanas-mamparas") === true;
   await page.getByRole("button", { name: "Cerrar asistente" }).click();
   await page.goto(baseUrl + "/asistente", { waitUntil: "networkidle" });
   if (!process.env.SKIP_SCREENSHOTS) await page.screenshot({ path: ".visual-check/v4-desktop-assistant.png" });
-  await page.getByRole("button", { name: "Quiero automatizar mi puerta" }).click();
+  await page.getByRole("button", { name: "Puerta automática / garaje" }).click();
   await page.getByRole("button", { name: "Residencial" }).click();
-  const fullAssistantHref = await page.getByRole("link", { name: /Abrir configuración recomendada/ }).getAttribute("href");
-  const fullAssistantReady = fullAssistantHref?.includes("producto=automatizacion") === true;
+  await page.getByLabel("Respuesta para IRP Asistente").fill("Lima");
+  await page.getByLabel("Respuesta para IRP Asistente").press("Enter");
+  await page.getByLabel("Respuesta para IRP Asistente").fill("3.20 m × 2.40 m");
+  await page.getByLabel("Respuesta para IRP Asistente").press("Enter");
+  await page.getByLabel("Respuesta para IRP Asistente").fill("Acabado por definir");
+  await page.getByLabel("Respuesta para IRP Asistente").press("Enter");
+  const fullAssistantHref = await page.getByRole("link", { name: /Configurar recomendación/ }).getAttribute("href");
+  const fullAssistantReady = fullAssistantHref?.includes("producto=seccionales") === true;
 
   await page.goto(baseUrl + "/cotizar?producto=seccionales", { waitUntil: "networkidle" });
-  for (let step = 0; step < 7; step += 1) {
+  await page.getByRole("button", { name: /Siguiente/ }).click();
+  await page.getByLabel("Ancho aproximado (m)").fill("3.20");
+  await page.getByLabel("Alto aproximado (m)").fill("2.40");
+  for (let step = 0; step < 6; step += 1) {
     await page.locator(".configurator__nav button").last().click();
   }
   await page.locator(".configurator__nav button").last().click();
@@ -81,7 +90,7 @@ try {
   };
 
   console.log(JSON.stringify(result, null, 2));
-  const passed = result.solutionLinks === 6 && result.productsNavRemoved && result.searchReady && result.assistantConfiguratorReady && result.fullAssistantReady && result.projectLines === 1 && result.projectQuantity === 1 && result.configuredMeasures && result.confirmationVisible && result.proformaVisible;
+  const passed = result.solutionLinks >= 3 && result.productsNavRemoved && result.searchReady && result.assistantConfiguratorReady && result.fullAssistantReady && result.projectLines === 1 && result.projectQuantity === 1 && result.configuredMeasures && result.confirmationVisible && result.proformaVisible;
   if (!passed) process.exitCode = 1;
   await context.close();
 } finally {

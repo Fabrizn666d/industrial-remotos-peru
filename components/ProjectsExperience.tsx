@@ -2,6 +2,7 @@
 
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import { Reveal } from "@/components/Reveal";
 import { projects } from "@/data/projects";
@@ -35,7 +36,7 @@ export function ProjectsExperience() {
       <div className="project-grid">
         {visible.map((project, index) => (
           <Reveal key={project.id} delay={(index % 4) * .05} className={"project-card project-card--" + ((index % 6) + 1)}>
-            <a href={project.tiktokUrl} target="_blank" rel="noreferrer"><Image src={project.image} alt={project.title} fill sizes="(min-width: 1024px) 46vw, 92vw" className="object-cover" /><span className="project-card__shade" /><span className="project-card__copy"><small>{project.badge} · {project.location}</small><strong>{project.title}</strong></span><i><ArrowRight size={17} /></i></a>
+            <Link href={`/proyectos/${project.slug}`}><Image src={project.image} alt={project.title} fill sizes="(min-width: 1024px) 46vw, 92vw" className="object-cover" /><span className="project-card__shade" /><span className="project-card__copy"><small>{project.badge} · {project.location}</small><strong>{project.title}</strong></span><i><ArrowRight size={17} /></i></Link>
           </Reveal>
         ))}
       </div>

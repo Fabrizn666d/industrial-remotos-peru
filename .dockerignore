@@ -9,6 +9,7 @@ npm-debug.log*
 .artifacts
 screenshot-*.png
 *.pdf
+*PROMPT*.md
 SUPER_PROMPT_CODEX_IRP_SERVICIOS_PORTALES_COTIZADOR.md
 app/SUPER_PROMPT_CODEX_IRP_SERVICIOS_PORTALES_COTIZADOR.md
 public/fotos-reales-industrial-remotos.zip

@@ -98,22 +98,20 @@ export function NeedsSection() {
     visible: { opacity: 1, y: 0, transition: { delay: reduceMotion ? 0 : 0.32, duration: reduceMotion ? 0 : 0.7, ease: [0.16, 1, 0.3, 1] } }
   };
   const processReveal: Variants = {
-    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 24, scale: 0.97, filter: "blur(8px)" },
+    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 10 },
     visible: {
       opacity: 1,
       y: 0,
-      scale: 1,
-      filter: "blur(0px)",
-      transition: { duration: reduceMotion ? 0 : 0.7, ease: [0.16, 1, 0.3, 1] }
+      transition: { duration: reduceMotion ? 0 : 0.62, ease: [0.16, 1, 0.3, 1] }
     }
   };
   const serviceReveal: Variants = {
-    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 28, scale: 0.94 },
-    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: reduceMotion ? 0 : 0.72, ease: [0.16, 1, 0.3, 1] } }
+    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 12 },
+    visible: { opacity: 1, y: 0, transition: { duration: reduceMotion ? 0 : 0.64, ease: [0.16, 1, 0.3, 1] } }
   };
   const stagger: Variants = {
     hidden: {},
-    visible: { transition: { staggerChildren: reduceMotion ? 0 : 0.085, delayChildren: reduceMotion ? 0 : 0.62 } }
+    visible: { transition: { staggerChildren: reduceMotion ? 0 : 0.055, delayChildren: reduceMotion ? 0 : 0.22 } }
   };
 
   return (

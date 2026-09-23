@@ -30,15 +30,15 @@ export function ProjectsShowcase() {
     visible: { opacity: 1, y: 0, transition: { duration: reduceMotion ? 0 : 0.72, ease: [0.16, 1, 0.3, 1] } }
   };
   const featuredReveal: Variants = {
-    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, x: -35, scale: 0.97 },
-    visible: { opacity: 1, x: 0, scale: 1, transition: { delay: reduceMotion ? 0 : 0.24, duration: reduceMotion ? 0 : 0.78, ease: [0.16, 1, 0.3, 1] } }
+    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, x: -14 },
+    visible: { opacity: 1, x: 0, transition: { delay: reduceMotion ? 0 : 0.16, duration: reduceMotion ? 0 : 0.68, ease: [0.16, 1, 0.3, 1] } }
   };
   const secondaryList: Variants = {
     hidden: {},
-    visible: { transition: { delayChildren: reduceMotion ? 0 : 0.3, staggerChildren: reduceMotion ? 0 : 0.1 } }
+    visible: { transition: { delayChildren: reduceMotion ? 0 : 0.18, staggerChildren: reduceMotion ? 0 : 0.06 } }
   };
   const secondaryReveal: Variants = {
-    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, x: 30 },
+    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, x: 14 },
     visible: { opacity: 1, x: 0, transition: { duration: reduceMotion ? 0 : 0.68, ease: [0.16, 1, 0.3, 1] } }
   };
 

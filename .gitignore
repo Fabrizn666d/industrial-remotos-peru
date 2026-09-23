@@ -18,4 +18,5 @@ dev-server*.log
 .edge-profile*
 .chrome-profile*
 screenshot-*.png
+*PROMPT*.md
 public/fotos-reales-industrial-remotos.zip

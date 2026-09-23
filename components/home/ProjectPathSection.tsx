@@ -26,16 +26,16 @@ export function ProjectPathSection() {
   const ease = [0.16, 1, 0.3, 1] as const;
 
   const fadeUp: Variants = {
-    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 20 },
+    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 12 },
     visible: { opacity: 1, y: 0, transition: { duration: reduceMotion ? 0 : 0.74, ease } }
   };
   const cardLeft: Variants = {
-    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, x: -30 },
-    visible: { opacity: 1, x: 0, transition: { delay: reduceMotion ? 0 : 0.18, duration: reduceMotion ? 0 : 0.8, ease } }
+    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, x: -14 },
+    visible: { opacity: 1, x: 0, transition: { delay: reduceMotion ? 0 : 0.14, duration: reduceMotion ? 0 : 0.68, ease } }
   };
   const cardRight: Variants = {
-    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, x: 30 },
-    visible: { opacity: 1, x: 0, transition: { delay: reduceMotion ? 0 : 0.23, duration: reduceMotion ? 0 : 0.8, ease } }
+    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, x: 14 },
+    visible: { opacity: 1, x: 0, transition: { delay: reduceMotion ? 0 : 0.18, duration: reduceMotion ? 0 : 0.68, ease } }
   };
 
   return (

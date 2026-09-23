@@ -107,12 +107,12 @@ export function InteractiveSolutionsSection() {
   const ease = [0.16, 1, 0.3, 1] as const;
 
   const reveal: Variants = {
-    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 22 },
+    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 12 },
     visible: { opacity: 1, y: 0, transition: { duration: reduceMotion ? 0 : 0.76, ease } }
   };
   const list: Variants = {
     hidden: {},
-    visible: { transition: { delayChildren: reduceMotion ? 0 : 0.24, staggerChildren: reduceMotion ? 0 : 0.075 } }
+    visible: { transition: { delayChildren: reduceMotion ? 0 : 0.16, staggerChildren: reduceMotion ? 0 : 0.055 } }
   };
   const row: Variants = {
     hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, x: -20 },

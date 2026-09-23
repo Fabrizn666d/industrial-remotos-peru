@@ -21,6 +21,10 @@ export function ServiceMiniConfigurator({ solution }: { solution: SolutionPage }
     .filter((field) => customFields[field.key])
     .map((field) => `${field.label}: ${customFields[field.key]}`)
     .join(". ");
+  const previewSummary = solution.miniFields
+    .filter((field) => values[field.key])
+    .map((field) => `${field.label}: ${values[field.key]}`)
+    .join(" · ");
   const quoteHref = `/cotizar?${new URLSearchParams({
     producto: solution.quoteProduct,
     ...(values.width ? { width: values.width } : {}),
@@ -54,7 +58,7 @@ export function ServiceMiniConfigurator({ solution }: { solution: SolutionPage }
         <div className={styles.actions}><button type="button" onClick={add} disabled={!product}><PackagePlus size={17} />{added ? "Agregado a Mi Proyecto" : "Agregar a Mi Proyecto"}</button><Link href={quoteHref} data-analytics="configurator_start">Continuar cotización <ArrowRight size={17} /></Link></div>
         {added && <p className={styles.success} role="status">La configuración quedó guardada. Puedes continuar o revisarla en Mi Proyecto.</p>}
       </div>
-      <div className={styles.preview}><Image src={solution.heroImage} alt={`Referencia para ${solution.title}`} fill sizes="(max-width:820px) 100vw, 46vw" /><span className={styles.shade} /><div className={styles.summary}><small>{solution.verifiedReal ? "Trabajo registrado" : "Referencia visual"}</small><h3>{solution.shortTitle}</h3><p>{Object.values(values).filter(Boolean).join(" · ") || "Completa los datos principales"}</p><strong>Precio por confirmar</strong></div></div>
+      <div className={styles.preview}><Image src={solution.heroImage} alt={`Referencia para ${solution.title}`} fill sizes="(max-width:820px) 100vw, 46vw" /><span className={styles.shade} /><div className={styles.summary}><small>{solution.verifiedReal ? "Trabajo registrado" : "Referencia visual"}</small><h3>{solution.shortTitle}</h3><p>{previewSummary || "Completa los datos principales"}</p><strong>Precio por confirmar</strong></div></div>
     </div>
   </section>;
 }

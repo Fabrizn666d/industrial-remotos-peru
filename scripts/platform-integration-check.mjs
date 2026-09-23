@@ -4,8 +4,13 @@ const baseUrl = process.env.SITE_URL || "http://127.0.0.1:3000";
 const browser = await chromium.launch({ executablePath: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe", headless: true });
 const failures = [];
 const check = (condition, message) => { if (!condition) failures.push(message); };
+const introAsset = `${baseUrl}/NUEVO/Garage_door_opening_transition_1080p_20260921110657.mp4`;
 
 try {
+  const assetResponse = await fetch(introAsset, { headers: { Range: "bytes=0-1023" } });
+  check([200, 206].includes(assetResponse.status), `El MP4 respondió ${assetResponse.status}`);
+  check(assetResponse.headers.get("content-type")?.includes("video/mp4"), `MIME incorrecto: ${assetResponse.headers.get("content-type")}`);
+
   const introContext = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "es-PE" });
   const introPage = await introContext.newPage();
   await introPage.goto(baseUrl, { waitUntil: "domcontentloaded" });
@@ -14,11 +19,23 @@ try {
   await introPage.waitForTimeout(1200);
   const introState = await introPage.evaluate(() => ({
     currentTime: document.querySelector(".irp-hero__video")?.currentTime ?? 0,
+    duration: document.querySelector(".irp-hero__video")?.duration ?? 0,
+    paused: document.querySelector(".irp-hero__video")?.paused,
+    ended: document.querySelector(".irp-hero__video")?.ended,
+    error: document.querySelector(".irp-hero__video")?.error?.code ?? null,
+    readyState: document.querySelector(".irp-hero__video")?.readyState,
+    networkState: document.querySelector(".irp-hero__video")?.networkState,
+    videoWidth: document.querySelector(".irp-hero__video")?.videoWidth,
+    videoHeight: document.querySelector(".irp-hero__video")?.videoHeight,
     logoVisible: Boolean(document.querySelector(".irp-entry-loader__logo")),
     headerOpacity: getComputedStyle(document.querySelector(".site-header")).opacity
   }));
   console.log(JSON.stringify({ introState }));
   check(introState.currentTime > .2, "El video del loader no inició directamente");
+  check(introState.duration > 9 && introState.duration < 12, `Duración inesperada del MP4: ${introState.duration}`);
+  check(introState.paused === false && introState.ended === false, "El MP4 no está reproduciéndose durante el intro");
+  check(introState.error === null, `El elemento video reportó error ${introState.error}`);
+  check((introState.readyState ?? 0) >= 2 && introState.videoWidth === 1920 && introState.videoHeight === 1080, "Metadatos/readyState del MP4 inválidos");
   check(introState.logoVisible, "El logo inicial no está superpuesto al video");
   check(Number(introState.headerOpacity) < .1, "La navbar aparece antes del final del video");
   await introPage.locator(".irp-entry-loader").waitFor({ state: "detached", timeout: 15000 });
@@ -38,6 +55,24 @@ try {
   await freshIntroPage.locator(".irp-entry-loader").waitFor({ state: "visible" });
   check(await freshIntroPage.locator(".irp-hero__video").isVisible(), "Una sesión nueva no volvió a mostrar la introducción");
   await freshIntroContext.close();
+
+  const forcedContext = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "es-PE" });
+  await forcedContext.addInitScript(() => sessionStorage.setItem("irp-intro-v4", "seen"));
+  const forcedPage = await forcedContext.newPage();
+  await forcedPage.goto(`${baseUrl}/?intro=1`, { waitUntil: "domcontentloaded" });
+  await forcedPage.locator(".irp-entry-loader").waitFor({ state: "visible" });
+  await forcedPage.waitForTimeout(900);
+  check(await forcedPage.locator(".irp-hero__video").evaluate((video) => video.currentTime) > .2, "?intro=1 no forzó el MP4 con una sesión vista");
+  await forcedContext.close();
+
+  const errorContext = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "es-PE" });
+  await errorContext.route("**/Garage_door_opening_transition_1080p_20260921110657.mp4", (route) => route.fulfill({ status: 404, contentType: "video/mp4", body: "missing" }));
+  const errorPage = await errorContext.newPage();
+  await errorPage.goto(`${baseUrl}/?intro=1`, { waitUntil: "domcontentloaded" });
+  await errorPage.locator(".irp-entry-loader").waitFor({ state: "detached", timeout: 8000 });
+  check(await errorPage.locator(".irp-hero__fallback").isVisible(), "El fallo del MP4 no mostró el fallback exterior");
+  check(await errorPage.evaluate(() => sessionStorage.getItem("irp-intro-v4")) !== "seen", "Un fallo del MP4 marcó incorrectamente el intro como visto");
+  await errorContext.close();
 
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: "es-PE", reducedMotion: "reduce" });
   await context.addInitScript(() => sessionStorage.setItem("irp-intro-v4", "seen"));

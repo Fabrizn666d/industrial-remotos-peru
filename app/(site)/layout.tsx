@@ -5,17 +5,20 @@ import { ProjectProvider } from "@/components/ProjectContext";
 import { ProjectExperience } from "@/components/ProjectExperience";
 import { PrivacyRuntime } from "@/components/PrivacyRuntime";
 import { FloatingActions } from "@/components/FloatingActions";
+import { HomeIntroProvider } from "@/components/HomeIntroController";
 
 export default function SiteLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <ProjectProvider>
-      <IntroLoader />
-      <Header />
-      {children}
-      <Footer />
-      <ProjectExperience />
-      <FloatingActions />
-      <PrivacyRuntime />
+      <HomeIntroProvider>
+        <IntroLoader />
+        <Header />
+        {children}
+        <Footer />
+        <ProjectExperience />
+        <FloatingActions />
+        <PrivacyRuntime />
+      </HomeIntroProvider>
     </ProjectProvider>
   );
 }

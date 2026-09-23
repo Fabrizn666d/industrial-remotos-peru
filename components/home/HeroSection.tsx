@@ -4,13 +4,12 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Play } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import {
   HOME_INTRO_ASSETS,
-  HOME_INTRO_STATE_EVENT,
   HOME_INTRO_TIMING,
-  type IntroStateEventDetail
-} from "@/components/IntroLoader";
+  useHomeIntro
+} from "@/components/HomeIntroController";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 
 const HERO_ADVISOR_ASSET = "/NUEVO/ChatGPT Image 22 sept 2026%2C 14_56_50.png";
@@ -19,23 +18,13 @@ const MotionLink = motion.create(Link);
 export function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [phase, setPhase] = useState<IntroStateEventDetail["phase"]>("playing");
-  const [logoHidden, setLogoHidden] = useState(false);
-  const [videoEnded, setVideoEnded] = useState(false);
-  const [skipIntro, setSkipIntro] = useState(false);
-  const [videoError, setVideoError] = useState(false);
+  const playAttemptedRef = useRef(false);
+  const { status, heroVisible, markPlaying, hideLogo, complete, fail } = useHomeIntro();
   const reduceMotion = usePrefersReducedMotion();
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end start"] });
-  const mediaY = useTransform(scrollYProgress, [0, 1], ["0%", "8%"]);
-  const glowX = useTransform(scrollYProgress, [0, 1], ["0%", "3%"]);
-  const waveY = useTransform(scrollYProgress, [0, 1], [0, -12]);
-
-  const revealHero = useCallback(() => {
-    setLogoHidden(true);
-    setPhase("hero-reveal");
-    document.body.classList.remove("loader-open");
-    document.body.classList.add("intro-complete");
-  }, []);
+  const mediaY = useTransform(scrollYProgress, [0, 1], ["0%", "3%"]);
+  const glowX = useTransform(scrollYProgress, [0, 1], ["0%", "1.5%"]);
+  const waveY = useTransform(scrollYProgress, [0, 1], [0, -5]);
 
   const applyPlaybackRate = useCallback(() => {
     const video = videoRef.current;
@@ -45,20 +34,34 @@ export function HeroSection() {
     video.playbackRate = HOME_INTRO_TIMING.playbackRate;
   }, []);
 
-  const startVideo = useCallback(() => {
+  const videoDiagnostics = useCallback(() => {
     const video = videoRef.current;
-    if (!video) return;
+    return video ? {
+      src: video.currentSrc,
+      duration: video.duration,
+      currentTime: video.currentTime,
+      readyState: video.readyState,
+      networkState: video.networkState,
+      paused: video.paused,
+      ended: video.ended,
+      error: video.error ? { code: video.error.code, message: video.error.message } : null,
+      videoWidth: video.videoWidth,
+      videoHeight: video.videoHeight
+    } : null;
+  }, []);
 
+  const attemptPlayback = useCallback(() => {
+    const video = videoRef.current;
+    if (!video || playAttemptedRef.current || video.ended || !video.paused) return;
+    playAttemptedRef.current = true;
     applyPlaybackRate();
     void video.play().catch((error) => {
       if (process.env.NODE_ENV === "development") {
-        console.error("[HeroSection] No se pudo reproducir el video de apertura.", error);
+        console.error("[HeroSection] Falló la reproducción del intro.", { error, video: videoDiagnostics() });
       }
-      setVideoError(true);
-      revealHero();
-      setVideoEnded(true);
+      fail();
     });
-  }, [applyPlaybackRate, revealHero]);
+  }, [applyPlaybackRate, fail, videoDiagnostics]);
 
   useEffect(() => {
     const advisorImage = new window.Image();
@@ -67,60 +70,57 @@ export function HeroSection() {
     exteriorImage.src = HOME_INTRO_ASSETS.exterior;
   }, []);
 
-  useEffect(() => {
-    if (sessionStorage.getItem("irp-intro-v4") === "seen") {
-      setSkipIntro(true);
-      setVideoEnded(true);
-      revealHero();
-      return;
-    }
-    document.body.classList.add("loader-open");
-    document.body.classList.remove("intro-complete");
-    startVideo();
-
-    return () => {
-      videoRef.current?.pause();
-      document.body.classList.remove("loader-open", "intro-complete");
-    };
-  }, [revealHero, startVideo]);
+  useEffect(() => () => videoRef.current?.pause(), []);
 
   useEffect(() => {
-    const detail: IntroStateEventDetail = { phase, logoHidden, complete: videoEnded };
-    window.dispatchEvent(new CustomEvent<IntroStateEventDetail>(HOME_INTRO_STATE_EVENT, { detail }));
-  }, [logoHidden, phase, videoEnded]);
+    if (status !== "loading") return;
 
-  useEffect(() => {
-    if (!videoEnded) return;
-    sessionStorage.setItem("irp-intro-v4", "seen");
-    revealHero();
-    window.dispatchEvent(new Event("irp:intro-complete"));
-  }, [revealHero, videoEnded]);
+    const playbackWatchdog = window.setTimeout(() => {
+      const video = videoRef.current;
+      const hasStarted = Boolean(video && !video.paused && video.currentTime > 0.05);
+
+      if (hasStarted) return;
+
+      if (process.env.NODE_ENV === "development") {
+        console.error(
+          "[HeroSection] El video del intro no inició dentro del tiempo esperado.",
+          videoDiagnostics()
+        );
+      }
+      fail();
+    }, HOME_INTRO_TIMING.playbackStartTimeoutMs);
+
+    return () => window.clearTimeout(playbackWatchdog);
+  }, [fail, status, videoDiagnostics]);
 
   const handleTimeUpdate = () => {
     const video = videoRef.current;
     if (!video) return;
 
     if (
-      phase === "playing"
+      !["completed", "failed", "skipped"].includes(status)
       && video.currentTime >= HOME_INTRO_TIMING.logoFadeAtVideoSeconds
     ) {
-      setLogoHidden(true);
-      setPhase("logo-fading");
+      hideLogo();
     }
-
   };
 
-  const handleEnded = () => setVideoEnded(true);
+  const handleEnded = () => complete();
   const handleVideoError = () => {
-    setVideoError(true);
-    setVideoEnded(true);
+    if (process.env.NODE_ENV === "development") {
+      console.error("[HeroSection] El MP4 del intro no pudo cargarse.", videoDiagnostics());
+    }
+    fail();
   };
+
+  const renderFallback = status === "failed" || status === "skipped";
+  const renderVideo = !renderFallback;
 
   return (
     <section ref={sectionRef} className="irp-hero" id="inicio">
       <motion.div className="irp-hero__media" style={reduceMotion ? undefined : { y: mediaY }}>
         <div className="irp-hero__media-frame">
-          {(skipIntro || videoError) && <Image
+          {renderFallback && <Image
             className="irp-hero__fallback"
             src={HOME_INTRO_ASSETS.exterior}
             alt="Casa moderna con acceso automatizado abierto"
@@ -128,10 +128,11 @@ export function HeroSection() {
             priority
             sizes="100vw"
           />}
-          {!skipIntro && !videoError && <video
+          {renderVideo && <video
             ref={videoRef}
             className="irp-hero__video"
             src={HOME_INTRO_ASSETS.video}
+            poster={HOME_INTRO_ASSETS.firstFrame}
             preload="auto"
             autoPlay
             muted
@@ -140,7 +141,8 @@ export function HeroSection() {
             tabIndex={-1}
             aria-label="Acceso automatizado abriéndose hacia una casa moderna"
             onLoadedMetadata={applyPlaybackRate}
-            onPlaying={applyPlaybackRate}
+            onCanPlay={attemptPlayback}
+            onPlaying={() => { applyPlaybackRate(); markPlaying(); }}
             onTimeUpdate={handleTimeUpdate}
             onEnded={handleEnded}
             onError={handleVideoError}
@@ -150,7 +152,7 @@ export function HeroSection() {
       <div className="irp-hero__cinema" />
       <motion.div className="irp-hero__ambient" style={reduceMotion ? undefined : { x: glowX }} />
 
-      {(phase === "hero-reveal" || videoEnded) && (
+      {heroVisible && (
         <MotionLink
           className="irp-hero__advisor"
           href="/asistente"

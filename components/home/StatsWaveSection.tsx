@@ -68,21 +68,21 @@ export function StatsWaveSection() {
   const easing = [0.16, 1, 0.3, 1] as const;
 
   const fadeUp: Variants = {
-    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 20 },
+    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 12 },
     visible: { opacity: 1, y: 0, transition: { duration, ease: easing } }
   };
   const stepList: Variants = {
     hidden: {},
     visible: {
       transition: {
-        delayChildren: reduceMotion ? 0 : 0.25,
-        staggerChildren: reduceMotion ? 0 : 0.1
+        delayChildren: reduceMotion ? 0 : 0.16,
+        staggerChildren: reduceMotion ? 0 : 0.06
       }
     }
   };
   const stepReveal: Variants = {
-    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 32, scale: 0.96 },
-    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: reduceMotion ? 0 : 0.78, ease: easing } }
+    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 12 },
+    visible: { opacity: 1, y: 0, transition: { duration: reduceMotion ? 0 : 0.68, ease: easing } }
   };
 
   return (

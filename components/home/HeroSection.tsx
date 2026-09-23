@@ -2,91 +2,155 @@
 
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Play } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { HOME_INTRO_EVENTS, type FinalFrameEventDetail } from "@/components/IntroLoader";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  HOME_INTRO_ASSETS,
+  HOME_INTRO_STATE_EVENT,
+  HOME_INTRO_TIMING,
+  type IntroStateEventDetail
+} from "@/components/IntroLoader";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
+
+const HERO_ADVISOR_ASSET = "/NUEVO/ChatGPT Image 22 sept 2026, 14_56_50.png";
 
 export function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
-  const finalFrameUrlRef = useRef<string | null>(null);
-  const [finalFrameUrl, setFinalFrameUrl] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [phase, setPhase] = useState<IntroStateEventDetail["phase"]>("playing");
+  const [logoHidden, setLogoHidden] = useState(false);
+  const [videoEnded, setVideoEnded] = useState(false);
   const reduceMotion = usePrefersReducedMotion();
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end start"] });
   const mediaY = useTransform(scrollYProgress, [0, 1], ["0%", "8%"]);
   const glowX = useTransform(scrollYProgress, [0, 1], ["0%", "3%"]);
   const waveY = useTransform(scrollYProgress, [0, 1], [0, -12]);
 
-  useEffect(() => {
-    let active = true;
+  const revealHero = useCallback(() => {
+    setLogoHidden(true);
+    setPhase("hero-reveal");
+    document.body.classList.remove("loader-open");
+    document.body.classList.add("intro-complete");
+  }, []);
 
-    const handleFinalFrame = async (event: Event) => {
-      const { blob } = (event as CustomEvent<FinalFrameEventDetail>).detail;
-      const objectUrl = URL.createObjectURL(blob);
-      const frame = new window.Image();
-      frame.src = objectUrl;
+  const applyPlaybackRate = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
 
-      try {
-        await frame.decode();
-        if (!active) {
-          URL.revokeObjectURL(objectUrl);
-          return;
-        }
+    video.defaultPlaybackRate = HOME_INTRO_TIMING.playbackRate;
+    video.playbackRate = HOME_INTRO_TIMING.playbackRate;
+  }, []);
 
-        if (finalFrameUrlRef.current) URL.revokeObjectURL(finalFrameUrlRef.current);
-        finalFrameUrlRef.current = objectUrl;
-        setFinalFrameUrl(objectUrl);
-      } catch (error) {
-        URL.revokeObjectURL(objectUrl);
-        if (process.env.NODE_ENV === "development") {
-          console.error("[HeroSection] No se pudo preparar el último fotograma capturado.", error);
-        }
-        window.dispatchEvent(new Event(HOME_INTRO_EVENTS.finalFrameReady));
+  const startVideo = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    applyPlaybackRate();
+    void video.play().catch((error) => {
+      if (process.env.NODE_ENV === "development") {
+        console.error("[HeroSection] No se pudo reproducir el video de apertura.", error);
       }
-    };
+      revealHero();
+      setVideoEnded(true);
+    });
+  }, [applyPlaybackRate, revealHero]);
 
-    window.addEventListener(HOME_INTRO_EVENTS.finalFrame, handleFinalFrame);
-
-    return () => {
-      active = false;
-      window.removeEventListener(HOME_INTRO_EVENTS.finalFrame, handleFinalFrame);
-      if (finalFrameUrlRef.current) URL.revokeObjectURL(finalFrameUrlRef.current);
-      finalFrameUrlRef.current = null;
-    };
+  useEffect(() => {
+    const advisorImage = new window.Image();
+    advisorImage.src = HERO_ADVISOR_ASSET;
   }, []);
 
   useEffect(() => {
-    if (!finalFrameUrl) return;
-
-    let secondFrame = 0;
-    const firstFrame = window.requestAnimationFrame(() => {
-      secondFrame = window.requestAnimationFrame(() => {
-        window.dispatchEvent(new Event(HOME_INTRO_EVENTS.finalFrameReady));
-      });
-    });
+    document.body.classList.add("loader-open");
+    document.body.classList.remove("intro-complete");
+    startVideo();
 
     return () => {
-      window.cancelAnimationFrame(firstFrame);
-      window.cancelAnimationFrame(secondFrame);
+      videoRef.current?.pause();
+      document.body.classList.remove("loader-open", "intro-complete");
     };
-  }, [finalFrameUrl]);
+  }, [startVideo]);
+
+  useEffect(() => {
+    const detail: IntroStateEventDetail = { phase, logoHidden, complete: videoEnded };
+    window.dispatchEvent(new CustomEvent<IntroStateEventDetail>(HOME_INTRO_STATE_EVENT, { detail }));
+  }, [logoHidden, phase, videoEnded]);
+
+  useEffect(() => {
+    if (!videoEnded) return;
+    revealHero();
+    window.dispatchEvent(new Event("irp:intro-complete"));
+  }, [revealHero, videoEnded]);
+
+  const handleTimeUpdate = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (
+      phase === "playing"
+      && video.currentTime >= HOME_INTRO_TIMING.logoDockAtVideoSeconds
+    ) {
+      setPhase("logo-docking");
+    }
+
+    if (
+      Number.isFinite(video.duration)
+      && video.duration > 0
+      && video.currentTime >= video.duration - HOME_INTRO_TIMING.heroRevealLeadSeconds
+    ) {
+      revealHero();
+    }
+  };
+
+  const handleEnded = () => setVideoEnded(true);
 
   return (
     <section ref={sectionRef} className="irp-hero" id="inicio">
       <motion.div className="irp-hero__media" style={reduceMotion ? undefined : { y: mediaY }}>
         <div className="irp-hero__media-frame">
-          {finalFrameUrl && (
-            <img
-              className="irp-hero__final-frame"
-              src={finalFrameUrl}
-              alt="Casa moderna con acceso vehicular automatizado abierto"
-              decoding="sync"
-            />
-          )}
+          <video
+            ref={videoRef}
+            className="irp-hero__video"
+            src={HOME_INTRO_ASSETS.video}
+            preload="auto"
+            autoPlay
+            muted
+            playsInline
+            disablePictureInPicture
+            tabIndex={-1}
+            aria-label="Acceso automatizado abriéndose hacia una casa moderna"
+            onLoadedMetadata={applyPlaybackRate}
+            onPlaying={applyPlaybackRate}
+            onTimeUpdate={handleTimeUpdate}
+            onEnded={handleEnded}
+          />
         </div>
       </motion.div>
       <div className="irp-hero__cinema" />
       <motion.div className="irp-hero__ambient" style={reduceMotion ? undefined : { x: glowX }} />
+
+      {(phase === "hero-reveal" || videoEnded) && (
+        <motion.div
+          className="irp-hero__advisor"
+          initial={{ opacity: 0, x: 280, y: 24, scale: .965, filter: "blur(14px)", clipPath: "inset(0 0 0 100% round 24px)" }}
+          animate={{ opacity: 1, x: 0, y: 0, scale: 1, filter: "blur(0px)", clipPath: "inset(0 0 0 0% round 24px)" }}
+          transition={{
+            duration: reduceMotion ? .65 : 1.85,
+            delay: reduceMotion ? .04 : .28,
+            ease: [0.16, 1, 0.3, 1]
+          }}
+        >
+          <Image
+            src={HERO_ADVISOR_ASSET}
+            alt="Asesor de Industrial Remotos Perú listo para orientar tu proyecto"
+            width={1086}
+            height={1448}
+            sizes="(max-width: 767px) 215px, (max-width: 1080px) 430px, 680px"
+            unoptimized
+          />
+        </motion.div>
+      )}
 
       <div className="irp-shell irp-hero__layout">
         <div className="irp-hero__content">

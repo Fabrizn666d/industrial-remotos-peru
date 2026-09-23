@@ -1,60 +1,183 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "framer-motion";
-import { BadgeCheck, ClipboardCheck, PenLine, Ruler, Wrench } from "lucide-react";
-import { useRef } from "react";
+import { motion, type Variants } from "framer-motion";
+import {
+  ArrowRight,
+  BadgeCheck,
+  ClipboardCheck,
+  Cog,
+  PencilRuler,
+  Settings2,
+  ShieldCheck,
+  Wrench
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
+import styles from "./StatsWaveSection.module.css";
 
-const stats = [
-  { icon: ClipboardCheck, title: "Asesoría", label: "Entendemos el espacio y el uso" },
-  { icon: PenLine, title: "Diseño", label: "Definimos sistema y materiales" },
-  { icon: Ruler, title: "Fabricación", label: "Desarrollamos cada solución a medida" },
-  { icon: Wrench, title: "Instalación", label: "Montaje y puesta en marcha" }
-];
+const PROCESS_ASSETS = {
+  desktopBackground: "/NUEVO/C/ChatGPT Image 22 sept 2026, 09_11_53.png",
+  mobileBackground: "/NUEVO/C/ChatGPT Image 22 sept 2026, 09_24_15.png"
+} as const;
+
+const steps = [
+  {
+    number: "01",
+    title: "Asesoría",
+    description: "Entendemos el espacio y el objetivo del proyecto.",
+    icon: ClipboardCheck,
+    image: "/NUEVO/A/ChatGPT Image 21 sept 2026, 20_19_53 (6).png",
+    imagePosition: "center"
+  },
+  {
+    number: "02",
+    title: "Diseño",
+    description: "Definimos sistema, materiales y solución a medida.",
+    icon: PencilRuler,
+    image: "/NUEVO/A/ChatGPT Image 21 sept 2026, 20_19_52 (2).png",
+    imagePosition: "center"
+  },
+  {
+    number: "03",
+    title: "Fabricación",
+    description: "Desarrollamos cada componente con precisión.",
+    icon: Cog,
+    image: "/NUEVO/A/ChatGPT Image 21 sept 2026, 20_19_53 (4).png",
+    imagePosition: "center 42%"
+  },
+  {
+    number: "04",
+    title: "Instalación",
+    description: "Montaje, pruebas y entrega final con respaldo.",
+    icon: Wrench,
+    image: "/NUEVO/A/ChatGPT Image 21 sept 2026, 20_19_52 (1).png",
+    imagePosition: "center 58%"
+  }
+] as const;
+
+const benefits = [
+  { icon: ShieldCheck, firstLine: "Calidad", secondLine: "en cada etapa" },
+  { icon: Settings2, firstLine: "Coordinación", secondLine: "total del proceso" },
+  { icon: BadgeCheck, firstLine: "Resultados", secondLine: "que generan confianza" }
+] as const;
 
 export function StatsWaveSection() {
-  const sectionRef = useRef<HTMLElement>(null);
   const reduceMotion = usePrefersReducedMotion();
-  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start end", "end start"] });
-  const waveBackY = useTransform(scrollYProgress, [0, 1], [8, -18]);
-  const waveFrontY = useTransform(scrollYProgress, [0, 1], [2, -8]);
-  const haloX = useTransform(scrollYProgress, [0, 1], [-10, 18]);
+  const duration = reduceMotion ? 0 : 0.72;
+  const easing = [0.16, 1, 0.3, 1] as const;
+
+  const fadeUp: Variants = {
+    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration, ease: easing } }
+  };
+  const stepList: Variants = {
+    hidden: {},
+    visible: {
+      transition: {
+        delayChildren: reduceMotion ? 0 : 0.25,
+        staggerChildren: reduceMotion ? 0 : 0.1
+      }
+    }
+  };
+  const stepReveal: Variants = {
+    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 32, scale: 0.96 },
+    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: reduceMotion ? 0 : 0.78, ease: easing } }
+  };
 
   return (
-    <section ref={sectionRef} className="irp-stats" aria-label="Cómo desarrollamos cada proyecto">
-      <motion.svg className="irp-stats__shape irp-stats__shape--back" viewBox="0 0 1600 500" preserveAspectRatio="none" style={reduceMotion ? undefined : { y: waveBackY }} aria-hidden="true">
-        <path d="M0 134C116 2 233 0 354 96c132 106 284 111 425 13 140-98 273-98 400 10 142 120 297 103 421-48v342c-158 105-343 35-523 42-251 10-416 104-659 40C256 448 113 481 0 431Z" />
-      </motion.svg>
-      <motion.svg className="irp-stats__shape irp-stats__shape--front" viewBox="0 0 1600 500" preserveAspectRatio="none" style={reduceMotion ? undefined : { y: waveFrontY }} aria-hidden="true">
-        <path d="M0 112C116 0 232 0 350 88c134 100 280 106 420 10 143-96 275-96 401 9 141 117 290 102 429-46v350c-156 101-334 35-511 39-249 7-414 96-655 35C262 446 117 472 0 420Z" />
-      </motion.svg>
-      <svg className="irp-stats__top-wave" viewBox="0 0 1600 260" preserveAspectRatio="none" aria-hidden="true">
-        <path d="M0 0h1600v54c-183-24-360-19-554 1-260 27-470 44-719 3C461 16 225 12 0 55Z" />
-      </svg>
-      <motion.div className="irp-stats__halo" style={reduceMotion ? undefined : { x: haloX }} aria-hidden="true" />
-      <div className="irp-stats__grid" aria-hidden="true" />
-      <svg className="irp-stats__surface" viewBox="0 0 1600 300" preserveAspectRatio="none" aria-hidden="true">
-        <path d="M0 42c201-9 371 6 560 13 220 9 458 1 640-12 194-14 311-12 400 3v254H0Z" />
-      </svg>
-      <div className="irp-shell irp-stats__content">
-        <div className="irp-stats__intro">
-          <BadgeCheck size={19} />
-          <span>Un proceso técnico de principio a fin</span>
-        </div>
-        <div className="irp-stats__items">
-          {stats.map(({ icon: Icon, title, label }, index) => (
-            <article key={label}>
-              <small>0{index + 1}</small>
-              <i><Icon size={21} /></i>
-              <strong>{title}</strong>
-              <p>{label}</p>
-            </article>
-          ))}
-        </div>
+    <motion.section
+      id="proceso"
+      className={styles.section}
+      aria-labelledby="process-title"
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.12 }}
+    >
+      <div className={styles.background} aria-hidden="true">
+        <img className={styles.backgroundDesktop} src={PROCESS_ASSETS.desktopBackground} alt="" />
+        <img className={styles.backgroundMobile} src={PROCESS_ASSETS.mobileBackground} alt="" />
       </div>
-      <svg className="irp-stats__bottom-wave" viewBox="0 0 1600 60" preserveAspectRatio="none" aria-hidden="true">
-        <path d="M0 0H1600V20C1430 12 1280 47 1060 39C830 31 655 18 450 33C265 47 112 52 0 38Z" />
-      </svg>
-    </section>
+
+      <span className={styles.leftNote} aria-hidden="true">
+        Tecnología<br />Seguridad<br />Confianza
+      </span>
+      <span className={styles.rightNote} aria-hidden="true">
+        Soluciones<br />que se hacen realidad
+      </span>
+
+      <div className={styles.content}>
+        <header className={styles.header}>
+          <motion.span className={styles.kicker} variants={fadeUp}>De la idea a la instalación</motion.span>
+          <motion.i className={styles.kickerLine} variants={fadeUp} aria-hidden="true" />
+          <motion.h2 id="process-title" variants={fadeUp}>
+            Así convertimos tu proyecto<br />en una <span>solución instalada</span>
+          </motion.h2>
+          <motion.p variants={fadeUp}>
+            Un proceso claro, coordinado y enfocado en la calidad, para que tú solo te preocupes por disfrutar el resultado.
+          </motion.p>
+        </header>
+
+        <motion.div className={styles.steps} variants={stepList}>
+          <motion.div
+            className={styles.connector}
+            variants={{
+              hidden: reduceMotion ? { scaleX: 1, opacity: 1 } : { scaleX: 0, opacity: 0 },
+              visible: { scaleX: 1, opacity: 1, transition: { delay: reduceMotion ? 0 : 0.32, duration: reduceMotion ? 0 : 0.85, ease: easing } }
+            }}
+            aria-hidden="true"
+          >
+            <i /><i /><i />
+          </motion.div>
+
+          {steps.map(({ number, title, description, icon: Icon, image, imagePosition }) => (
+            <motion.article className={styles.step} variants={stepReveal} key={number}>
+              <motion.span
+                className={styles.number}
+                variants={{
+                  hidden: reduceMotion ? { scale: 1 } : { scale: 0.8 },
+                  visible: { scale: 1, transition: { duration: reduceMotion ? 0 : 0.62, ease: easing } }
+                }}
+              >
+                {number}
+              </motion.span>
+              <div className={styles.card}>
+                <div className={styles.cardCopy}>
+                  <Icon className={styles.icon} aria-hidden="true" />
+                  <div>
+                    <h3>{title}</h3>
+                    <p>{description}</p>
+                  </div>
+                </div>
+                <div className={styles.cardMedia}>
+                  <Image
+                    src={image}
+                    alt=""
+                    fill
+                    sizes="(min-width: 1101px) 330px, (min-width: 768px) 44vw, calc(100vw - 64px)"
+                    style={{ objectPosition: imagePosition }}
+                  />
+                  <span aria-hidden="true" />
+                </div>
+              </div>
+            </motion.article>
+          ))}
+        </motion.div>
+
+        <motion.div className={styles.footer} variants={fadeUp}>
+          <div className={styles.benefits}>
+            {benefits.map(({ icon: Icon, firstLine, secondLine }) => (
+              <div className={styles.benefit} key={firstLine}>
+                <Icon aria-hidden="true" />
+                <p><strong>{firstLine}</strong><span>{secondLine}</span></p>
+              </div>
+            ))}
+          </div>
+          <Link className={styles.cta} href="/cotizar">
+            Hablemos de tu proyecto <ArrowRight aria-hidden="true" />
+          </Link>
+        </motion.div>
+      </div>
+    </motion.section>
   );
 }

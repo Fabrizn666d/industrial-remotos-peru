@@ -1,189 +1,96 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 
 export const HOME_INTRO_ASSETS = {
   logo: "/NUEVO/ChatGPT Image 19 sept 2026, 19_13_22.png",
   video: "/NUEVO/Garage_door_opening_transition_1080p_20260921110657.mp4"
 } as const;
 
-export const HOME_INTRO_EVENTS = {
-  finalFrame: "irp:final-frame",
-  finalFrameReady: "irp:final-frame-ready"
+export const HOME_INTRO_TIMING = {
+  playbackRate: 1,
+  logoDockAtVideoSeconds: 1,
+  logoDockMs: 1500,
+  logoFadeMs: 720,
+  heroRevealLeadSeconds: 3.8
 } as const;
 
-export type FinalFrameEventDetail = {
-  blob: Blob;
+export const HOME_INTRO_STATE_EVENT = "irp:intro-state";
+
+export type IntroStateEventDetail = {
+  phase: "playing" | "logo-docking" | "hero-reveal";
+  logoHidden: boolean;
+  complete: boolean;
 };
-
-// Tiempos centrales de la secuencia para poder afinarlos sin tocar la lógica.
-const INTRO_TIMING = {
-  playbackRate: 1.4,
-  logoFadeAtVideoSeconds: 1.8,
-  logoFadeMs: 1000,
-  heroRevealLeadSeconds: 3.4,
-  finalCrossfadeMs: 600
-} as const;
-
-type LoaderPhase = "playing" | "hero-reveal" | "finished";
 
 export function IntroLoader() {
   const pathname = usePathname();
   const isHome = pathname === "/";
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const finishingRef = useRef(false);
   const [visible, setVisible] = useState(isHome);
-  const [phase, setPhase] = useState<LoaderPhase>("playing");
+  const [phase, setPhase] = useState<IntroStateEventDetail["phase"]>("playing");
   const [logoHidden, setLogoHidden] = useState(false);
-
-  const revealHero = useCallback(() => {
-    setLogoHidden(true);
-    setPhase((current) => current === "playing" ? "hero-reveal" : current);
-    document.body.classList.remove("loader-open");
-    document.body.classList.add("intro-complete");
-  }, []);
-
-  const showRealVideoError = useCallback((error: unknown) => {
-    if (process.env.NODE_ENV === "development") {
-      console.error("[IntroLoader] No se pudo reproducir el video de apertura.", error);
-    }
-
-    document.body.classList.remove("loader-open");
-    document.body.classList.add("intro-complete");
-    setLogoHidden(true);
-    setPhase("finished");
-  }, []);
-
-  const startVideo = useCallback(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    video.defaultPlaybackRate = INTRO_TIMING.playbackRate;
-    video.playbackRate = INTRO_TIMING.playbackRate;
-    void video.play().catch(showRealVideoError);
-  }, [showRealVideoError]);
+  const [logoDockStyles, setLogoDockStyles] = useState<CSSProperties>({});
+  const brandRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isHome) {
       setVisible(false);
-      document.body.classList.remove("loader-open", "intro-complete");
       return;
     }
 
+    setVisible(true);
     setPhase("playing");
     setLogoHidden(false);
-    finishingRef.current = false;
-    setVisible(true);
+
+    const handleIntroState = (event: Event) => {
+      const detail = (event as CustomEvent<IntroStateEventDetail>).detail;
+      setPhase(detail.phase);
+      setLogoHidden(detail.logoHidden);
+      if (detail.complete) setVisible(false);
+    };
+
+    window.addEventListener(HOME_INTRO_STATE_EVENT, handleIntroState);
+    return () => window.removeEventListener(HOME_INTRO_STATE_EVENT, handleIntroState);
   }, [isHome]);
 
   useEffect(() => {
-    if (!isHome || !visible) return;
+    if (phase === "playing") return;
 
-    document.body.classList.add("loader-open");
-    document.body.classList.remove("intro-complete");
-    startVideo();
+    const updateLogoTarget = () => {
+      const brand = brandRef.current;
+      const target = document.querySelector<HTMLElement>(".site-header__logo");
+      if (!brand || !target) return;
 
-    return () => {
-      videoRef.current?.pause();
-      document.body.classList.remove("loader-open");
+      const targetRect = target.getBoundingClientRect();
+      const header = target.closest<HTMLElement>(".site-header");
+      const headerTransform = header ? window.getComputedStyle(header).transform : "none";
+      const matrix = headerTransform === "none" ? null : new DOMMatrixReadOnly(headerTransform);
+      const targetCenterX = targetRect.left + targetRect.width / 2 - (matrix?.m41 ?? 0);
+      const targetCenterY = targetRect.top + targetRect.height / 2 - (matrix?.m42 ?? 0);
+      const scale = Math.min(
+        targetRect.width / brand.offsetWidth,
+        targetRect.height / brand.offsetHeight
+      ) * 1.5;
+
+      setLogoDockStyles({
+        "--intro-logo-x": `${targetCenterX - window.innerWidth / 2}px`,
+        "--intro-logo-y": `${targetCenterY - window.innerHeight / 2}px`,
+        "--intro-logo-scale": scale
+      } as CSSProperties);
     };
-  }, [isHome, startVideo, visible]);
 
-  useEffect(() => {
-    if (phase !== "finished") return;
-
-    const unmountTimer = window.setTimeout(() => {
-      setVisible(false);
-      window.dispatchEvent(new Event("irp:intro-complete"));
-    }, INTRO_TIMING.finalCrossfadeMs);
-
-    return () => window.clearTimeout(unmountTimer);
+    updateLogoTarget();
+    window.addEventListener("resize", updateLogoTarget);
+    return () => window.removeEventListener("resize", updateLogoTarget);
   }, [phase]);
-
-  const applyPlaybackRate = () => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    video.defaultPlaybackRate = INTRO_TIMING.playbackRate;
-    video.playbackRate = INTRO_TIMING.playbackRate;
-  };
-
-  const handleTimeUpdate = () => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    if (video.currentTime >= INTRO_TIMING.logoFadeAtVideoSeconds) {
-      setLogoHidden(true);
-    }
-
-    if (
-      Number.isFinite(video.duration)
-      && video.duration > 0
-      && video.currentTime >= video.duration - INTRO_TIMING.heroRevealLeadSeconds
-    ) {
-      revealHero();
-    }
-  };
-
-  const captureFinalFrame = useCallback(async (video: HTMLVideoElement) => {
-    await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
-
-    const canvas = document.createElement("canvas");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-
-    const context = canvas.getContext("2d");
-    if (!context || canvas.width === 0 || canvas.height === 0) {
-      throw new Error("No fue posible preparar la captura del último fotograma.");
-    }
-
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    const blob = await new Promise<Blob>((resolve, reject) => {
-      canvas.toBlob(
-        (result) => result ? resolve(result) : reject(new Error("El último fotograma no produjo una imagen válida.")),
-        "image/jpeg",
-        0.96
-      );
-    });
-
-    await new Promise<void>((resolve) => {
-      window.addEventListener(HOME_INTRO_EVENTS.finalFrameReady, () => resolve(), { once: true });
-      window.dispatchEvent(new CustomEvent<FinalFrameEventDetail>(HOME_INTRO_EVENTS.finalFrame, {
-        detail: { blob }
-      }));
-    });
-  }, []);
-
-  const handleEnded = async () => {
-    if (finishingRef.current) return;
-    finishingRef.current = true;
-
-    revealHero();
-    const video = videoRef.current;
-
-    try {
-      if (!video) throw new Error("El elemento de video no está disponible para capturar su último fotograma.");
-      await captureFinalFrame(video);
-    } catch (error) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("[IntroLoader] No se pudo capturar el último fotograma del video.", error);
-      }
-    } finally {
-      setPhase("finished");
-    }
-  };
-
-  const handleVideoElementError = () => {
-    showRealVideoError(videoRef.current?.error ?? new Error("Error desconocido del elemento video"));
-  };
 
   if (!isHome || !visible) return null;
 
   const timingStyles = {
-    "--intro-logo-fade": `${INTRO_TIMING.logoFadeMs}ms`,
-    "--intro-exit-duration": `${INTRO_TIMING.finalCrossfadeMs}ms`
+    ...logoDockStyles,
+    "--intro-logo-dock": `${HOME_INTRO_TIMING.logoDockMs}ms`,
+    "--intro-logo-fade": `${HOME_INTRO_TIMING.logoFadeMs}ms`
   } as CSSProperties;
 
   return (
@@ -194,27 +101,8 @@ export function IntroLoader() {
       aria-live="polite"
       role="status"
     >
-      <div className="irp-entry-loader__scene" aria-hidden="true">
-        <video
-          ref={videoRef}
-          className="irp-entry-loader__video"
-          src={HOME_INTRO_ASSETS.video}
-          preload="auto"
-          autoPlay
-          muted
-          playsInline
-          disablePictureInPicture
-          tabIndex={-1}
-          onLoadedMetadata={applyPlaybackRate}
-          onPlaying={applyPlaybackRate}
-          onTimeUpdate={handleTimeUpdate}
-          onEnded={handleEnded}
-          onError={handleVideoElementError}
-        />
-      </div>
-
       <div className="irp-entry-loader__brand-stage" aria-hidden="true">
-        <div className="irp-entry-loader__brand">
+        <div ref={brandRef} className="irp-entry-loader__brand">
           <img
             className="irp-entry-loader__logo"
             src={HOME_INTRO_ASSETS.logo}

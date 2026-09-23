@@ -1,0 +1,460 @@
+.section {
+  position: relative;
+  z-index: 7;
+  width: 100%;
+  aspect-ratio: 1672 / 941;
+  overflow: hidden;
+  background: #f7faff;
+  color: #0a1733;
+  isolation: isolate;
+  scroll-margin-top: 92px;
+}
+
+.shell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.scene {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+}
+
+.sceneArtwork {
+  position: absolute;
+  inset: -6px;
+}
+
+.desktopScene,
+.mobileScene {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  user-select: none;
+  pointer-events: none;
+}
+
+.mobileScene { display: none; }
+
+.intro {
+  position: relative;
+  z-index: 4;
+  width: 30%;
+  max-width: 500px;
+  padding-top: clamp(108px, 8.4vw, 162px);
+  margin-left: clamp(48px, 4.8vw, 92px);
+}
+
+.kicker {
+  display: block;
+  color: #1570ff;
+  font-size: clamp(10px, .68vw, 13px);
+  font-weight: 800;
+  letter-spacing: .26em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.kickerLine {
+  display: block;
+  width: 38px;
+  height: 2px;
+  margin: 13px 0 20px;
+  background: #1570ff;
+  box-shadow: 0 0 12px rgba(21, 112, 255, .22);
+}
+
+.intro h2 {
+  margin: 0;
+  color: #07152f;
+  font-size: clamp(39px, 3.35vw, 64px);
+  font-weight: 790;
+  letter-spacing: -.062em;
+  line-height: .98;
+}
+
+.intro h2 span { color: #1570ff; }
+
+.intro > p {
+  max-width: 475px;
+  margin: 20px 0 0;
+  color: #60718c;
+  font-size: clamp(13px, .88vw, 17px);
+  line-height: 1.55;
+}
+
+.primaryCta {
+  display: inline-flex;
+  min-height: 52px;
+  align-items: center;
+  justify-content: center;
+  gap: 13px;
+  margin-top: clamp(22px, 1.7vw, 33px);
+  border-radius: 999px;
+  background: linear-gradient(108deg, #0964e8, #1595ff);
+  padding: 0 27px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 760;
+  box-shadow: 0 15px 30px rgba(13, 108, 231, .23);
+  transition: box-shadow 380ms ease, transform 380ms cubic-bezier(.16, 1, .3, 1);
+}
+
+.primaryCta svg {
+  width: 17px;
+  transition: transform 380ms cubic-bezier(.16, 1, .3, 1);
+}
+
+.desktopSelector {
+  display: grid;
+  gap: clamp(6px, .55vw, 10px);
+  margin-top: clamp(24px, 2vw, 38px);
+}
+
+.desktopSelector button {
+  display: grid;
+  width: 100%;
+  min-height: clamp(43px, 3vw, 57px);
+  grid-template-columns: 27px minmax(0, 1fr) 17px;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(124, 159, 198, .2);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .66);
+  padding: 0 15px 0 17px;
+  color: #60718d;
+  text-align: left;
+  box-shadow: 0 7px 20px rgba(32, 82, 130, .045);
+  backdrop-filter: blur(7px);
+  cursor: pointer;
+  transition: color 320ms ease, border-color 320ms ease, background-color 320ms ease, box-shadow 320ms ease, transform 320ms cubic-bezier(.16, 1, .3, 1);
+}
+
+.desktopSelector button::before {
+  position: absolute;
+  top: 9px;
+  bottom: 9px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 4px 4px 0;
+  background: #1570ff;
+  opacity: 0;
+  content: "";
+  transform: scaleY(.35);
+  transition: opacity 320ms ease, transform 320ms cubic-bezier(.16, 1, .3, 1);
+}
+
+.desktopSelector button { position: relative; }
+.desktopSelector button > svg:first-child { width: 23px; height: 23px; stroke-width: 1.65; }
+.desktopSelector button > svg:last-child { width: 16px; height: 16px; justify-self: end; opacity: .65; }
+.desktopSelector button span { min-width: 0; font-size: clamp(11px, .72vw, 14px); font-weight: 690; line-height: 1.2; }
+
+.desktopSelector button:hover,
+.desktopSelector button:focus-visible,
+.desktopSelector .activeOption {
+  border-color: rgba(21, 112, 255, .29);
+  background: rgba(237, 246, 255, .91);
+  color: #0a2855;
+  box-shadow: 0 10px 24px rgba(29, 92, 163, .08);
+  transform: translateX(3px);
+}
+
+.desktopSelector .activeOption::before { opacity: 1; transform: scaleY(1); }
+.desktopSelector .activeOption > svg { color: #1570ff; opacity: 1; }
+.desktopSelector button:focus-visible { outline: 3px solid rgba(21, 112, 255, .24); outline-offset: 2px; }
+
+.hotspot {
+  position: absolute;
+  z-index: 5;
+  top: var(--desktop-y);
+  left: var(--desktop-x);
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: #157cff;
+  padding: 0;
+  box-shadow: 0 0 0 5px rgba(21, 124, 255, .12), 0 7px 18px rgba(4, 84, 193, .28);
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  transition: box-shadow 320ms ease, transform 320ms cubic-bezier(.16, 1, .3, 1), opacity 320ms ease;
+}
+
+.hotspot::before {
+  position: absolute;
+  inset: -9px;
+  border: 1px solid rgba(21, 124, 255, .42);
+  border-radius: 50%;
+  content: "";
+  opacity: .42;
+  animation: hotspot-pulse 2.4s ease-out infinite;
+}
+
+.hotspot span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.hotspot:hover,
+.hotspot:focus-visible,
+.activeHotspot {
+  z-index: 8;
+  box-shadow: 0 0 0 7px rgba(21, 124, 255, .16), 0 8px 25px rgba(4, 84, 193, .42);
+  transform: translate(-50%, -50%) scale(1.12);
+}
+
+.hotspot:focus-visible { outline: 3px solid rgba(255, 255, 255, .95); outline-offset: 5px; }
+
+.secondaryDoor {
+  top: 62%;
+  left: 65%;
+  width: 18px;
+  height: 18px;
+  border-width: 2px;
+  opacity: .42;
+}
+
+.secondaryDoor svg { width: 10px; height: 10px; color: #fff; }
+.secondaryDoor::before { inset: -7px; }
+.secondaryDoor.activeHotspot { opacity: .92; }
+
+.floatingCard {
+  position: absolute;
+  z-index: 7;
+  display: grid;
+  width: clamp(250px, 17.5vw, 330px);
+  grid-template-columns: 39px minmax(0, 1fr);
+  gap: 14px;
+  border: 1px solid rgba(118, 166, 219, .28);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, .93);
+  padding: 18px;
+  color: #0a1733;
+  box-shadow: 0 20px 50px rgba(18, 62, 108, .17);
+  backdrop-filter: blur(13px);
+}
+
+.floatingCard[data-position="doors"] { top: 66%; left: 42%; }
+.floatingCard[data-position="railing"] { top: 46%; left: 43%; }
+.floatingCard[data-position="windows"] { top: 47%; left: 69%; }
+.floatingCard[data-position="roof"] { top: 26%; left: 59%; }
+.floatingCard[data-position="fence"] { top: 27%; right: 4%; }
+.floatingCard[data-position="drywall"] { top: 60%; right: 5%; }
+
+.floatingCard > svg {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #eaf3ff;
+  padding: 7px;
+  color: #1570ff;
+  stroke-width: 1.75;
+}
+
+.floatingCard h3,
+.mobileCard h3 {
+  margin: 1px 0 0;
+  font-size: clamp(14px, 1vw, 18px);
+  font-weight: 760;
+  letter-spacing: -.03em;
+  line-height: 1.15;
+}
+
+.floatingCard p,
+.mobileCard p {
+  margin: 8px 0 0;
+  color: #65758c;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.floatingCard small,
+.mobileCard small {
+  display: block;
+  margin-top: 7px;
+  color: #526781;
+  font-size: 9px;
+  font-weight: 620;
+  line-height: 1.45;
+}
+
+.floatingCard a,
+.mobileCard a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 12px;
+  color: #126dea;
+  font-size: 10px;
+  font-weight: 780;
+  text-transform: uppercase;
+}
+
+.floatingCard a svg,
+.mobileCard a svg { width: 14px; transition: transform 320ms ease; }
+.floatingCard a:hover svg,
+.mobileCard a:hover svg { transform: translateX(4px); }
+
+.mobileControls { display: none; }
+
+.primaryCta:hover { box-shadow: 0 19px 38px rgba(13, 108, 231, .3); transform: translateY(-2px); }
+.primaryCta:hover svg { transform: translateX(4px); }
+.primaryCta:focus-visible { outline: 3px solid rgba(21, 112, 255, .3); outline-offset: 4px; }
+
+@keyframes hotspot-pulse {
+  0% { opacity: .42; transform: scale(.75); }
+  70%, 100% { opacity: 0; transform: scale(1.35); }
+}
+
+@media (max-width: 1450px) {
+  .intro { width: 29%; margin-left: 46px; padding-top: 86px; }
+  .intro h2 { font-size: clamp(37px, 3.3vw, 49px); }
+  .intro > p { margin-top: 15px; font-size: 13px; }
+  .primaryCta { min-height: 47px; margin-top: 18px; }
+  .desktopSelector { margin-top: 20px; }
+  .desktopSelector button { min-height: 44px; }
+  .floatingCard { width: 255px; padding: 14px; }
+}
+
+@media (max-width: 1100px) {
+  .section {
+    aspect-ratio: auto;
+    overflow: hidden;
+    padding: 105px 0 92px;
+    background: linear-gradient(180deg, #f8fbff, #edf5ff);
+  }
+
+  .shell { width: min(calc(100% - 48px), 960px); height: auto; margin-inline: auto; }
+  .intro { width: 100%; max-width: 760px; margin: 0 auto; padding: 0; text-align: center; }
+  .kickerLine { margin-inline: auto; }
+  .intro h2 { font-size: clamp(44px, 6.3vw, 62px); }
+  .intro > p { max-width: 680px; margin-inline: auto; font-size: 15px; }
+  .primaryCta { margin-top: 25px; }
+  .desktopSelector { display: none; }
+
+  .scene {
+    position: relative;
+    aspect-ratio: 1672 / 941;
+    margin-top: 44px;
+    border: 1px solid rgba(84, 137, 194, .12);
+    border-radius: 28px;
+    background: #eaf3ff;
+    box-shadow: 0 24px 62px rgba(20, 70, 122, .13);
+  }
+
+  .sceneArtwork { inset: 0; }
+  .floatingCard { display: none; }
+  .mobileControls { display: block; margin-top: 24px; }
+
+  .mobileSelector {
+    display: flex;
+    gap: 9px;
+    overflow-x: auto;
+    padding: 2px 2px 10px;
+    scrollbar-width: none;
+    scroll-snap-type: x mandatory;
+  }
+
+  .mobileSelector::-webkit-scrollbar { display: none; }
+
+  .mobileSelector button {
+    display: inline-flex;
+    min-height: 46px;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #d5e3f3;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .84);
+    padding: 0 16px;
+    color: #5e6f88;
+    font-size: 11px;
+    font-weight: 730;
+    scroll-snap-align: start;
+  }
+
+  .mobileSelector button svg { width: 17px; height: 17px; }
+  .mobileSelector .activeMobileOption { border-color: rgba(21, 112, 255, .35); background: #e7f2ff; color: #0a58c5; }
+
+  .mobileCard {
+    display: grid;
+    min-height: 150px;
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 16px;
+    margin-top: 12px;
+    border: 1px solid rgba(108, 157, 207, .18);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, .88);
+    padding: 22px;
+    box-shadow: 0 17px 42px rgba(24, 72, 119, .09);
+  }
+
+  .mobileCard > svg { width: 43px; height: 43px; border-radius: 13px; background: #e9f3ff; padding: 9px; color: #1570ff; }
+  .mobileCard h3 { font-size: 18px; }
+  .mobileCard p { max-width: 680px; font-size: 12px; }
+}
+
+@media (max-width: 767px) {
+  .section { padding: 88px 0 78px; scroll-margin-top: 78px; }
+  .shell { width: min(calc(100% - 28px), 470px); }
+  .intro { max-width: 420px; }
+  .kicker { font-size: 10px; letter-spacing: .22em; }
+  .kickerLine { width: 34px; margin: 11px auto 17px; }
+  .intro h2 { font-size: clamp(36px, 10.5vw, 49px); line-height: .98; }
+  .intro h2 br { display: none; }
+  .intro h2 span { display: block; }
+  .intro > p { max-width: 390px; margin-top: 17px; font-size: 13px; line-height: 1.5; }
+  .primaryCta { min-height: 49px; margin-top: 23px; padding-inline: 23px; }
+
+  .scene {
+    aspect-ratio: 941 / 1672;
+    margin-top: 33px;
+    border-radius: 24px;
+  }
+
+  .desktopScene { display: none; }
+  .mobileScene { display: block; }
+
+  .hotspot {
+    top: var(--mobile-y);
+    left: var(--mobile-x);
+    width: 28px;
+    height: 28px;
+  }
+
+  .secondaryDoor { top: 68%; left: 60%; width: 22px; height: 22px; opacity: .48; }
+  .secondaryDoor svg { width: 12px; height: 12px; }
+  .mobileControls { margin-top: 20px; }
+  .mobileSelector { margin-inline: -14px; padding-inline: 14px; }
+  .mobileSelector button { min-height: 44px; padding-inline: 14px; }
+  .mobileCard { min-height: 0; grid-template-columns: 42px minmax(0, 1fr); gap: 13px; padding: 19px; border-radius: 20px; }
+  .mobileCard > svg { width: 39px; height: 39px; }
+  .mobileCard h3 { font-size: 17px; }
+  .mobileCard p { font-size: 11.5px; }
+  .mobileCard a { margin-top: 10px; }
+}
+
+@media (hover: none) {
+  .primaryCta:hover,
+  .primaryCta:hover svg,
+  .desktopSelector button:hover { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hotspot::before { animation: none; }
+  .primaryCta,
+  .primaryCta svg,
+  .desktopSelector button,
+  .hotspot,
+  .floatingCard a svg,
+  .mobileCard a svg { transition-duration: .01ms !important; }
+}

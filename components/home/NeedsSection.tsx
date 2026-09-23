@@ -1,52 +1,202 @@
 "use client";
 
-import { Bot, Facebook, Instagram, MessageCircle } from "lucide-react";
+import { motion, type Variants } from "framer-motion";
+import { ArrowRight, Cog, PencilRuler, UserRoundCheck, Wrench } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { SolutionSelector } from "@/components/home/SolutionSelector";
-import { siteConfig } from "@/data/site";
+import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import styles from "./NeedsSection.module.css";
 
+const services = [
+  {
+    name: "Puertas automáticas / garaje",
+    description: "Comodidad, seguridad y control en cada acceso.",
+    image: "/NUEVO/A/ChatGPT Image 21 sept 2026, 20_19_52 (1).png",
+    href: "/soluciones/puertas-automatizacion",
+    icon: "garage"
+  },
+  {
+    name: "Baranda / acero inoxidable",
+    description: "Seguridad y elegancia en cada detalle.",
+    image: "/NUEVO/A/ChatGPT Image 21 sept 2026, 20_19_52 (2).png",
+    href: "/soluciones/acero-barandas",
+    icon: "rail"
+  },
+  {
+    name: "Mamparas y ventanas",
+    description: "Diseño, iluminación y funcionalidad.",
+    image: "/NUEVO/A/ChatGPT Image 21 sept 2026, 20_19_53 (3).png",
+    href: "/soluciones/ventanas-mamparas",
+    icon: "window"
+  },
+  {
+    name: "Techo solisombra",
+    description: "Protección y confort para cada espacio.",
+    image: "/NUEVO/A/ChatGPT Image 21 sept 2026, 20_19_53 (4).png",
+    href: "/soluciones/techos-coberturas",
+    icon: "pergola"
+  },
+  {
+    name: "Cerco Eléctrico",
+    description: "Protección perimetral para tu tranquilidad.",
+    image: "/NUEVO/A/ChatGPT Image 21 sept 2026, 20_19_53 (5).png",
+    href: "/soluciones/trabajos-especiales",
+    icon: "fence"
+  },
+  {
+    name: "Drywall",
+    description: "Espacios versátiles y acabados de alto nivel.",
+    image: "/NUEVO/A/ChatGPT Image 21 sept 2026, 20_19_53 (6).png",
+    href: "/soluciones/trabajos-especiales",
+    icon: "wall"
+  }
+] as const;
+
+const processSteps = [
+  {
+    title: "Asesoría",
+    description: "Te orientamos en la mejor solución",
+    icon: UserRoundCheck
+  },
+  {
+    title: "Diseño",
+    description: "Adaptado a tu espacio y estilo",
+    icon: PencilRuler
+  },
+  {
+    title: "Fabricación",
+    description: "Con estándares de alta calidad",
+    icon: Cog
+  },
+  {
+    title: "Instalación",
+    description: "Por un equipo especializado",
+    icon: Wrench
+  }
+] as const;
+
 export function NeedsSection() {
+  const reduceMotion = usePrefersReducedMotion();
+
+  const fadeUp: Variants = {
+    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 18 },
+    visible: { opacity: 1, y: 0, transition: { delay: reduceMotion ? 0 : 0.32, duration: reduceMotion ? 0 : 0.7, ease: [0.16, 1, 0.3, 1] } }
+  };
+  const processReveal: Variants = {
+    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 24, scale: 0.97, filter: "blur(8px)" },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      filter: "blur(0px)",
+      transition: { duration: reduceMotion ? 0 : 0.7, ease: [0.16, 1, 0.3, 1] }
+    }
+  };
+  const serviceReveal: Variants = {
+    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 28, scale: 0.94 },
+    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: reduceMotion ? 0 : 0.72, ease: [0.16, 1, 0.3, 1] } }
+  };
+  const stagger: Variants = {
+    hidden: {},
+    visible: { transition: { staggerChildren: reduceMotion ? 0 : 0.085, delayChildren: reduceMotion ? 0 : 0.62 } }
+  };
+
   return (
-    <section className={styles.section} aria-labelledby="needs-title">
-      <div className={styles.halo} aria-hidden="true" />
+    <motion.section
+      className={styles.section}
+      aria-labelledby="needs-title"
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.16 }}
+    >
+      <div className={`${styles.sideNote} ${styles.sideNoteLeft}`} aria-hidden="true">
+        <i />
+        <span>INGENIERÍA<br />SEGURIDAD<br />AUTOMATIZACIÓN<br />CONFIANZA</span>
+      </div>
+      <div className={`${styles.sideNote} ${styles.sideNoteRight}`} aria-hidden="true">
+        <i />
+        <span>HOGARES<br />EMPRESAS<br />INDUSTRIAS<br />PROYECTOS ESPECIALES</span>
+      </div>
+
       <div className={styles.shell}>
+        <motion.ol className={styles.processBand} variants={processReveal} aria-label="Nuestro proceso de trabajo">
+          {processSteps.map(({ title, description, icon: Icon }) => (
+            <li key={title} className={styles.processStep}>
+              <Icon aria-hidden="true" />
+              <span className={styles.processCopy}>
+                <strong>{title}</strong>
+                <small>{description}</small>
+              </span>
+            </li>
+          ))}
+        </motion.ol>
+
         <header className={styles.header}>
-          <div>
-            <span>Soluciones a medida</span>
-            <h2 id="needs-title">¿Qué necesitas construir?</h2>
-            <p>Elige un punto de partida. Convertimos tu idea en una solución diseñada, fabricada e instalada para tu espacio.</p>
-          </div>
-          <div className={styles.social}>
-            <p>Síguenos y mira nuestros proyectos</p>
-            <div aria-label="Redes sociales">
-              <a href={siteConfig.social.facebook} aria-label="Facebook" target="_blank" rel="noreferrer"><Facebook size={18} fill="currentColor" /></a>
-              <a href={siteConfig.social.instagram} aria-label="Instagram" target="_blank" rel="noreferrer"><Instagram size={18} /></a>
-              <a href={siteConfig.social.tiktok} aria-label="TikTok" target="_blank" rel="noreferrer">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.53.02c1.3-.02 2.6-.01 3.9-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.74v4.03c-1.44-.05-2.89-.35-4.2-1.01-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.93-3.58 3.17-5.92 3.14-1.43-.02-2.85-.41-4.07-1.16-2.02-1.19-3.44-3.29-3.72-5.62-.03-.5-.03-1-.02-1.5.23-1.91 1.1-3.71 2.47-5.06 1.56-1.54 3.75-2.34 5.94-2.2.02 1.48-.04 2.96-.04 4.44-1.1-.35-2.36-.24-3.35.37-.71.4-1.26 1.08-1.54 1.82-.23.56-.16 1.18-.15 1.78.25 1.73 1.89 3.19 3.65 3.05 1.19-.01 2.31-.7 2.93-1.72.2-.35.35-.74.36-1.15.03-3.17.02-6.34.02-9.5z" /></svg>
-              </a>
-            </div>
-          </div>
+          <motion.span className={styles.kicker} variants={fadeUp}>Soluciones a medida</motion.span>
+          <motion.i className={styles.kickerLine} variants={fadeUp} aria-hidden="true" />
+          <motion.h2 id="needs-title" variants={fadeUp}>
+            ¿Qué necesitas <span>construir?</span>
+          </motion.h2>
+          <motion.p className={styles.desktopSubtitle} variants={fadeUp}>
+            Elige la solución que mejor se adapte a tu proyecto. Convertimos tu idea en espacios<br />
+            más seguros, funcionales y con diseño de alto nivel.
+          </motion.p>
+          <motion.p className={styles.mobileSubtitle} variants={fadeUp}>
+            Elige la solución que mejor se adapte a tu proyecto.
+          </motion.p>
         </header>
 
-        <SolutionSelector labelledBy="needs-title" />
+        <motion.div className={styles.grid} variants={stagger}>
+          {services.map((service) => (
+            <motion.div key={service.name} className={styles.item} variants={serviceReveal}>
+              <Link href={service.href} className={styles.service} aria-label={`Conocer más sobre ${service.name}`}>
+                <span className={styles.visual}>
+                  <span className={styles.ring} aria-hidden="true" />
+                  <span className={styles.photo}>
+                    <Image
+                      src={service.image}
+                      alt={service.name}
+                      fill
+                      sizes="(min-width: 1100px) 210px, (min-width: 768px) 220px, 38vw"
+                    />
+                  </span>
+                  <span className={styles.icon} aria-hidden="true"><ServiceIcon type={service.icon} /></span>
+                </span>
+                <span className={styles.copy}>
+                  <strong>{service.name}</strong>
+                  <small>{service.description}</small>
+                </span>
+              </Link>
+            </motion.div>
+          ))}
+        </motion.div>
 
-        <aside className={styles.advisor} aria-label="Asesoría personalizada">
-          <div className={styles.advisorPerson} aria-hidden="true">
-            <Image src="/images/advisor-cutout-transparent.png" alt="" fill sizes="220px" className={styles.advisorImage} />
-          </div>
-          <div className={styles.advisorCopy}>
-            <span>Asesoría humana</span>
-            <h3>¿No sabes qué solución necesitas?</h3>
-            <p>Te ayudamos a definir el sistema adecuado antes de cotizar.</p>
-          </div>
-          <div className={styles.advisorActions}>
-            <a href={siteConfig.social.whatsapp} target="_blank" rel="noreferrer"><MessageCircle size={16} /> Hablar con un asesor</a>
-            <Link href="/asistente"><Bot size={16} /> Consultar a IRP Bot</Link>
-          </div>
-        </aside>
+        <motion.div className={styles.ctaWrap} variants={fadeUp}>
+          <Link href="/soluciones" className={styles.cta}>
+            <span><ArrowRight aria-hidden="true" /></span>
+            <b>Conoce más sobre nuestras soluciones</b>
+          </Link>
+        </motion.div>
       </div>
-    </section>
+    </motion.section>
   );
+}
+
+function ServiceIcon({ type }: { type: (typeof services)[number]["icon"] }) {
+  if (type === "garage") {
+    return <svg viewBox="0 0 32 32"><path d="M5 27V10l11-5 11 5v17M8 27V12h16v15M9 15h14M9 19h14M9 23h14" /></svg>;
+  }
+  if (type === "rail") {
+    return <svg viewBox="0 0 32 32"><path d="M5 26h22M7 24V10M25 24V7M7 20l18-8M12 18v6M18 15v9" /></svg>;
+  }
+  if (type === "window") {
+    return <svg viewBox="0 0 32 32"><rect x="5" y="6" width="22" height="21" rx="1" /><path d="M16 6v21M5 16.5h22" /></svg>;
+  }
+  if (type === "pergola") {
+    return <svg viewBox="0 0 32 32"><path d="M4 12l12-7 12 7M6 13h20M8 13v14M24 13v14M11 10l4 3M16 7l7 6M5 27h22" /></svg>;
+  }
+  if (type === "fence") {
+    return <svg viewBox="0 0 32 32"><path d="M6 6v21M14 4v23M22 6v21M27 9v18M4 12h24M4 18h24M4 24h24" /><path d="M17 5l-3 5h4l-3 6" /></svg>;
+  }
+  return <svg viewBox="0 0 32 32"><path d="M5 27V7h22v20M12 7v20M20 7v20M5 22h22" /></svg>;
 }

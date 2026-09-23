@@ -1,0 +1,404 @@
+.footer {
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+  background: #f5faff;
+  color: #0f172a;
+  isolation: isolate;
+}
+
+.background {
+  position: absolute;
+  z-index: -2;
+  inset: 0 0 74px;
+  background-image: url("/NUEVO/E/ChatGPT Image 22 sept 2026, 10_38_39 (1).png");
+  background-position: center;
+  background-size: cover;
+  opacity: .46;
+}
+
+.footer::after {
+  position: absolute;
+  z-index: -1;
+  inset: 0 0 74px;
+  background: linear-gradient(90deg, rgba(248, 250, 252, .68), rgba(255, 255, 255, .88) 20%, rgba(255, 255, 255, .9) 80%, rgba(248, 250, 252, .68));
+  backdrop-filter: blur(1.5px) saturate(.86);
+  content: "";
+  pointer-events: none;
+}
+
+.main {
+  position: relative;
+  display: grid;
+  width: min(calc(100% - 120px), 1750px);
+  grid-template-columns: 1.35fr .85fr 1.15fr 1.3fr 1fr;
+  gap: 0;
+  margin-inline: auto;
+  padding: 55px 0 45px;
+}
+
+.main > * {
+  min-width: 0;
+  padding-inline: clamp(25px, 2.1vw, 42px);
+}
+
+.main > *:first-child { padding-left: 0; }
+.main > *:last-child { padding-right: 0; }
+.main > *:not(:last-child) { border-right: 1px solid rgba(52, 116, 183, .14); }
+
+.brand { align-self: start; }
+.brand > a:first-child { display: inline-flex; }
+
+.logo {
+  position: relative;
+  display: block;
+  width: clamp(195px, 12vw, 225px) !important;
+  height: clamp(104px, 6.4vw, 118px) !important;
+  overflow: hidden;
+}
+
+.logoAsset {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: clamp(170px, 10vw, 190px);
+  max-width: none;
+  height: auto;
+  filter: drop-shadow(0 7px 14px rgba(8, 34, 67, .12));
+  transform: translate(-50%, -50%);
+}
+
+.accentLine {
+  display: block;
+  width: 36px;
+  height: 3px;
+  margin: 6px 0 14px;
+  border-radius: 999px;
+  background: #1687ff;
+}
+
+.brand > p,
+.follow > p {
+  max-width: 320px;
+  margin: 0;
+  color: #334155;
+  font-size: clamp(13px, .78vw, 15px);
+  line-height: 1.52;
+}
+
+.contactLines {
+  display: grid;
+  gap: 8px;
+  margin-top: 17px;
+}
+
+.contactLines a {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  gap: 9px;
+  color: #0f172a;
+  font-size: 13px;
+  font-weight: 620;
+  transition: color 220ms ease, transform 220ms ease;
+}
+
+.contactLines svg {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(20, 132, 255, .1);
+  padding: 9px;
+  color: #0879ed;
+}
+
+.contactLines a:hover { color: #0879ed; transform: translateX(3px); }
+
+.column h2 {
+  margin: 2px 0 23px;
+  color: #073b7a;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: .13em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.column h2 span {
+  display: block;
+  width: 34px;
+  height: 3px;
+  margin-top: 12px;
+  border-radius: 999px;
+  background: #1687ff;
+}
+
+.links { display: grid; gap: 15px; }
+
+.links a {
+  width: fit-content;
+  color: #0f172a;
+  font-size: clamp(13px, .9vw, 16px);
+  line-height: 1.3;
+  transition: color 220ms ease, transform 220ms ease;
+}
+
+.links a:hover { color: #0879ed; transform: translateX(3px); }
+
+.legal { display: flex; flex-direction: column; }
+
+.claims {
+  position: relative;
+  display: grid;
+  width: min(100%, 285px);
+  grid-template-columns: 122px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  margin-top: 25px;
+  border-top: 1px solid rgba(52, 116, 183, .18);
+  border-radius: 0 0 12px 12px;
+  background: rgba(255, 255, 255, .56);
+  padding: 16px 8px 8px 6px;
+  box-shadow: inset 0 1px rgba(255, 255, 255, .72);
+}
+
+.claimsArt {
+  display: block;
+  width: 122px;
+  height: 58px;
+  overflow: hidden;
+}
+
+.claimsArt img {
+  display: block;
+  width: 130px;
+  height: auto;
+  filter: drop-shadow(0 12px 18px rgba(20, 52, 90, .12));
+  transform: translate(-4px, -37px);
+  transition: transform 320ms cubic-bezier(.16, 1, .3, 1);
+}
+
+.claimsCopy {
+  display: grid;
+  gap: 5px;
+}
+
+.claimsCopy small {
+  color: #475569;
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: .09em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.claimsCopy strong {
+  display: inline;
+  color: #075ecf;
+  font-size: 14px;
+  font-weight: 790;
+  letter-spacing: -.025em;
+  line-height: 1.13;
+}
+
+.claimsCopy strong svg { display: inline; width: 14px; height: 14px; margin-left: 4px; vertical-align: -2px; transition: transform 220ms ease; }
+.claims:hover .claimsArt img { transform: translate(-4px, -40px); }
+.claims:hover .claimsCopy strong svg { transform: translateX(4px); }
+
+.details { display: flex; flex-direction: column; gap: 16px; }
+.details h2 { margin-bottom: 2px; }
+.details > div { display: grid; gap: 7px; }
+
+.details small {
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 780;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.details p {
+  display: flex;
+  max-width: 245px;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  color: #0f172a;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.48;
+}
+
+.details p svg { width: 15px; height: 15px; flex: 0 0 auto; margin-top: 2px; color: #0879ed; }
+
+.socials { display: flex; gap: 12px; }
+
+.socials a {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(25, 74, 127, .14);
+  transition: transform 250ms cubic-bezier(.16, 1, .3, 1), box-shadow 250ms ease;
+}
+
+.socials a:hover { transform: scale(1.06); box-shadow: 0 14px 28px rgba(25, 74, 127, .22); }
+.socials svg { width: 21px; height: 21px; }
+.facebook { background: #1477df; }
+.instagram { background: linear-gradient(145deg, #7b36dc, #ed157a 48%, #ff9c22); }
+.tiktok { background: #070b13; }
+
+.follow > p { margin-top: 18px; font-size: 13px; }
+
+.whatsapp {
+  display: grid;
+  width: min(100%, 245px);
+  min-height: 54px;
+  grid-template-columns: 22px 1fr 17px;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  border-radius: 999px;
+  background: linear-gradient(105deg, #08b868, #0be78a);
+  padding: 0 20px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 790;
+  box-shadow: 0 14px 28px rgba(9, 203, 116, .28);
+  transition: filter 220ms ease, transform 220ms ease;
+}
+
+.whatsapp svg { width: 21px; height: 21px; }
+.whatsapp svg:last-child { width: 17px; justify-self: end; transition: transform 220ms ease; }
+.whatsapp:hover { filter: brightness(1.04); transform: translateY(-2px); }
+.whatsapp:hover svg:last-child { transform: translateX(4px); }
+
+.bottom {
+  position: relative;
+  background: linear-gradient(105deg, #062d59, #031d3c);
+  color: rgba(230, 242, 255, .88);
+}
+
+.bottom > div {
+  display: flex;
+  width: min(calc(100% - 120px), 1750px);
+  min-height: 70px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  margin-inline: auto;
+}
+
+.bottom p { margin: 0; color: rgba(230, 242, 255, .88); font-size: 12px; }
+
+.bottom a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(230, 242, 255, .84);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  transition: color 220ms ease;
+}
+
+.bottom a:hover { color: #fff; }
+.bottom a svg { width: 14px; height: 14px; }
+
+@media (max-width: 1500px) {
+  .main > * { padding-inline: clamp(18px, 1.5vw, 22px); }
+  .whatsapp { gap: 6px; padding-inline: 14px; font-size: 10.5px; }
+}
+
+@media (max-width: 1320px) {
+  .main,
+  .bottom > div { width: min(calc(100% - 72px), 1180px); }
+  .main { grid-template-columns: 1.15fr .7fr .95fr 1fr; row-gap: 54px; }
+  .main > * { padding-inline: 27px; }
+  .main > *:nth-child(5) { grid-column: 4; grid-row: 1 / 3; }
+  .main > *:nth-child(4) { grid-column: 2 / 4; }
+  .details { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .details h2 { grid-column: 1 / -1; }
+}
+
+@media (max-width: 960px) {
+  .main { grid-template-columns: 1.1fr .9fr; }
+  .main > * { padding: 0 28px; border-right: 0; }
+  .main > *:nth-child(odd) { padding-left: 0; border-right: 1px solid rgba(52, 116, 183, .14); }
+  .main > *:nth-child(even) { padding-right: 0; }
+  .main > *:nth-child(4),
+  .main > *:nth-child(5) { grid-column: auto; grid-row: auto; }
+  .details { display: flex; }
+  .follow { grid-column: 1 / -1; padding: 40px 0 0 !important; border-top: 1px solid rgba(52, 116, 183, .14); border-right: 0 !important; }
+  .follow > p { max-width: 360px; }
+}
+
+@media (max-width: 640px) {
+  .background {
+    background-image: url("/NUEVO/E/ChatGPT Image 22 sept 2026, 10_38_40 (2).png");
+    background-position: center;
+  }
+  .footer::after { background: rgba(248, 250, 252, .86); backdrop-filter: blur(1px) saturate(.85); }
+  .main,
+  .bottom > div { width: calc(100% - 36px); }
+  .main { grid-template-columns: 1fr; gap: 0; padding: 65px 0 58px; }
+  .main > * {
+    grid-column: auto !important;
+    grid-row: auto !important;
+    padding: 34px 0 !important;
+    border-top: 1px solid rgba(52, 116, 183, .14);
+    border-right: 0 !important;
+  }
+  .main > *:first-child { border-top: 0; padding-top: 0 !important; }
+  .brand { text-align: center; }
+  .brand > a:first-child { justify-content: center; }
+  .logo { width: 215px !important; height: 118px !important; }
+  .accentLine { margin-inline: auto; }
+  .brand > p { max-width: 350px; margin-inline: auto; }
+  .contactLines { justify-items: center; }
+  .column h2 { margin-bottom: 24px; }
+  .links { gap: 15px; }
+  .legal { display: grid; grid-template-columns: minmax(0, 1fr) minmax(190px, 205px); gap: 0 20px; }
+  .legal h2 { grid-column: 1 / -1; }
+  .claims { grid-column: 2; grid-row: 2 / 4; align-self: center; margin-top: 0; border-top: 0; padding-top: 0; }
+  .claims { width: 100%; grid-template-columns: 100px minmax(0, 1fr); gap: 8px; }
+  .claimsArt { width: 100px; height: 54px; }
+  .claimsArt img { width: 112px; transform: translate(-5px, -32px); }
+  .claims:hover .claimsArt img { transform: translate(-5px, -35px); }
+  .claimsCopy small { font-size: 7px; }
+  .claimsCopy strong { font-size: 12px; overflow-wrap: anywhere; }
+  .details { gap: 19px; }
+  .follow { padding-bottom: 0 !important; }
+  .follow h2 { text-align: center; }
+  .follow h2 span { margin-inline: auto; }
+  .socials { justify-content: center; }
+  .follow > p { margin-inline: auto; text-align: center; }
+  .whatsapp { width: 100%; max-width: 360px; margin-inline: auto; }
+  .bottom > div { min-height: 88px; align-items: flex-start; justify-content: center; flex-direction: column; gap: 8px; }
+  .bottom p { font-size: 10px; }
+  .bottom a { font-size: 8px; }
+}
+
+@media (max-width: 400px) {
+  .legal { grid-template-columns: 1fr; }
+  .claims { grid-column: auto; grid-row: auto; width: 270px; grid-template-columns: 122px minmax(0, 1fr); gap: 12px; margin-top: 25px; border-top: 1px solid rgba(52, 116, 183, .18); padding-top: 18px; }
+  .claimsArt { width: 122px; height: 58px; }
+  .claimsArt img { width: 130px; transform: translate(-4px, -37px); }
+  .claims:hover .claimsArt img { transform: translate(-4px, -40px); }
+  .claimsCopy small { font-size: 8px; }
+  .claimsCopy strong { font-size: 14px; overflow-wrap: normal; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contactLines a,
+  .links a,
+  .claimsArt img,
+  .claimsCopy strong svg,
+  .socials a,
+  .whatsapp,
+  .whatsapp svg,
+  .bottom a { transition-duration: .01ms !important; }
+}

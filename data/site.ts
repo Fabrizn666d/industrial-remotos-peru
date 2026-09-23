@@ -17,6 +17,12 @@ export const siteConfig = {
   developer: { name: "Wilo Studio", url: "https://wilostudio.site" }
 } as const;
 
+export const companyLegalData = {
+  legalName: "INDUSTRIAL REMOTOS PERU S.A.C.",
+  ruc: "20615226361",
+  address: "LIMA - VILLA EL SALVADOR",
+} as const;
+
 export const navItems = [
   { label: "Inicio", href: "/" },
   { label: "Soluciones", href: "/soluciones" },

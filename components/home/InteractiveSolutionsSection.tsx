@@ -17,8 +17,8 @@ import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import styles from "./InteractiveSolutionsSection.module.css";
 
 const SCENE_ASSETS = {
-  desktop: "/NUEVO/D/ChatGPT Image 22 sept 2026, 10_00_28.png",
-  mobile: "/NUEVO/D/ChatGPT Image 22 sept 2026, 10_00_21.png"
+  desktop: "/NUEVO/D/ChatGPT Image 22 sept 2026%2C 10_00_28.png",
+  mobile: "/NUEVO/D/ChatGPT Image 22 sept 2026%2C 10_00_21.png"
 } as const;
 
 const services = [

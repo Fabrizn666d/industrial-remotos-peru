@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, LockKeyhole } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, LockKeyhole } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import styles from "../admin.module.css";
@@ -9,6 +9,7 @@ export function LoginForm({ destination }: { destination: string }) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -44,7 +45,7 @@ export function LoginForm({ destination }: { destination: string }) {
       <h1>Industrial Remotos Control</h1>
       <p>Ingresa con las credenciales administrativas configuradas en el servidor.</p>
       <label>Correo electrónico<input name="email" type="email" autoComplete="username" required maxLength={254} /></label>
-      <label>Contraseña<input name="password" type="password" autoComplete="current-password" required minLength={1} maxLength={128} /></label>
+      <label>Contraseña<span className={styles.passwordField}><input name="password" type={passwordVisible ? "text" : "password"} autoComplete="current-password" required minLength={1} maxLength={128} /><button type="button" onClick={() => setPasswordVisible((value) => !value)} aria-label={passwordVisible ? "Ocultar contraseña" : "Mostrar contraseña"}>{passwordVisible ? <EyeOff size={17} /> : <Eye size={17} />}</button></span></label>
       {error && <div className={styles.loginError} role="alert">{error}</div>}
       <button type="submit" disabled={pending}>{pending ? "Verificando…" : "Ingresar"}<ArrowRight size={17} /></button>
       <small>No existe registro público ni credenciales predeterminadas.</small>

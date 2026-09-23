@@ -5,13 +5,26 @@
   overflow: visible;
   margin-top: 0;
   background-color: #edf7ff;
-  background-image: url("/NUEVO/B/ChatGPT%20Image%2021%20sept%202026,%2022_38_07.png");
+  background-image: url("/NUEVO/B/ChatGPT%20Image%2021%20sept%202026%2C%2022_38_07.png");
   background-position: center bottom;
   background-repeat: no-repeat;
   background-size: cover;
   color: #06133e;
   isolation: isolate;
   scroll-margin-top: 92px;
+}
+
+.section::before {
+  position: absolute;
+  z-index: 1;
+  top: -42px;
+  left: -4%;
+  width: 108%;
+  height: 84px;
+  border-radius: 50% 50% 0 0 / 68% 68% 0 0;
+  background: linear-gradient(180deg, rgba(247, 251, 255, .12), #edf7ff 72%);
+  content: "";
+  pointer-events: none;
 }
 
 .content {
@@ -343,12 +356,12 @@
     min-height: 0;
     margin-top: 0;
     background-color: #edf8ff;
-    background-image: url("/NUEVO/B/ChatGPT%20Image%2021%20sept%202026,%2022_42_22.png");
+    background-image: url("/NUEVO/B/ChatGPT%20Image%2021%20sept%202026%2C%2022_42_22.png");
     background-position: center bottom;
     background-size: 100% auto;
   }
 
-  .content { width: min(calc(100% - 36px), 520px); padding: 82px 0 390px; }
+  .content { width: min(calc(100% - 36px), 520px); padding: 82px 0 240px; }
   .header { max-width: 430px; }
   .kicker { font-size: 11px; letter-spacing: .27em; }
   .kickerLine { width: 36px; margin: 11px auto 17px; }
@@ -381,7 +394,7 @@
 }
 
 @media (max-width: 374px) {
-  .content { width: calc(100% - 32px); padding-bottom: 350px; }
+  .content { width: calc(100% - 32px); padding-bottom: 220px; }
   .secondaryCard { grid-template-columns: 39% 1fr 31px; }
   .secondaryCopy { padding-left: 11px; }
   .secondaryCopy strong { font-size: 11px; }

@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { type CSSProperties, useEffect, useRef, useState } from "react";
 
 export const HOME_INTRO_ASSETS = {
-  logo: "/NUEVO/ChatGPT Image 19 sept 2026, 19_13_22.png",
+  logo: "/NUEVO/ChatGPT Image 19 sept 2026%2C 19_13_22.png",
   video: "/NUEVO/Garage_door_opening_transition_1080p_20260921110657.mp4"
 } as const;
 

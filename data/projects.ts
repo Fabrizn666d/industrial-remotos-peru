@@ -6,16 +6,21 @@ const tiktokUrl = siteConfig.social.tiktok;
 export const projects: Project[] = [
   {
     id: "seccional-peatonal-san-miguel",
+    slug: "seccional-peatonal-san-miguel",
     title: "Puerta seccional automática con peatonal integrada",
+    description: "Acceso vehicular y peatonal integrado en una solución fabricada a medida.",
     category: "seccionales",
     badge: "RESIDENCIAL",
     location: "San Miguel",
     image: "/images/reales/puerta-21.jpg",
-    tiktokUrl
+    tiktokUrl,
+    featured: true
   },
   {
     id: "levadiza-surco",
+    slug: "levadiza-surco",
     title: "Puerta levadiza automatizada con acabado madera",
+    description: "Puerta levadiza automatizada con acabado coordinado para el ingreso residencial.",
     category: "levadizas",
     badge: "RESIDENCIAL",
     location: "Santiago de Surco",
@@ -24,7 +29,9 @@ export const projects: Project[] = [
   },
   {
     id: "corrediza-callao",
+    slug: "corrediza-callao",
     title: "Puerta corrediza motorizada para acceso amplio",
+    description: "Sistema corredizo motorizado preparado para un acceso vehicular de mayor amplitud.",
     category: "corredizas",
     badge: "COMERCIAL",
     location: "Callao",
@@ -33,7 +40,9 @@ export const projects: Project[] = [
   },
   {
     id: "estructura-sjl",
+    slug: "estructura-sjl",
     title: "Estructura metálica fabricada a medida",
+    description: "Estructura metálica ejecutada según las medidas y condiciones del proyecto.",
     category: "estructuras",
     badge: "ESTRUCTURAS",
     location: "San Juan de Lurigancho",
@@ -42,7 +51,9 @@ export const projects: Project[] = [
   },
   {
     id: "automatizacion-huacho",
+    slug: "automatizacion-huacho",
     title: "Automatización de puerta con control remoto",
+    description: "Integración de automatización y control para mejorar el uso cotidiano del acceso.",
     category: "automatizacion",
     badge: "RESIDENCIAL",
     location: "Huacho",
@@ -51,7 +62,9 @@ export const projects: Project[] = [
   },
   {
     id: "seccional-chancay",
+    slug: "seccional-chancay",
     title: "Puerta seccional para ingreso residencial",
+    description: "Puerta seccional fabricada para aprovechar el recorrido vertical del ingreso.",
     category: "seccionales",
     badge: "RESIDENCIAL",
     location: "Chancay",
@@ -60,7 +73,9 @@ export const projects: Project[] = [
   },
   {
     id: "corrediza-huaral",
+    slug: "corrediza-huaral",
     title: "Puerta corrediza de fabricación metálica",
+    description: "Acceso corredizo metálico desarrollado para las dimensiones del proyecto.",
     category: "corredizas",
     badge: "INDUSTRIAL",
     location: "Huaral",
@@ -69,7 +84,9 @@ export const projects: Project[] = [
   },
   {
     id: "levadiza-la-molina",
+    slug: "levadiza-la-molina",
     title: "Puerta levadiza a medida con automatización",
+    description: "Solución levadiza automatizada y adaptada al vano disponible.",
     category: "levadizas",
     badge: "RESIDENCIAL",
     location: "La Molina",
@@ -78,7 +95,9 @@ export const projects: Project[] = [
   },
   {
     id: "techo-policarbonato-lima",
+    slug: "techo-policarbonato-lima",
     title: "Techo sol y sombra con policarbonato",
+    description: "Cobertura metálica con policarbonato para proteger y aprovechar el espacio exterior.",
     category: "estructuras",
     badge: "ESTRUCTURAS",
     location: "Lima",
@@ -87,7 +106,9 @@ export const projects: Project[] = [
   },
   {
     id: "seccional-san-miguel",
+    slug: "seccional-san-miguel",
     title: "Puerta seccional con panel importado",
+    description: "Puerta seccional con panel y automatización coordinados para el acceso.",
     category: "seccionales",
     badge: "RESIDENCIAL",
     location: "San Miguel",

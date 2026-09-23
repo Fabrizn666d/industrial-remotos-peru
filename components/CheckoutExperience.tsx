@@ -100,6 +100,8 @@ export function CheckoutExperience() {
     setSubmitError("");
     submissionId.current ??= crypto.randomUUID();
 
+    let attribution: Record<string, string> = {};
+    try { attribution = JSON.parse(sessionStorage.getItem("irp_utm_v1") || "{}"); } catch { attribution = {}; }
     const payload = {
       clientSubmissionId: submissionId.current,
       contact: {
@@ -119,7 +121,7 @@ export function CheckoutExperience() {
         productId: item.productId,
         name: item.name,
         quantity: item.quantity,
-        configuration: compactConfiguration(item.configuration)
+        configuration: { ...compactConfiguration(item.configuration), ...attribution }
       })),
       attachmentNames: [],
       source: "CONFIGURATOR" as const
@@ -151,6 +153,7 @@ export function CheckoutExperience() {
         pricing: { status: "pending" }
       };
       sessionStorage.setItem(LAST_REQUEST_KEY, JSON.stringify(request));
+      window.dispatchEvent(new CustomEvent("irp:analytics", { detail: { name: "quote_submit" } }));
       clearProject();
       router.push(`/cotizar/confirmacion/${encodeURIComponent(body.code)}`);
     } catch (error) {

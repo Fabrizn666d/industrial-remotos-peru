@@ -4,11 +4,12 @@ import { AnimatePresence, motion } from "framer-motion";
 import { BriefcaseBusiness, ChevronDown, Facebook, Instagram, Menu, MessageCircle, Music2, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Logo } from "@/components/Logo";
 import { useProject } from "@/components/ProjectContext";
 import { navItems, serviceNavItems, siteConfig } from "@/data/site";
 import { cn } from "@/lib/utils";
+import { SiteSearch } from "@/components/SiteSearch";
 
 export function Header() {
   const pathname = usePathname();
@@ -16,6 +17,8 @@ export function Header() {
   const darkRoute = home || ["/cotizar", "/asistente", "/confirmacion", "/proyectos"].some((route) => pathname.startsWith(route));
   const [scrolled, setScrolled] = useState(!home);
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const mobileMenuRef = useRef<HTMLElement>(null);
   const { count, setDrawerOpen } = useProject();
 
   useEffect(() => {
@@ -31,7 +34,15 @@ export function Header() {
 
   useEffect(() => {
     document.body.classList.toggle("overlay-open", menuOpen);
-    const onKey = (event: KeyboardEvent) => event.key === "Escape" && setMenuOpen(false);
+    if (menuOpen) requestAnimationFrame(() => mobileMenuRef.current?.querySelector<HTMLElement>("a, button")?.focus());
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { setMenuOpen(false); menuButtonRef.current?.focus(); return; }
+      if (event.key !== "Tab" || !menuOpen || !mobileMenuRef.current) return;
+      const items = [...mobileMenuRef.current.querySelectorAll<HTMLElement>("a[href], button:not([disabled])")];
+      const first = items[0], last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    };
     window.addEventListener("keydown", onKey);
     return () => {
       document.body.classList.remove("overlay-open");
@@ -67,16 +78,18 @@ export function Header() {
             )}
           </div>
           <div className="site-header__actions">
-            <a className="header-whatsapp-cta" href={siteConfig.social.whatsapp} target="_blank" rel="noreferrer" aria-label="Hablar por WhatsApp">
+            <SiteSearch />
+            <a className="header-whatsapp-cta" href={siteConfig.social.whatsapp} target="_blank" rel="noreferrer" aria-label="Hablar por WhatsApp" data-analytics="whatsapp_click">
               <MessageCircle size={17} /><span>WhatsApp</span>
             </a>
-            <Link className="header-quote-cta" href="/cotizar">Cotizar mi proyecto</Link>
+            <Link className="header-quote-cta" href="/cotizar" data-analytics="configurator_start">Cotizar mi proyecto</Link>
             <button className="project-chip" type="button" onClick={() => setDrawerOpen(true)} aria-label={"Abrir Mi proyecto con " + count + " elementos"}>
               <BriefcaseBusiness size={17} />
               <span>Mi proyecto</span>
               <b>{count}</b>
             </button>
             <button
+              ref={menuButtonRef}
               className="menu-toggle"
               type="button"
               aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}
@@ -92,7 +105,7 @@ export function Header() {
 
       <AnimatePresence>
         {menuOpen && (
-          <motion.nav className="mobile-nav" id="mobile-menu" aria-label="Navegación móvil" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.nav ref={mobileMenuRef} className="mobile-nav" id="mobile-menu" aria-label="Navegación móvil" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <motion.div className="mobile-nav__sheet" initial={{ y: -28, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }} transition={{ duration: .42, ease: [0.2, .75, 0, 1] }}>
               <span className="eyebrow">Explora Industrial Remotos</span>
               <div className="mobile-nav__links">
@@ -110,7 +123,7 @@ export function Header() {
                 </button>
               </div>
               <div className="mobile-nav__footer">
-                <p>{siteConfig.hours}</p>
+                {siteConfig.hours && <p>{siteConfig.hours}</p>}
                 <div className="mobile-nav__socials"><a href={siteConfig.social.facebook} aria-label="Facebook" target="_blank" rel="noreferrer"><Facebook size={17} /></a><a href={siteConfig.social.instagram} aria-label="Instagram" target="_blank" rel="noreferrer"><Instagram size={17} /></a><a href={siteConfig.social.tiktok} aria-label="TikTok" target="_blank" rel="noreferrer"><Music2 size={17} /></a><a href={siteConfig.social.whatsapp} aria-label="WhatsApp" target="_blank" rel="noreferrer"><MessageCircle size={17} /></a></div>
               </div>
             </motion.div>

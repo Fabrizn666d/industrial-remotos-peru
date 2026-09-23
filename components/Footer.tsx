@@ -54,11 +54,12 @@ export function Footer() {
             <span className={styles.logo}>
               <Image
                 className={styles.logoAsset}
-                src="/NUEVO/ChatGPT Image 19 sept 2026, 19_13_22.png"
+                src="/NUEVO/ChatGPT Image 19 sept 2026%2C 19_13_22.png"
                 alt="Industrial Remotos Perú — Garantía y confianza"
                 width={1254}
                 height={1254}
                 sizes="(max-width: 640px) 190px, 180px"
+                unoptimized
               />
             </span>
           </Link>
@@ -82,8 +83,9 @@ export function Footer() {
           <div className={styles.links}>
             <Link href="/politica-privacidad">Política de privacidad</Link>
             <Link href="/terminos">Términos y condiciones</Link>
+            <button type="button" onClick={() => window.dispatchEvent(new Event("irp:open-cookie-settings"))}>Configurar cookies</button>
           </div>
-          <Link className={styles.claims} href="/contacto" aria-label="Ir al canal de atención para el Libro de Reclamaciones">
+          <Link className={styles.claims} href="/libro-reclamaciones" aria-label="Abrir el Libro de Reclamaciones">
             <span className={styles.claimsArt} aria-hidden="true">
               <Image src="/images/libro-reclamaciones.png" alt="" width={652} height={436} sizes="120px" />
             </span>

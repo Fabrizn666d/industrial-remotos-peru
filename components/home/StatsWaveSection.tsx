@@ -17,8 +17,8 @@ import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import styles from "./StatsWaveSection.module.css";
 
 const PROCESS_ASSETS = {
-  desktopBackground: "/NUEVO/C/ChatGPT Image 22 sept 2026, 09_11_53.png",
-  mobileBackground: "/NUEVO/C/ChatGPT Image 22 sept 2026, 09_24_15.png"
+  desktopBackground: "/NUEVO/C/ChatGPT Image 22 sept 2026%2C 09_11_53.png",
+  mobileBackground: "/NUEVO/C/ChatGPT Image 22 sept 2026%2C 09_24_15.png"
 } as const;
 
 const steps = [
@@ -27,7 +27,7 @@ const steps = [
     title: "Asesoría",
     description: "Entendemos el espacio y el objetivo del proyecto.",
     icon: ClipboardCheck,
-    image: "/NUEVO/A/ChatGPT Image 21 sept 2026, 20_19_53 (6).png",
+    image: "/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_53 (6).png",
     imagePosition: "center"
   },
   {
@@ -35,7 +35,7 @@ const steps = [
     title: "Diseño",
     description: "Definimos sistema, materiales y solución a medida.",
     icon: PencilRuler,
-    image: "/NUEVO/A/ChatGPT Image 21 sept 2026, 20_19_52 (2).png",
+    image: "/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_52 (2).png",
     imagePosition: "center"
   },
   {
@@ -43,7 +43,7 @@ const steps = [
     title: "Fabricación",
     description: "Desarrollamos cada componente con precisión.",
     icon: Cog,
-    image: "/NUEVO/A/ChatGPT Image 21 sept 2026, 20_19_53 (4).png",
+    image: "/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_53 (4).png",
     imagePosition: "center 42%"
   },
   {
@@ -51,7 +51,7 @@ const steps = [
     title: "Instalación",
     description: "Montaje, pruebas y entrega final con respaldo.",
     icon: Wrench,
-    image: "/NUEVO/A/ChatGPT Image 21 sept 2026, 20_19_52 (1).png",
+    image: "/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_52 (1).png",
     imagePosition: "center 58%"
   }
 ] as const;
@@ -156,6 +156,7 @@ export function StatsWaveSection() {
                     fill
                     sizes="(min-width: 1101px) 330px, (min-width: 768px) 44vw, calc(100vw - 64px)"
                     style={{ objectPosition: imagePosition }}
+                    unoptimized
                   />
                   <span aria-hidden="true" />
                 </div>

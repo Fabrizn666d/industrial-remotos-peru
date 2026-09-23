@@ -13,7 +13,7 @@ import {
 } from "@/components/IntroLoader";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 
-const HERO_ADVISOR_ASSET = "/NUEVO/ChatGPT Image 22 sept 2026, 14_56_50.png";
+const HERO_ADVISOR_ASSET = "/NUEVO/ChatGPT Image 22 sept 2026%2C 14_56_50.png";
 
 export function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -164,8 +164,8 @@ export function HeroSection() {
             Puertas automáticas, techos, ventanas, mamparas y estructuras metálicas a medida para tu hogar o negocio.
           </p>
           <div className="irp-hero__actions">
-            <Link className="irp-button irp-button--primary" href="/cotizar">Diseña y cotiza tu proyecto <ArrowRight size={18} /></Link>
-            <Link className="irp-button irp-button--glass" href="/proyectos"><Play size={15} fill="currentColor" /> Ver proyectos reales</Link>
+            <Link className="irp-button irp-button--primary" href="/cotizar" data-analytics="hero_cta_click">Diseña y cotiza tu proyecto <ArrowRight size={18} /></Link>
+            <Link className="irp-button irp-button--glass" href="/proyectos" data-analytics="project_open"><Play size={15} fill="currentColor" /> Ver proyectos reales</Link>
           </div>
           <div className="irp-hero__proof">
             <span><b>Diseño a medida</b> según tu espacio y forma de uso</span>

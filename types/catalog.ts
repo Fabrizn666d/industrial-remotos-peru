@@ -71,12 +71,15 @@ export type ProjectCategory = "seccionales" | "levadizas" | "corredizas" | "estr
 
 export type Project = {
   id: string;
+  slug: string;
   title: string;
+  description: string;
   category: ProjectCategory;
   badge: "RESIDENCIAL" | "INDUSTRIAL" | "ESTRUCTURAS" | "COMERCIAL";
   location: string;
   image: string;
   tiktokUrl: string;
+  featured?: boolean;
 };
 
 export type Service = {

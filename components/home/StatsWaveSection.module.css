@@ -2,7 +2,7 @@
   position: relative;
   z-index: 8;
   min-height: clamp(920px, 54.5vw, 1050px);
-  margin: -42px 0 -42px;
+  margin: 0;
   overflow: hidden;
   color: #fff;
   isolation: isolate;
@@ -21,7 +21,7 @@
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: fill;
+  object-fit: cover;
 }
 
 .backgroundMobile { display: none !important; }
@@ -347,7 +347,7 @@
 }
 
 @media (max-width: 1100px) {
-  .section { min-height: 1410px; margin-block: -30px; }
+  .section { min-height: 0; margin-block: 0; }
   .content { width: min(calc(100% - 64px), 920px); padding: 220px 0 140px; }
   .header { max-width: 760px; }
   .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 38px 34px; margin-top: 52px; }
@@ -362,8 +362,8 @@
 
 @media (max-width: 767px) {
   .section {
-    min-height: 2100px;
-    margin: -22px 0 -30px;
+    min-height: 0;
+    margin: 0;
     scroll-margin-top: 78px;
   }
 
@@ -436,7 +436,7 @@
 }
 
 @media (max-width: 390px) {
-  .section { min-height: 2050px; }
+  .section { min-height: 0; }
   .content { width: calc(100% - 28px); padding-top: 142px; }
   .steps { padding-left: 19px; }
   .connector { left: 24px; }

@@ -12,9 +12,11 @@ const viewports = [
   ["mobile-430", 430, 932],
   ["mobile-412", 412, 915],
   ["mobile-390", 390, 844],
-  ["mobile-375", 375, 812]
+  ["mobile-375", 375, 812],
+  ["mobile-360", 360, 800],
+  ["mobile-320", 320, 720]
 ];
-const routes = ["/", "/soluciones", "/soluciones/puertas-automatizacion", "/soluciones/techos-coberturas", "/soluciones/ventanas-mamparas", "/soluciones/acero-barandas", "/soluciones/estructuras-metalicas", "/soluciones/trabajos-especiales", "/proyectos", "/cotizar", "/nosotros", "/contacto", "/mi-proyecto", "/asistente", "/cotizar/finalizar", "/cotizar/confirmacion/COT-IRP-00284", "/proforma"];
+const routes = ["/", "/soluciones", "/soluciones/puertas-automatizacion", "/soluciones/techos-coberturas", "/soluciones/ventanas-mamparas", "/soluciones/acero-barandas", "/soluciones/estructuras-metalicas", "/soluciones/trabajos-especiales", "/proyectos", "/cotizar", "/nosotros", "/contacto", "/libro-reclamaciones", "/mi-proyecto", "/asistente", "/cotizar/finalizar", "/cotizar/confirmacion/COT-IRP-00284", "/proforma"];
 
 await mkdir(outputDirectory, { recursive: true });
 const browser = await chromium.launch({ executablePath, headless: true });
@@ -54,7 +56,10 @@ async function routeMetrics(page, route) {
 try {
   for (const [name, width, height] of viewports) {
     const context = await browser.newContext({ viewport: { width, height }, reducedMotion: "reduce", locale: "es-PE" });
-    await context.addInitScript(() => sessionStorage.setItem("irp-intro-v3", "seen"));
+    await context.addInitScript(() => {
+      sessionStorage.setItem("irp-intro-v3", "seen");
+      localStorage.setItem("irp_cookie_consent_v1", JSON.stringify({ necessary: true, analytics: false, optional: false, savedAt: new Date().toISOString() }));
+    });
     const page = await context.newPage();
     const home = await routeMetrics(page, "/");
     await page.waitForTimeout(900);
@@ -65,7 +70,7 @@ try {
     await page.evaluate(() => window.scrollTo(0, 760));
     await page.waitForTimeout(500);
     const floatingHeader = await page.locator(".site-header").evaluate((node) => node.classList.contains("site-header--scrolled"));
-    const homeAdvisor = page.locator(".irp-advisor");
+    const homeAdvisor = page.locator(".irp-hero__advisor");
     await homeAdvisor.waitFor({ state: "visible" });
     const assistantVisible = await homeAdvisor.isVisible();
 
@@ -88,8 +93,11 @@ try {
     if (!process.env.SKIP_SCREENSHOTS && (name === "desktop-1440" || name === "mobile-390")) {
       await page.addStyleTag({ content: ".site-header,.quote-assistant,.skip-link{visibility:hidden!important}" });
       for (const [selector, sectionName] of [
-        [".irp-needs", "needs"],
-        [".irp-stats", "stats"]
+        ["#soluciones", "needs"],
+        ["#proyectos", "projects"],
+        ["#proceso", "stats"],
+        ["#soluciones-integradas", "integrated-solutions"],
+        [".site-footer", "footer"]
       ]) {
         const section = page.locator(selector);
         if (await section.count()) {

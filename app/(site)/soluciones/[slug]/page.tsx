@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { findSolutionPage, solutionPages } from "@/data/solution-pages";
 import { siteConfig } from "@/data/site";
+import { FaqSection } from "@/components/FaqSection";
 
 export function generateStaticParams() {
   return solutionPages.map((solution) => ({ slug: solution.slug }));
@@ -112,6 +113,8 @@ export default async function SolutionDetailPage({ params }: { params: Promise<{
           </div>
         </div>
       </section>
+
+      <FaqSection title={`Preguntas sobre ${solution.shortTitle.toLowerCase()}`} />
 
       <section className="solution-detail-v4__cta">
         <div className="solution-detail-shell">

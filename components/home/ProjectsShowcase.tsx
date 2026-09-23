@@ -5,45 +5,25 @@ import { ArrowRight, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { projects } from "@/data/projects";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import styles from "./ProjectsShowcase.module.css";
 
-const projects = [
-  {
-    id: "seccional-peatonal",
-    category: "Puertas automáticas / garaje",
-    title: "Puerta seccional automática con peatonal integrada",
-    description: "Seguridad, comodidad y automatización en un acceso diseñado a medida.",
-    image: "/images/reales/portada-puerta-seccional.jpg"
-  },
-  {
-    id: "levadiza-automatizada",
-    category: "Puertas automáticas / garaje",
-    title: "Puerta levadiza automatizada",
-    description: "Acceso funcional con acabado tipo madera y fabricación a medida.",
-    image: "/images/reales/puerta-22.jpg"
-  },
-  {
-    id: "cerco-electrico",
-    category: "Cerco Eléctrico",
-    title: "Protección perimetral instalada",
-    description: "Una solución de seguridad adaptada al perímetro del proyecto.",
-    image: "/images/reales/puerta-37.jpg"
-  },
-  {
-    id: "techo-solisombra",
-    category: "Techo solisombra",
-    title: "Techo solisombra con policarbonato",
-    description: "Protección y confort mediante una solución adaptada al espacio.",
-    image: "/images/reales/puerta-36.jpg"
-  }
-] as const;
+const homeProjects = projects.slice(0, 4);
+
+const categoryLabels = {
+  seccionales: "Puertas seccionales",
+  levadizas: "Puertas levadizas",
+  corredizas: "Puertas corredizas",
+  estructuras: "Estructuras metálicas",
+  automatizacion: "Automatización"
+} as const;
 
 export function ProjectsShowcase() {
-  const [activeId, setActiveId] = useState<(typeof projects)[number]["id"]>(projects[0].id);
+  const [activeId, setActiveId] = useState(homeProjects[0].id);
   const reduceMotion = usePrefersReducedMotion();
-  const activeProject = projects.find((project) => project.id === activeId) ?? projects[0];
-  const secondaryProjects = projects.filter((project) => project.id !== activeProject.id);
+  const activeProject = homeProjects.find((project) => project.id === activeId) ?? homeProjects[0];
+  const secondaryProjects = homeProjects.filter((project) => project.id !== activeProject.id);
 
   const fadeUp: Variants = {
     hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 18 },
@@ -64,6 +44,7 @@ export function ProjectsShowcase() {
 
   return (
     <motion.section
+      id="proyectos"
       className={styles.section}
       aria-labelledby="projects-showcase-title"
       initial="hidden"
@@ -98,13 +79,13 @@ export function ProjectsShowcase() {
                   src={activeProject.image}
                   alt={activeProject.title}
                   fill
-                  priority={activeProject.id === projects[0].id}
+                  priority={activeProject.id === homeProjects[0].id}
                   sizes="(min-width: 1200px) 760px, (min-width: 768px) 72vw, calc(100vw - 36px)"
                 />
                 <span className={styles.featuredShade} aria-hidden="true" />
                 <span className={styles.featuredBadge}><Star aria-hidden="true" /> Proyecto destacado</span>
                 <div className={styles.featuredCopy}>
-                  <small>{activeProject.category}</small>
+                  <small>{categoryLabels[activeProject.category]}</small>
                   <h3>{activeProject.title}</h3>
                   <p>{activeProject.description}</p>
                   <Link href="/proyectos" className={styles.projectLink}>
@@ -134,7 +115,7 @@ export function ProjectsShowcase() {
                     />
                   </span>
                   <span className={styles.secondaryCopy}>
-                    <small>{project.category}</small>
+                    <small>{categoryLabels[project.category]}</small>
                     <strong>{project.title}</strong>
                     <span>{project.description}</span>
                   </span>

@@ -1,0 +1,16 @@
+.trigger { display: grid; width: 42px; height: 42px; place-items: center; border: 1px solid rgba(255,255,255,.2); border-radius: 50%; background: rgba(0,0,0,.16); color: currentColor; cursor: pointer; }
+.backdrop { position: fixed; z-index: 130; inset: 0; display: grid; align-items: start; justify-items: center; background: rgba(2,15,32,.68); padding: min(14vh, 120px) 18px 24px; backdrop-filter: blur(7px); }
+.dialog { position: relative; width: min(720px,100%); max-height: min(720px,calc(100svh - 80px)); overflow-y: auto; border-radius: 26px; background: white; padding: 22px; box-shadow: 0 35px 100px rgba(0,0,0,.34); color: #0f172a; }
+.close { position: absolute; top: 18px; right: 18px; display: grid; width: 38px; height: 38px; place-items: center; border: 1px solid #e2e8f0; border-radius: 50%; background: white; cursor: pointer; }
+.dialog h2 { margin: 2px 48px 18px 2px; font-size: 22px; letter-spacing: -.035em; }
+.field { display: flex; min-height: 54px; align-items: center; gap: 11px; border: 1px solid #cbd5e1; border-radius: 16px; padding: 0 16px; color: #64748b; }
+.field:focus-within { border-color: #1687ff; box-shadow: 0 0 0 4px rgba(22,135,255,.11); }
+.field input { width: 100%; border: 0; outline: 0; color: #0f172a; font: inherit; font-size: 15px; }
+.results { display: grid; gap: 8px; margin-top: 16px; }
+.results a { display: grid; gap: 5px; border: 1px solid #e2e8f0; border-radius: 15px; padding: 14px 16px; transition: border-color .2s, background .2s; }
+.results a:hover, .results a:focus-visible { border-color: #60a5fa; background: #eff6ff; outline: none; }
+.results small { color: #2563eb; font-size: 9px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.results strong { font-size: 14px; }
+.results p, .empty { margin: 0; color: #64748b; font-size: 11px; line-height: 1.55; }
+.empty { padding: 28px 5px; text-align: center; }
+@media (max-width: 700px) { .backdrop { align-items: stretch; padding: 10px; } .dialog { max-height: calc(100svh - 20px); border-radius: 22px; } }

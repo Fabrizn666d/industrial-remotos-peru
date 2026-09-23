@@ -298,3 +298,7 @@
 .adminBoundary .itemBody h3 { font-size: 16px; font-weight: 700; }
 .adminBoundary .itemBody dd,
 .adminBoundary .operationList dd { font-size: 13px !important; }
+.passwordField { position: relative; display: block; }
+.passwordField input { width: 100%; padding-right: 48px !important; }
+.passwordField button { position: absolute; top: 50%; right: 8px; display: grid; width: 36px; height: 36px; place-items: center; border: 0; border-radius: 10px; background: transparent; color: #64748b; transform: translateY(-50%); cursor: pointer; }
+.passwordField button:hover { background: #edf4ff; color: #075fcf; }

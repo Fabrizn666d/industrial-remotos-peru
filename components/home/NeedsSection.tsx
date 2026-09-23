@@ -11,42 +11,42 @@ const services = [
   {
     name: "Puertas automáticas / garaje",
     description: "Comodidad, seguridad y control en cada acceso.",
-    image: "/NUEVO/A/ChatGPT Image 21 sept 2026, 20_19_52 (1).png",
+    image: "/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_52 (1).png",
     href: "/soluciones/puertas-automatizacion",
     icon: "garage"
   },
   {
     name: "Baranda / acero inoxidable",
     description: "Seguridad y elegancia en cada detalle.",
-    image: "/NUEVO/A/ChatGPT Image 21 sept 2026, 20_19_52 (2).png",
+    image: "/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_52 (2).png",
     href: "/soluciones/acero-barandas",
     icon: "rail"
   },
   {
     name: "Mamparas y ventanas",
     description: "Diseño, iluminación y funcionalidad.",
-    image: "/NUEVO/A/ChatGPT Image 21 sept 2026, 20_19_53 (3).png",
+    image: "/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_53 (3).png",
     href: "/soluciones/ventanas-mamparas",
     icon: "window"
   },
   {
     name: "Techo solisombra",
     description: "Protección y confort para cada espacio.",
-    image: "/NUEVO/A/ChatGPT Image 21 sept 2026, 20_19_53 (4).png",
+    image: "/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_53 (4).png",
     href: "/soluciones/techos-coberturas",
     icon: "pergola"
   },
   {
     name: "Cerco Eléctrico",
     description: "Protección perimetral para tu tranquilidad.",
-    image: "/NUEVO/A/ChatGPT Image 21 sept 2026, 20_19_53 (5).png",
+    image: "/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_53 (5).png",
     href: "/soluciones/trabajos-especiales",
     icon: "fence"
   },
   {
     name: "Drywall",
     description: "Espacios versátiles y acabados de alto nivel.",
-    image: "/NUEVO/A/ChatGPT Image 21 sept 2026, 20_19_53 (6).png",
+    image: "/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_53 (6).png",
     href: "/soluciones/trabajos-especiales",
     icon: "wall"
   }
@@ -103,6 +103,7 @@ export function NeedsSection() {
 
   return (
     <motion.section
+      id="soluciones"
       className={styles.section}
       aria-labelledby="needs-title"
       initial="hidden"
@@ -158,6 +159,7 @@ export function NeedsSection() {
                       alt={service.name}
                       fill
                       sizes="(min-width: 1100px) 210px, (min-width: 768px) 220px, 38vw"
+                      unoptimized
                     />
                   </span>
                   <span className={styles.icon} aria-hidden="true"><ServiceIcon type={service.icon} /></span>

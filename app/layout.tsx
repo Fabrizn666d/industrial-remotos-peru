@@ -27,8 +27,15 @@ export const metadata: Metadata = {
     siteName: siteConfig.name,
     images: [{ url: "/images/reales/portada-puerta-seccional.jpg", width: 848, height: 480, alt: "Puerta seccional instalada por Industrial Remotos Perú" }]
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Industrial Remotos Perú",
+    description: "Soluciones de acceso que combinan seguridad, diseño y automatización.",
+    images: ["/images/reales/portada-puerta-seccional.jpg"]
+  },
   alternates: { canonical: "/" },
-  icons: { icon: "/brand-mark.svg" }
+  manifest: "/manifest.webmanifest",
+  icons: { icon: "/brand-mark.svg", apple: "/logo-original-transparent.png" }
 };
 
 export const viewport: Viewport = {

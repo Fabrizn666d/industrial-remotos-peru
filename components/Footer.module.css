@@ -11,7 +11,7 @@
   position: absolute;
   z-index: -2;
   inset: 0 0 74px;
-  background-image: url("/NUEVO/E/ChatGPT Image 22 sept 2026, 10_38_39 (1).png");
+  background-image: url("/NUEVO/E/ChatGPT Image 22 sept 2026%2C 10_38_39 (1).png");
   background-position: center;
   background-size: cover;
   opacity: .46;
@@ -135,15 +135,23 @@
 
 .links { display: grid; gap: 15px; }
 
-.links a {
+.links a,
+.links button {
   width: fit-content;
+  border: 0;
+  background: transparent;
+  padding: 0;
   color: #0f172a;
   font-size: clamp(13px, .9vw, 16px);
+  font-family: inherit;
   line-height: 1.3;
+  text-align: left;
+  cursor: pointer;
   transition: color 220ms ease, transform 220ms ease;
 }
 
-.links a:hover { color: #0879ed; transform: translateX(3px); }
+.links a:hover,
+.links button:hover { color: #0879ed; transform: translateX(3px); }
 
 .legal { display: flex; flex-direction: column; }
 
@@ -338,7 +346,7 @@
 
 @media (max-width: 640px) {
   .background {
-    background-image: url("/NUEVO/E/ChatGPT Image 22 sept 2026, 10_38_40 (2).png");
+    background-image: url("/NUEVO/E/ChatGPT Image 22 sept 2026%2C 10_38_40 (2).png");
     background-position: center;
   }
   .footer::after { background: rgba(248, 250, 252, .86); backdrop-filter: blur(1px) saturate(.85); }

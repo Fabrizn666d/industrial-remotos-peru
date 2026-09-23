@@ -16,8 +16,8 @@ import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import styles from "./ProjectPathSection.module.css";
 
 const PATH_ASSETS = {
-  desktopBackground: "/NUEVO/E/ChatGPT Image 22 sept 2026, 10_38_39 (1).png",
-  mobileBackground: "/NUEVO/E/ChatGPT Image 22 sept 2026, 10_38_40 (2).png",
+  desktopBackground: "/NUEVO/E/ChatGPT Image 22 sept 2026%2C 10_38_39 (1).png",
+  mobileBackground: "/NUEVO/E/ChatGPT Image 22 sept 2026%2C 10_38_40 (2).png",
   configuratorPreview: "/images/reales/portada-puerta-seccional.jpg"
 } as const;
 

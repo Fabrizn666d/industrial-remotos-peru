@@ -5,9 +5,9 @@ export const siteConfig = {
   phoneDisplay: "+51 987 908 444",
   phoneCompact: "987 908 444",
   whatsappNumber: "51987908444",
-  hours: "Lun – Sáb · 8:00 am – 6:00 pm",
-  location: "San Miguel, Lima – Perú",
-  coverage: "Lima, Callao y atención a todo el Perú",
+  hours: "",
+  location: "Lima - Villa El Salvador",
+  coverage: "Consulta disponibilidad para tu ubicación.",
   social: {
     facebook: "https://www.facebook.com/industrial5.H",
     instagram: "https://www.instagram.com/industrialremotos/",

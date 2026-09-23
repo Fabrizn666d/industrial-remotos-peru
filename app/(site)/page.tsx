@@ -1,13 +1,10 @@
 import { HomeExperience } from "@/components/HomeExperience";
-import { siteConfig } from "@/data/site";
+import { companyLegalData, siteConfig } from "@/data/site";
 
-const schema = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  name: siteConfig.name,
-  url: siteConfig.url,
-  inLanguage: "es-PE"
-};
+const schema = [
+  { "@context": "https://schema.org", "@type": "WebSite", name: siteConfig.name, url: siteConfig.url, inLanguage: "es-PE" },
+  { "@context": "https://schema.org", "@type": "Organization", name: companyLegalData.legalName, url: siteConfig.url, telephone: siteConfig.phoneDisplay, taxID: companyLegalData.ruc, sameAs: [siteConfig.social.facebook, siteConfig.social.instagram, siteConfig.social.tiktok] }
+];
 
 export default function HomePage() {
   return (

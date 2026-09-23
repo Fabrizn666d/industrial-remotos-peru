@@ -23,17 +23,14 @@
   overflow: hidden;
 }
 
-.sceneArtwork {
-  position: absolute;
-  inset: -6px;
-}
+.sceneArtwork { position: absolute; inset: 0; }
 
 .desktopScene,
 .mobileScene {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: fill;
+  object-fit: cover;
   user-select: none;
   pointer-events: none;
 }

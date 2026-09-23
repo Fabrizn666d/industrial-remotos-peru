@@ -39,7 +39,8 @@ const configurationSchema = z.object({
   automation: z.string().min(1).optional(),
   accessories: z.array(z.string().min(1)),
   installation: z.string().min(1).optional(),
-  notes: z.string().min(1).optional()
+  notes: z.string().min(1).optional(),
+  customFields: z.record(z.string().min(1).max(80), z.string().min(1).max(500)).optional()
 }).strict();
 
 const quoteItemSchema = z.object({
@@ -74,6 +75,11 @@ function normalizeConfiguration(configuration: Partial<QuoteItemConfiguration> =
   const width = optionalText(configuration.dimensions?.width);
   const height = optionalText(configuration.dimensions?.height);
   const accessories = Array.from(new Set((configuration.accessories ?? []).map((item) => item.trim()).filter(Boolean)));
+  const customFields = Object.fromEntries(
+    Object.entries(configuration.customFields ?? {})
+      .map(([key, value]) => [key.trim().slice(0, 80), value.trim().slice(0, 500)] as const)
+      .filter(([key, value]) => key && value)
+  );
 
   return {
     ...(optionalText(configuration.subtype) ? { subtype: optionalText(configuration.subtype) } : {}),
@@ -84,7 +90,8 @@ function normalizeConfiguration(configuration: Partial<QuoteItemConfiguration> =
     ...(optionalText(configuration.automation) ? { automation: optionalText(configuration.automation) } : {}),
     accessories,
     ...(optionalText(configuration.installation) ? { installation: optionalText(configuration.installation) } : {}),
-    ...(optionalText(configuration.notes) ? { notes: optionalText(configuration.notes) } : {})
+    ...(optionalText(configuration.notes) ? { notes: optionalText(configuration.notes) } : {}),
+    ...(Object.keys(customFields).length ? { customFields } : {})
   };
 }
 
@@ -119,7 +126,10 @@ function configurationFromUnknown(value: unknown, legacyItem: UnknownRecord): Qu
     automation: optionalText(stored.automation),
     accessories: storedAccessories,
     installation: optionalText(stored.installation),
-    notes: optionalText(stored.notes)
+    notes: optionalText(stored.notes),
+    customFields: isRecord(stored.customFields)
+      ? Object.fromEntries(Object.entries(stored.customFields).filter((entry): entry is [string, string] => typeof entry[1] === "string"))
+      : undefined
   });
 }
 
@@ -188,7 +198,8 @@ function cloneConfiguration(configuration: QuoteItemConfiguration): QuoteItemCon
   return {
     ...configuration,
     ...(configuration.dimensions ? { dimensions: { ...configuration.dimensions } } : {}),
-    accessories: [...configuration.accessories]
+    accessories: [...configuration.accessories],
+    ...(configuration.customFields ? { customFields: { ...configuration.customFields } } : {})
   };
 }
 

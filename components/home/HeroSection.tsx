@@ -14,6 +14,7 @@ import {
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 
 const HERO_ADVISOR_ASSET = "/NUEVO/ChatGPT Image 22 sept 2026%2C 14_56_50.png";
+const MotionLink = motion.create(Link);
 
 export function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -107,13 +108,6 @@ export function HeroSection() {
       setPhase("logo-fading");
     }
 
-    if (
-      Number.isFinite(video.duration)
-      && video.duration > 0
-      && video.currentTime >= video.duration - HOME_INTRO_TIMING.heroRevealLeadSeconds
-    ) {
-      revealHero();
-    }
   };
 
   const handleEnded = () => setVideoEnded(true);
@@ -157,16 +151,16 @@ export function HeroSection() {
       <motion.div className="irp-hero__ambient" style={reduceMotion ? undefined : { x: glowX }} />
 
       {(phase === "hero-reveal" || videoEnded) && (
-        <motion.a
+        <MotionLink
           className="irp-hero__advisor"
           href="/asistente"
           data-analytics="irp_start"
           aria-label="Abrir IRP Asistente"
-          initial={{ opacity: 0, x: 280, y: 24, scale: .965, filter: "blur(14px)", clipPath: "inset(0 0 0 100% round 24px)" }}
-          animate={{ opacity: 1, x: 0, y: 0, scale: 1, filter: "blur(0px)", clipPath: "inset(0 0 0 0% round 24px)" }}
+          initial={{ opacity: 0, x: 70, scale: .99 }}
+          animate={{ opacity: 1, x: 0, scale: 1 }}
           transition={{
-            duration: reduceMotion ? .65 : 1.85,
-            delay: reduceMotion ? .04 : .28,
+            duration: reduceMotion ? .01 : 1.05,
+            delay: reduceMotion ? 0 : .25,
             ease: [0.16, 1, 0.3, 1]
           }}
         >
@@ -177,7 +171,7 @@ export function HeroSection() {
             height={1448}
             sizes="(max-width: 767px) 215px, (max-width: 1080px) 430px, 680px"
           />
-        </motion.a>
+        </MotionLink>
       )}
 
       <div className="irp-shell irp-hero__layout">

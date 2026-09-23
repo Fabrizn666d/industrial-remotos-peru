@@ -14,9 +14,12 @@ export function ServiceMiniConfigurator({ solution }: { solution: SolutionPage }
   const { addProduct } = useProject();
   const [values, setValues] = useState<Record<string, string>>({});
   const [added, setAdded] = useState(false);
-  const additionalNotes = solution.miniFields
+  const customFields = Object.fromEntries(solution.miniFields
     .filter((field) => !["width", "height", "subtype", "design", "finish", "automation"].includes(field.key) && values[field.key])
-    .map((field) => `${field.label}: ${values[field.key]}`)
+    .map((field) => [field.key, values[field.key]]));
+  const additionalNotes = solution.miniFields
+    .filter((field) => customFields[field.key])
+    .map((field) => `${field.label}: ${customFields[field.key]}`)
     .join(". ");
   const quoteHref = `/cotizar?${new URLSearchParams({
     producto: solution.quoteProduct,
@@ -37,7 +40,8 @@ export function ServiceMiniConfigurator({ solution }: { solution: SolutionPage }
       finish: values.finish,
       automation: values.automation,
       accessories: [],
-      notes: additionalNotes || undefined
+      notes: additionalNotes || undefined,
+      customFields
     });
     setAdded(true);
     window.dispatchEvent(new CustomEvent("irp:analytics", { detail: { name: "project_add", parameters: { service: solution.slug } } }));

@@ -21,7 +21,8 @@ function configurationSummary(item: QuoteItem) {
     configuration.panel,
     configuration.automation,
     ...configuration.accessories,
-    configuration.installation
+    configuration.installation,
+    ...Object.values(configuration.customFields ?? {})
   ].filter((value): value is string => Boolean(value) && value !== "Por definir" && value !== "Por definir con el asesor");
 }
 

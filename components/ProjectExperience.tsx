@@ -26,7 +26,7 @@ function projectItemSummary(item: ReturnType<typeof useProject>["items"][number]
   const measures = dimensions?.width || dimensions?.height
     ? `${dimensions.width ?? "?"} ${dimensions.unit} × ${dimensions.height ?? "?"} ${dimensions.unit}`
     : "Medidas por definir";
-  return [measures, item.configuration.finish, item.configuration.design]
+  return [measures, item.configuration.finish, item.configuration.design, ...Object.values(item.configuration.customFields ?? {})]
     .filter((value): value is string => Boolean(value) && value !== "Por definir")
     .join(" · ");
 }

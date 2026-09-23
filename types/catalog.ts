@@ -49,6 +49,7 @@ export type QuoteItemConfiguration = {
   accessories: string[];
   installation?: string;
   notes?: string;
+  customFields?: Record<string, string>;
 };
 
 export type PendingPrice = {

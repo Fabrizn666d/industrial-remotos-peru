@@ -1,7 +1,6 @@
 .section {
   position: relative;
   z-index: 6;
-  min-height: clamp(954px, calc(56.25vw + 104px), 1184px);
   overflow: visible;
   margin-top: -2px;
   background-color: #f7fbff;
@@ -299,11 +298,49 @@
 
 .ctaWrap {
   position: relative;
-  top: -26px;
   display: flex;
   justify-content: center;
-  margin-top: clamp(32px, 3vw, 45px);
+  margin-top: clamp(22px, 2vw, 32px);
 }
+
+.secondaryLinks {
+  display: grid;
+  width: min(760px, 100%);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 28px auto 0;
+}
+
+.secondaryLink {
+  display: grid;
+  min-width: 0;
+  min-height: 72px;
+  grid-template-columns: 38px minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 13px;
+  border-top: 1px solid rgba(42, 105, 196, .28);
+  border-bottom: 1px solid rgba(42, 105, 196, .14);
+  padding: 12px 14px;
+  color: #07164b;
+  transition: border-color 300ms ease, background-color 300ms ease, transform 350ms cubic-bezier(.16,1,.3,1);
+}
+
+.secondaryLink > svg:first-child {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: rgba(7, 92, 255, .07);
+  padding: 9px;
+  color: #075cff;
+}
+
+.secondaryLink > span { display: grid; gap: 3px; min-width: 0; }
+.secondaryLink strong { font-size: 14px; font-weight: 760; }
+.secondaryLink small { color: #526a90; font-size: 11px; line-height: 1.35; }
+.secondaryLink > svg:last-child { width: 17px; color: #075cff; transition: transform 300ms ease; }
+.secondaryLink:hover { border-color: rgba(7,92,255,.45); background: rgba(255,255,255,.5); transform: translateY(-1px); }
+.secondaryLink:hover > svg:last-child { transform: translateX(3px); }
+.secondaryLink:focus-visible { outline: 3px solid rgba(7,92,255,.3); outline-offset: 3px; }
 
 .cta {
   display: flex;
@@ -345,7 +382,7 @@
 }
 
 @media (min-width: 768px) and (max-width: 1099px) {
-  .section { min-height: 1094px; background-position: center bottom; }
+  .section { background-position: center bottom; }
   .shell { width: min(calc(100% - 44px), 980px); padding-top: 0; padding-bottom: 170px; }
   .processBand { width: min(100%, 900px); margin-bottom: 62px; }
   .processStep { padding-inline: 14px; }
@@ -358,7 +395,6 @@
 
 @media (max-width: 767px) {
   .section {
-    min-height: 1200px;
     background-image: url("/NUEVO/A/ChatGPT%20Image%2021%20sept%202026%2C%2020_01_54.png");
     background-position: center bottom;
     background-size: cover;
@@ -420,6 +456,20 @@
   }
   .copy small { display: none; }
 
+  .secondaryLinks {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    margin-top: 26px;
+    border: 1px solid rgba(112, 157, 211, .22);
+    border-radius: 20px;
+    background: rgba(248, 252, 255, .88);
+    padding: 6px;
+    box-shadow: 0 12px 30px rgba(24, 70, 126, .08);
+    backdrop-filter: blur(9px);
+  }
+  .secondaryLink { min-height: 66px; padding-inline: 10px; }
+  .secondaryLink small { font-size: 10px; }
+
   .ctaWrap { margin-top: 36px; }
   .cta { width: min(94%, 420px); min-height: 66px; gap: 13px; padding-right: 17px; }
   .cta > span { width: 52px; height: 52px; flex-basis: 52px; }
@@ -427,7 +477,6 @@
 }
 
 @media (max-width: 374px) {
-  .section { min-height: 1140px; }
   .shell { width: calc(100% - 32px); padding-bottom: 220px; }
   .grid { gap: 27px 14px; }
   .visual { width: min(38vw, 145px); }

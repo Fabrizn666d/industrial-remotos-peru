@@ -23,7 +23,21 @@ try {
   check(Number(introState.headerOpacity) < .1, "La navbar aparece antes del final del video");
   await introPage.locator(".irp-entry-loader").waitFor({ state: "detached", timeout: 15000 });
   check(await introPage.evaluate(() => sessionStorage.getItem("irp-intro-v4")) === "seen", "El loader no marcó la sesión al finalizar");
+  const advisor = introPage.locator(".irp-hero__advisor");
+  await advisor.waitFor({ state: "visible" });
+  await Promise.all([introPage.waitForURL("**/asistente"), advisor.click()]);
+  check(new URL(introPage.url()).pathname === "/asistente", "El trabajador no navega a /asistente");
+  await introPage.goBack({ waitUntil: "domcontentloaded" });
+  await introPage.waitForTimeout(350);
+  check(await introPage.locator(".irp-entry-loader").count() === 0, "El loader se repitió al volver atrás en la misma sesión");
   await introContext.close();
+
+  const freshIntroContext = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "es-PE" });
+  const freshIntroPage = await freshIntroContext.newPage();
+  await freshIntroPage.goto(baseUrl, { waitUntil: "domcontentloaded" });
+  await freshIntroPage.locator(".irp-entry-loader").waitFor({ state: "visible" });
+  check(await freshIntroPage.locator(".irp-hero__video").isVisible(), "Una sesión nueva no volvió a mostrar la introducción");
+  await freshIntroContext.close();
 
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: "es-PE", reducedMotion: "reduce" });
   await context.addInitScript(() => sessionStorage.setItem("irp-intro-v4", "seen"));
@@ -69,9 +83,10 @@ try {
     contractedGood: "Servicio de prueba", amount: "", incidentDate: today, type: "RECLAMO", detail: "Registro automatizado para validar el contrato del endpoint.", requestedResolution: "Validar la recepción del registro.", consent: true, website: ""
   };
   const future = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
-  const rejected = await context.request.post(`${baseUrl}/api/complaints`, { headers: { Origin: baseUrl, "Content-Type": "application/json" }, data: { ...complaint, clientSubmissionId: crypto.randomUUID(), incidentDate: future } });
+  const qaRun = Date.now().toString().slice(-8);
+  const rejected = await context.request.post(`${baseUrl}/api/complaints`, { headers: { Origin: baseUrl, "Content-Type": "application/json", "X-Real-IP": `qa-invalid-${qaRun}` }, data: { ...complaint, clientSubmissionId: crypto.randomUUID(), incidentDate: future } });
   check(rejected.status() === 400, "El endpoint aceptó una fecha futura");
-  const accepted = await context.request.post(`${baseUrl}/api/complaints`, { headers: { Origin: baseUrl, "Content-Type": "application/json" }, data: complaint });
+  const accepted = await context.request.post(`${baseUrl}/api/complaints`, { headers: { Origin: baseUrl, "Content-Type": "application/json", "X-Real-IP": `qa-valid-${qaRun}` }, data: complaint });
   const acceptedBody = await accepted.json();
   check(accepted.status() === 201 && /^REC-\d{4}-/.test(acceptedBody.complaint?.code || ""), "El endpoint no registró un reclamo válido");
 

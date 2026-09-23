@@ -11,9 +11,8 @@ export const HOME_INTRO_ASSETS = {
 
 export const HOME_INTRO_TIMING = {
   playbackRate: 1,
-  logoFadeAtVideoSeconds: 2.3,
-  logoFadeMs: 900,
-  heroRevealLeadSeconds: 0.2
+  logoFadeAtVideoSeconds: 2.55,
+  logoFadeMs: 950
 } as const;
 
 export const HOME_INTRO_STATE_EVENT = "irp:intro-state";

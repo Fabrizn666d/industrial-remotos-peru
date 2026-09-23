@@ -53,6 +53,7 @@ function compactConfiguration(configuration: QuoteItemConfiguration) {
   if (configuration.accessories.length) values.accessories = configuration.accessories;
   if (configuration.installation) values.installation = configuration.installation;
   if (configuration.notes) values.notes = configuration.notes;
+  for (const [key, value] of Object.entries(configuration.customFields ?? {})) values[`custom_${key}`] = value;
   return values;
 }
 

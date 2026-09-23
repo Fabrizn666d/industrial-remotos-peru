@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, type Variants } from "framer-motion";
-import { ArrowRight, Cog, PencilRuler, UserRoundCheck, Wrench } from "lucide-react";
+import { ArrowRight, Blocks, Cog, DoorOpen, PencilRuler, UserRoundCheck, Wrench } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
@@ -72,6 +72,21 @@ const processSteps = [
     title: "Acompañamiento",
     description: "Un equipo durante todo el proyecto",
     icon: Wrench
+  }
+] as const;
+
+const secondaryServices = [
+  {
+    title: "Puertas principales",
+    description: "Accesos peatonales diseñados para integrarse a la fachada.",
+    href: "/soluciones/puertas-principales",
+    icon: DoorOpen
+  },
+  {
+    title: "Estructuras metálicas",
+    description: "Fabricación especial según medidas, uso y condiciones del proyecto.",
+    href: "/soluciones/estructuras-metalicas",
+    icon: Blocks
   }
 ] as const;
 
@@ -171,6 +186,16 @@ export function NeedsSection() {
             </motion.div>
           ))}
         </motion.div>
+
+        <motion.nav className={styles.secondaryLinks} variants={fadeUp} aria-label="Más soluciones">
+          {secondaryServices.map(({ title, description, href, icon: Icon }) => (
+            <Link href={href} className={styles.secondaryLink} key={href}>
+              <Icon aria-hidden="true" />
+              <span><strong>{title}</strong><small>{description}</small></span>
+              <ArrowRight aria-hidden="true" />
+            </Link>
+          ))}
+        </motion.nav>
 
         <motion.div className={styles.ctaWrap} variants={fadeUp}>
           <Link href="/soluciones" className={styles.cta}>

@@ -26,8 +26,7 @@ const services = [
     id: "puertas",
     shortTitle: "Puertas",
     title: "Puertas automáticas / garaje",
-    description: "Puertas de garaje, accesos automatizados y puertas principales diseñadas de acuerdo con el espacio y las necesidades del proyecto.",
-    note: "También desarrollamos puertas principales y otros accesos residenciales.",
+    description: "Puertas de garaje y accesos vehiculares con automatización y control adaptados al proyecto.",
     href: "/soluciones/puertas-automatizacion",
     icon: Warehouse,
     desktop: { x: 38, y: 65 },
@@ -228,17 +227,14 @@ export function InteractiveSolutionsSection() {
               );
             })}
 
-            <button
-              type="button"
+            <Link
+              href="/soluciones/puertas-principales"
               className={`${styles.hotspot} ${styles.secondaryDoor} ${activeId === "puertas" ? styles.activeHotspot : ""}`}
-              aria-label="Seleccionar puertas principales y accesos residenciales"
-              aria-pressed={selectedId === "puertas"}
-              onClick={() => setSelectedId("puertas")}
-              onPointerEnter={(event) => preview("puertas", event)}
-              onPointerLeave={() => setPreviewId(null)}
+              aria-label="Conocer puertas principales"
+              title="Puertas principales"
             >
               <DoorOpen aria-hidden="true" />
-            </button>
+            </Link>
 
             <AnimatePresence mode="wait">
               <motion.article
@@ -254,7 +250,7 @@ export function InteractiveSolutionsSection() {
                 <div>
                   <h3>{active.title}</h3>
                   <p>{active.description}</p>
-                  {"note" in active && <small>{active.note}</small>}
+                  {"note" in active && typeof active.note === "string" && <small>{active.note}</small>}
                   <Link href={active.href}>Explorar solución <ArrowRight aria-hidden="true" /></Link>
                 </div>
               </motion.article>
@@ -295,7 +291,7 @@ export function InteractiveSolutionsSection() {
               <div>
                 <h3>{active.title}</h3>
                 <p>{active.description}</p>
-                {"note" in active && <small>{active.note}</small>}
+                {"note" in active && typeof active.note === "string" && <small>{active.note}</small>}
                 <Link href={active.href}>Explorar solución <ArrowRight aria-hidden="true" /></Link>
               </div>
             </motion.article>

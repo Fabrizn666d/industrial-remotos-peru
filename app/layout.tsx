@@ -45,7 +45,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es-PE">
+    <html lang="es-PE" data-scroll-behavior="smooth">
       <body className={plusJakartaSans.variable}>
         <a className="skip-link" href="#contenido">Saltar al contenido</a>
         {children}

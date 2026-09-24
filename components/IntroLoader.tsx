@@ -1,6 +1,7 @@
 "use client";
 
 import type { CSSProperties } from "react";
+import Loader from "@/components/Loader";
 import { HOME_INTRO_ASSETS, HOME_INTRO_TIMING, useHomeIntro } from "@/components/HomeIntroController";
 
 export function IntroLoader() {
@@ -19,7 +20,7 @@ export function IntroLoader() {
       aria-live="polite"
       role="status"
     >
-      <div className="irp-entry-loader__brand-stage" aria-hidden="true">
+      <Loader durationMs={2600} visible={!logoHidden}>
         <div className="irp-entry-loader__brand">
           <img
             className="irp-entry-loader__logo"
@@ -31,7 +32,7 @@ export function IntroLoader() {
             decoding="sync"
           />
         </div>
-      </div>
+      </Loader>
 
       <span className="sr-only">Abriendo el acceso</span>
     </div>

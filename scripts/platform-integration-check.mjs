@@ -37,9 +37,50 @@ try {
   check(introState.error === null, `El elemento video reportó error ${introState.error}`);
   check((introState.readyState ?? 0) >= 2 && introState.videoWidth === 1920 && introState.videoHeight === 1080, "Metadatos/readyState del MP4 inválidos");
   check(introState.logoVisible, "El logo inicial no está superpuesto al video");
-  check(Number(introState.headerOpacity) < .1, "La navbar aparece antes del final del video");
+  check(Number(introState.headerOpacity) < .1, "La navbar aparece antes de la fase de reveal");
   await introPage.locator(".irp-entry-loader").waitFor({ state: "detached", timeout: 15000 });
-  check(await introPage.evaluate(() => sessionStorage.getItem("irp-intro-v4")) === "seen", "El loader no marcó la sesión al finalizar");
+  await introPage.waitForFunction(() => document.body.classList.contains("intro-revealing"));
+  const revealState = await introPage.evaluate(() => {
+    const video = document.querySelector(".irp-hero__video");
+    return {
+      currentTime: video?.currentTime ?? 0,
+      duration: video?.duration ?? 0,
+      paused: video?.paused,
+      ended: video?.ended,
+      session: sessionStorage.getItem("irp-intro-v4"),
+      bodyClass: document.body.className,
+      headerOpacity: Number(getComputedStyle(document.querySelector(".site-header")).opacity),
+      advisorMounted: Boolean(document.querySelector(".irp-hero__advisor"))
+    };
+  });
+  console.log(JSON.stringify({ revealState }));
+  check(revealState.duration - revealState.currentTime <= 5.2 && revealState.duration - revealState.currentTime >= 4.4, `Reveal fuera del umbral esperado: ${revealState.currentTime}/${revealState.duration}`);
+  check(revealState.paused === false && revealState.ended === false, "El video se detuvo al iniciar el reveal");
+  check(revealState.session !== "seen", "La sesión se marcó antes de onEnded");
+  check(revealState.bodyClass.includes("intro-revealing"), "Falta la clase intro-revealing");
+  check(!revealState.advisorMounted, "El trabajador apareció de golpe al iniciar el reveal");
+
+  await introPage.waitForTimeout(4300);
+  const stagedReveal = await introPage.evaluate(() => ({
+    ended: document.querySelector(".irp-hero__video")?.ended,
+    session: sessionStorage.getItem("irp-intro-v4"),
+    headerOpacity: Number(getComputedStyle(document.querySelector(".site-header")).opacity),
+    workerOpacity: Number(getComputedStyle(document.querySelector(".irp-hero__advisor")).opacity),
+    kickerOpacity: Number(getComputedStyle(document.querySelector(".irp-kicker")).opacity),
+    titleOpacity: Number(getComputedStyle(document.querySelector(".irp-hero__title-line")).opacity),
+    actionsOpacity: Number(getComputedStyle(document.querySelector(".irp-hero__action-stage--primary")).opacity),
+    secondaryActionOpacity: Number(getComputedStyle(document.querySelector(".irp-hero__action-stage--secondary")).opacity)
+  }));
+  check(stagedReveal.ended === false && stagedReveal.session !== "seen", "El reveal no ocurrió mientras el MP4 seguía activo");
+  check(stagedReveal.headerOpacity > .7, "La navbar no apareció progresivamente antes del final");
+  check(stagedReveal.workerOpacity > .7, "El trabajador no recorrió su entrada antes del final");
+  check(stagedReveal.kickerOpacity > .5 && stagedReveal.titleOpacity > .5 && stagedReveal.actionsOpacity > 0, "La secuencia escalonada del Hero no avanzó durante el video");
+
+  await introPage.waitForFunction(() => {
+    const video = document.querySelector(".irp-hero__video");
+    return video?.ended && sessionStorage.getItem("irp-intro-v4") === "seen" && document.body.classList.contains("intro-complete");
+  }, undefined, { timeout: 6000 });
+  check(await introPage.evaluate(() => sessionStorage.getItem("irp-intro-v4")) === "seen", "El loader no marcó la sesión en onEnded");
   const advisor = introPage.locator(".irp-hero__advisor");
   await advisor.waitFor({ state: "visible" });
   await Promise.all([introPage.waitForURL("**/asistente"), advisor.click()]);

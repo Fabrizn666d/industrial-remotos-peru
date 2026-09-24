@@ -40,6 +40,9 @@ const config: Config = {
         header: "0 4px 20px rgba(15,23,42,0.08)"
       },
       backgroundImage: {
+        "gradient-primary": "linear-gradient(135deg, #1768EB 0%, #4BAEFF 100%)",
+        "gradient-hero":
+          "linear-gradient(135deg, rgba(4,16,34,0.9) 0%, rgba(17,76,139,0.7) 100%)",
         "hero-overlay":
           "linear-gradient(180deg, rgba(11,30,58,0.85) 0%, rgba(11,30,58,0.2) 100%)",
         "dark-stage": "linear-gradient(145deg, #071527 0%, #0B1E3A 45%, #132952 100%)"

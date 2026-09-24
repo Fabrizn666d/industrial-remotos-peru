@@ -39,7 +39,7 @@ Definidos en `lib/motion.ts`:
 - [x] Fase 1 — lectura, plan, tokens y componente de reveal reutilizable.
 - [x] Fase 2 — defectos visibles del intro, título y primer pintado.
 - [x] Fase 3 — coreografía del intro y opción “Saltar intro”.
-- [ ] Fase 4 — entrada y movimiento continuo del hero.
+- [x] Fase 4 — entrada y movimiento continuo del hero.
 - [ ] Fase 5 — movimiento del resto de la web.
 - [ ] Fase 6 — responsive, accesibilidad, rendimiento, limpieza y QA final.
 
@@ -53,3 +53,11 @@ Se completará al terminar la Fase 6 con tiempos medidos sobre el MP4 real.
 - Los puntos blancos de las bisagras pertenecen al metraje. Se suavizan durante la fase interior con una capa óptica localizada de bajo contraste que desaparece antes del hero.
 - Las líneas del título tienen `line-height` y reserva inferior propia para no recortar descendentes, comas, tildes ni eñes; el `h1` mantiene su texto completo mediante `aria-label`.
 - El loader tiene poster y color base desde el HTML/CSS inicial, por lo que no depende de la hidratación para pintar el primer fotograma.
+
+## Movimiento continuo del hero
+
+- El fondo conserva el encuadre y respira entre escala `1` y `1.06` durante `24 s`, además del parallax vertical existente.
+- El halo azul detrás del asesor cambia de opacidad cada `9 s`; el asesor flota un máximo de `4 px` y responde al puntero un máximo de `6 px` únicamente en dispositivos con mouse.
+- La barra de la burbuja completa un ciclo de `6 s` y las palabras azules reciben un solo barrido de luz después de entrar.
+- Los bucles se detienen cuando el hero sale del viewport o la pestaña deja de estar visible. Con movimiento reducido quedan desactivados.
+- Los botones usan desplazamiento de `2 px`, presión a escala `.98`, foco visible y desplazamiento del degradado sin alterar el layout.

@@ -13,6 +13,9 @@ import {
 } from "@/components/HomeIntroController";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { useHeroScroll } from "@/hooks/useHeroScroll";
+import { usePointerParallax } from "@/hooks/usePointerParallax";
+import { motionDuration, motionEase } from "@/lib/motion";
+import { usePageVisibility } from "@/lib/use-page-visibility";
 
 const HERO_ADVISOR_ASSET = "/NUEVO/ChatGPT Image 22 sept 2026%2C 14_56_50.png";
 const MotionLink = motion.create(Link);
@@ -26,7 +29,11 @@ export function HeroSection() {
   const { status, revealStage, heroVisible, markPlaying, beginReveal, advanceReveal, hideLogo, complete, fail } = useHomeIntro();
   const reduceMotion = usePrefersReducedMotion();
   const isInView = useInView(sectionRef, { once: true, amount: 0.15 });
+  const heroInViewport = useInView(sectionRef, { amount: 0.05 });
+  const pageVisible = usePageVisibility();
   const { mediaY, glowX, waveY } = useHeroScroll(sectionRef);
+  const motionActive = !reduceMotion && pageVisible && heroInViewport && heroVisible;
+  const advisorPointer = usePointerParallax(sectionRef, motionActive);
 
   const revealItemVariants = useMemo<Variants>(() => ({
     hidden: {
@@ -38,7 +45,7 @@ export function HeroSection() {
       opacity: 1,
       y: 0,
       filter: "blur(0px)",
-      transition: { duration: reduceMotion ? 0.01 : 0.6, ease: "easeOut" }
+      transition: { duration: reduceMotion ? motionDuration.reduced : 0.8, ease: motionEase.enter }
     }
   }), [reduceMotion]);
 
@@ -217,7 +224,12 @@ export function HeroSection() {
 
   return (
     <section ref={sectionRef} className="irp-hero bg-gradient-hero" id="inicio">
-      <motion.div className="irp-hero__media" style={reduceMotion ? undefined : { y: mediaY }}>
+      <motion.div
+        className="irp-hero__media"
+        style={reduceMotion ? undefined : { y: mediaY, willChange: motionActive ? "transform" : "auto" }}
+        animate={motionActive ? { scale: [1, 1.06, 1] } : { scale: 1 }}
+        transition={motionActive ? { duration: 24, repeat: Infinity, ease: motionEase.long } : { duration: .6, ease: motionEase.enter }}
+      >
         <div className="irp-hero__media-frame">
           {renderFallback && <Image
             className="irp-hero__fallback"
@@ -250,7 +262,12 @@ export function HeroSection() {
         </div>
       </motion.div>
       <div className="irp-hero__cinema" />
-      <motion.div className="irp-hero__ambient" style={reduceMotion ? undefined : { x: glowX }} />
+      <motion.div
+        className="irp-hero__ambient"
+        style={reduceMotion ? undefined : { x: glowX, willChange: motionActive ? "transform, opacity" : "auto" }}
+        animate={motionActive ? { opacity: [.38, .62, .38] } : undefined}
+        transition={motionActive ? { duration: 9, repeat: Infinity, ease: "easeInOut" } : undefined}
+      />
 
       <AnimatePresence initial={false}>
       {showAdvisor && (
@@ -281,14 +298,28 @@ export function HeroSection() {
             scale: { duration: reduceMotion ? .01 : 1.55, delay: reduceMotion ? 0 : workerDelay, ease: [0.16, 0.84, 0.3, 1] }
           }}
         >
-          <Image
-            src={HERO_ADVISOR_ASSET}
-            alt="Asesor de Industrial Remotos Perú listo para orientar tu proyecto"
-            width={1086}
-            height={1448}
-            loading="eager"
-            sizes="(max-width: 767px) 215px, (max-width: 1080px) 430px, 680px"
-          />
+          <motion.span className="irp-hero__advisor-depth" style={advisorPointer}>
+            <motion.span
+              className="irp-hero__advisor-float"
+              animate={motionActive ? { y: [0, -4, 0, 4, 0] } : { y: 0 }}
+              transition={motionActive ? { duration: 7, repeat: Infinity, ease: "easeInOut" } : { duration: .5, ease: motionEase.enter }}
+            >
+              <Image
+                src={HERO_ADVISOR_ASSET}
+                alt="Asesor de Industrial Remotos Perú listo para orientar tu proyecto"
+                width={1086}
+                height={1448}
+                loading="eager"
+                sizes="(max-width: 767px) 215px, (max-width: 1080px) 430px, 680px"
+              />
+              <motion.i
+                className="irp-hero__advisor-progress"
+                animate={motionActive ? { scaleX: [.12, 1, .12] } : { scaleX: .12 }}
+                transition={motionActive ? { duration: 6, repeat: Infinity, ease: "easeInOut" } : { duration: .3 }}
+                aria-hidden="true"
+              />
+            </motion.span>
+          </motion.span>
         </MotionLink>
       )}
       </AnimatePresence>
@@ -296,7 +327,7 @@ export function HeroSection() {
       <div className="irp-shell irp-hero__layout">
         <div className="irp-hero__content">
           <motion.span
-            className="irp-kicker transform-gpu will-change-transform"
+            className="irp-kicker transform-gpu"
             variants={revealItemVariants}
             initial="hidden"
             animate={stageIsVisible(cueStage("kicker")) ? "visible" : "hidden"}
@@ -307,12 +338,12 @@ export function HeroSection() {
             initial="hidden"
             animate={stageIsVisible(cueStage("title-1")) ? "visible" : "hidden"}
           >
-            <motion.span aria-hidden="true" variants={revealItemVariants} className="irp-hero__title-line transform-gpu will-change-transform">Soluciones de acceso</motion.span>
-            <motion.span aria-hidden="true" variants={revealItemVariants} className="irp-hero__title-line transform-gpu will-change-transform">que combinan <em>seguridad,</em></motion.span>
-            <motion.span aria-hidden="true" variants={revealItemVariants} className="irp-hero__title-line transform-gpu will-change-transform">diseño y <em>automatización.</em></motion.span>
+            <motion.span aria-hidden="true" variants={revealItemVariants} className="irp-hero__title-line transform-gpu">Soluciones de acceso</motion.span>
+            <motion.span aria-hidden="true" variants={revealItemVariants} className="irp-hero__title-line transform-gpu">que combinan <em>seguridad,</em></motion.span>
+            <motion.span aria-hidden="true" variants={revealItemVariants} className="irp-hero__title-line transform-gpu">diseño y <em>automatización.</em></motion.span>
           </motion.h1>
           <motion.p
-            className="transform-gpu will-change-transform"
+            className="transform-gpu"
             variants={revealItemVariants}
             initial="hidden"
             animate={stageIsVisible(cueStage("description")) ? "visible" : "hidden"}
@@ -320,26 +351,28 @@ export function HeroSection() {
             Puertas automáticas, techos, ventanas, mamparas y estructuras metálicas a medida para tu hogar o negocio.
           </motion.p>
           <div className="irp-hero__actions">
-            <motion.span className="irp-hero__action-stage irp-hero__action-stage--primary transform-gpu will-change-transform" variants={revealItemVariants} initial="hidden" animate={stageIsVisible(cueStage("cta-primary")) ? "visible" : "hidden"}>
+            <motion.span className="irp-hero__action-stage irp-hero__action-stage--primary transform-gpu" variants={revealItemVariants} initial="hidden" animate={stageIsVisible(cueStage("cta-primary")) ? "visible" : "hidden"}>
               <MotionLink
                 className="irp-button irp-button--primary transform-gpu"
                 href="/cotizar"
                 data-analytics="hero_cta_click"
-                whileHover={reduceMotion ? undefined : { scale: 1.05, y: -2, boxShadow: "0 22px 52px rgba(17,106,233,.4)" }}
+                whileHover={reduceMotion ? undefined : { y: -2, boxShadow: "0 22px 52px rgba(17,106,233,.4)" }}
+                whileTap={reduceMotion ? undefined : { scale: .98 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
               >Diseña y cotiza tu proyecto <ArrowRight size={18} /></MotionLink>
             </motion.span>
-            <motion.span className="irp-hero__action-stage irp-hero__action-stage--secondary transform-gpu will-change-transform" variants={revealItemVariants} initial="hidden" animate={stageIsVisible(cueStage("cta-secondary")) ? "visible" : "hidden"}>
+            <motion.span className="irp-hero__action-stage irp-hero__action-stage--secondary transform-gpu" variants={revealItemVariants} initial="hidden" animate={stageIsVisible(cueStage("cta-secondary")) ? "visible" : "hidden"}>
               <MotionLink
                 className="irp-button irp-button--glass transform-gpu"
                 href="/proyectos"
                 data-analytics="project_open"
-                whileHover={reduceMotion ? undefined : { scale: 1.05, y: -2, boxShadow: "0 18px 42px rgba(0,18,40,.25)" }}
+                whileHover={reduceMotion ? undefined : { y: -2, boxShadow: "0 18px 42px rgba(0,18,40,.25)" }}
+                whileTap={reduceMotion ? undefined : { scale: .98 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
               ><Play size={15} fill="currentColor" /> Ver proyectos reales</MotionLink>
             </motion.span>
           </div>
-          <motion.div className="irp-hero__proof transform-gpu will-change-transform" variants={revealItemVariants} initial="hidden" animate={stageIsVisible(cueStage("proof")) ? "visible" : "hidden"}>
+          <motion.div className="irp-hero__proof transform-gpu" variants={revealItemVariants} initial="hidden" animate={stageIsVisible(cueStage("proof")) ? "visible" : "hidden"}>
             <span><b>Diseño a medida</b> según tu espacio y forma de uso</span>
             <i />
             <span><b>Asesoría técnica</b> antes de fabricar e instalar</span>

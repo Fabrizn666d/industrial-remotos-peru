@@ -5,8 +5,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 
 export const HOME_INTRO_ASSETS = {
   logo: "/NUEVO/ChatGPT Image 19 sept 2026%2C 19_13_22.png",
-  video: "/NUEVO/Garage_door_opening_transition_1080p_20260921110657.mp4",
-  firstFrame: "/NUEVO/ChatGPT Image 21 sept 2026%2C 11_01_55.png",
+  video: "/NUEVO/Garage_door_opening_transition_1080p_polished.mp4",
+  firstFrame: "/NUEVO/garage-door-closed-polished.png",
   exterior: "/NUEVO/ChatGPT Image 21 sept 2026%2C 11_01_15.png"
 } as const;
 

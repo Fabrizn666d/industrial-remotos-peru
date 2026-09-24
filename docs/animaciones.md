@@ -37,7 +37,7 @@ Definidos en `lib/motion.ts`:
 ## Fases
 
 - [x] Fase 1 — lectura, plan, tokens y componente de reveal reutilizable.
-- [ ] Fase 2 — defectos visibles del intro, título y primer pintado.
+- [x] Fase 2 — defectos visibles del intro, título y primer pintado.
 - [ ] Fase 3 — coreografía del intro y opción “Saltar intro”.
 - [ ] Fase 4 — entrada y movimiento continuo del hero.
 - [ ] Fase 5 — movimiento del resto de la web.
@@ -46,3 +46,10 @@ Definidos en `lib/motion.ts`:
 ## Cronología final
 
 Se completará al terminar la Fase 6 con tiempos medidos sobre el MP4 real.
+
+## Correcciones de fuente
+
+- La junta oscura central pertenece al poster y al MP4 originales. Se conservaron ambos intactos y se crearon `garage-door-closed-polished.png` y `Garage_door_opening_transition_1080p_polished.mp4` con una reparación localizada únicamente sobre esa junta.
+- Los puntos blancos de las bisagras pertenecen al metraje. Se suavizan durante la fase interior con una capa óptica localizada de bajo contraste que desaparece antes del hero.
+- Las líneas del título tienen `line-height` y reserva inferior propia para no recortar descendentes, comas, tildes ni eñes; el `h1` mantiene su texto completo mediante `aria-label`.
+- El loader tiene poster y color base desde el HTML/CSS inicial, por lo que no depende de la hidratación para pintar el primer fotograma.

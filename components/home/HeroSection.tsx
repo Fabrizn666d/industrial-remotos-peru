@@ -246,6 +246,7 @@ export function HeroSection() {
             onEnded={handleEnded}
             onError={handleVideoError}
           />}
+          <span className="irp-hero__door-polish" aria-hidden="true" />
         </div>
       </motion.div>
       <div className="irp-hero__cinema" />
@@ -301,13 +302,14 @@ export function HeroSection() {
             animate={stageIsVisible(cueStage("kicker")) ? "visible" : "hidden"}
           ><i /> Diseño, fabricación e instalación a medida</motion.span>
           <motion.h1
+            aria-label="Soluciones de acceso que combinan seguridad, diseño y automatización."
             variants={titleContainerVariants}
             initial="hidden"
             animate={stageIsVisible(cueStage("title-1")) ? "visible" : "hidden"}
           >
-            <motion.span variants={revealItemVariants} className="irp-hero__title-line transform-gpu will-change-transform">Soluciones de acceso</motion.span>
-            <motion.span variants={revealItemVariants} className="irp-hero__title-line transform-gpu will-change-transform">que combinan <em>seguridad,</em></motion.span>
-            <motion.span variants={revealItemVariants} className="irp-hero__title-line transform-gpu will-change-transform">diseño y <em>automatización.</em></motion.span>
+            <motion.span aria-hidden="true" variants={revealItemVariants} className="irp-hero__title-line transform-gpu will-change-transform">Soluciones de acceso</motion.span>
+            <motion.span aria-hidden="true" variants={revealItemVariants} className="irp-hero__title-line transform-gpu will-change-transform">que combinan <em>seguridad,</em></motion.span>
+            <motion.span aria-hidden="true" variants={revealItemVariants} className="irp-hero__title-line transform-gpu will-change-transform">diseño y <em>automatización.</em></motion.span>
           </motion.h1>
           <motion.p
             className="transform-gpu will-change-transform"

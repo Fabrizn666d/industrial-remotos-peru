@@ -3438,7 +3438,9 @@ body:not(:has(.adminBoundary)) main .irp-advisor__copy p {
   z-index: 999;
   inset: 0;
   overflow: hidden;
-  background: transparent;
+  background:
+    linear-gradient(rgba(7,21,39,.06), rgba(7,21,39,.06)),
+    #e7e1d8 url("/NUEVO/garage-door-closed-polished.png") center / cover no-repeat;
   isolation: isolate;
   overscroll-behavior: none;
   touch-action: none;
@@ -3485,14 +3487,15 @@ body:not(:has(.adminBoundary)) main .irp-advisor__copy p {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 5px 8px rgba(0,20,48,.13));
+  filter: drop-shadow(0 6px 12px rgba(0,20,48,.22));
+  image-rendering: auto;
   animation: irp-intro-logo-arrive 920ms cubic-bezier(.22,.61,.36,1) both;
   will-change: opacity, transform, filter;
 }
 
 @keyframes irp-intro-logo-arrive {
   from { opacity: 0; transform: translate3d(0, 8px, 0) scale(.985); filter: blur(1.5px) drop-shadow(0 5px 8px rgba(0,20,48,0)); }
-  to { opacity: 1; transform: scale(1); filter: blur(0) drop-shadow(0 5px 8px rgba(0,20,48,.13)); }
+  to { opacity: 1; transform: scale(1); filter: blur(0) drop-shadow(0 6px 12px rgba(0,20,48,.22)); }
 }
 
 /* El Hero se construye sobre los últimos segundos del video. */
@@ -3582,7 +3585,14 @@ body:has(.irp-entry-loader):not(.intro-revealing) .site-header__actions {
   will-change: opacity, transform, filter;
 }
 
-.irp-hero__title-line { display: block; white-space: nowrap; }
+.irp-hero__title-line {
+  display: block;
+  overflow: visible;
+  padding-bottom: .1em;
+  margin-bottom: -.1em;
+  line-height: 1.04;
+  white-space: nowrap;
+}
 .irp-hero__content > .irp-kicker { display: inline-flex; }
 
 body.intro-loading .irp-hero__content h1,
@@ -3687,6 +3697,20 @@ body.intro-skipped .quote-assistant {
   object-position: 50% 50%;
   user-select: none;
 }
+.irp-hero__door-polish {
+  position: absolute;
+  z-index: 1;
+  inset: 14% 18% 23%;
+  opacity: 0;
+  background: linear-gradient(180deg, rgba(205,207,208,.055), rgba(174,178,181,.025));
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 54%, transparent 94%);
+  mask-image: radial-gradient(ellipse at center, #000 54%, transparent 94%);
+  backdrop-filter: contrast(.94) saturate(.96);
+  pointer-events: none;
+  transition: opacity .7s cubic-bezier(.22,1,.36,1);
+}
+body.intro-loading .irp-hero__door-polish,
+body.intro-playing .irp-hero__door-polish { opacity: 1; }
 .irp-hero__fallback { object-fit: cover; object-position: 50% 50%; }
 .irp-hero__advisor:focus-visible { outline: 3px solid #55a8ff; outline-offset: 5px; border-radius: 24px; }
 body.intro-loading .irp-hero__media-frame,

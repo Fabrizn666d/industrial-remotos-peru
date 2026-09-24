@@ -11,31 +11,31 @@ export const HOME_INTRO_ASSETS = {
 } as const;
 
 export const HOME_INTRO_TIMING = {
-  playbackRate: 1,
-  revealBeforeEndSeconds: 5,
-  logoFadeAtVideoSeconds: 2.6,
-  logoFadeMs: 300,
-  playbackStartTimeoutMs: 4500
+  playbackRate: 1.25,
+  revealBeforeEndSeconds: 3.75,
+  logoFadeAtVideoSeconds: 1.875,
+  logoFadeMs: 500,
+  playbackStartTimeoutMs: 4000
 } as const;
 
 // Coreografía del Hero medida desde el momento en que faltan cinco segundos.
 // Cada cue desbloquea una capa distinta; ninguna depende de un fade global.
 export const HOME_HERO_REVEAL_CUES = [
   { key: "overlay", at: 0 },
-  { key: "header", at: .25 },
-  { key: "nav", at: .65 },
-  { key: "header-actions", at: .95 },
-  { key: "advisor", at: 1.05 },
-  { key: "kicker", at: 1.28 },
-  { key: "title-1", at: 1.62 },
-  { key: "title-2", at: 1.72 },
-  { key: "title-3", at: 1.82 },
-  { key: "description", at: 2.72 },
-  { key: "cta-primary", at: 3.32 },
-  { key: "cta-secondary", at: 3.42 },
-  { key: "proof", at: 4 },
-  { key: "wave", at: 4.22 },
-  { key: "assistant", at: 4.34 }
+  { key: "header", at: .125 },
+  { key: "nav", at: .5 },
+  { key: "advisor", at: .5 },
+  { key: "header-actions", at: .75 },
+  { key: "kicker", at: .875 },
+  { key: "title-1", at: 1 },
+  { key: "title-2", at: 1.15 },
+  { key: "title-3", at: 1.3 },
+  { key: "description", at: 2.125 },
+  { key: "cta-primary", at: 2.5 },
+  { key: "cta-secondary", at: 2.625 },
+  { key: "proof", at: 2.875 },
+  { key: "wave", at: 2.875 },
+  { key: "assistant", at: 2.875 }
 ] as const;
 
 export const HOME_INTRO_SESSION_KEY = "irp-intro-v4";
@@ -55,6 +55,7 @@ type HomeIntroContextValue = {
   hideLogo: () => void;
   complete: () => void;
   fail: () => void;
+  skipIntro: () => void;
 };
 
 const HomeIntroContext = createContext<HomeIntroContextValue | null>(null);
@@ -126,8 +127,16 @@ export function HomeIntroProvider({ children }: { children: React.ReactNode }) {
     setRevealStage(HOME_HERO_REVEAL_CUES.length);
     setStatus("failed");
   }, []);
+  const skipIntro = useCallback(() => {
+    sessionStorage.setItem(HOME_INTRO_SESSION_KEY, "seen");
+    setLogoHidden(true);
+    setRevealStage(HOME_HERO_REVEAL_CUES.length);
+    setStatus("skipped");
+    window.dispatchEvent(new Event("irp:intro-complete"));
+  }, []);
 
   const introActive = pathname === "/" && ["checking", "loading", "playing"].includes(status);
+  const introLocksScroll = pathname === "/" && ["checking", "loading", "playing", "revealing"].includes(status);
   const heroVisible = pathname !== "/" || ["revealing", "completed", "failed", "skipped"].includes(status);
 
   useEffect(() => {
@@ -146,8 +155,14 @@ export function HomeIntroProvider({ children }: { children: React.ReactNode }) {
       document.body.classList.add(...cueClasses.slice(0, revealStage));
     }
 
-    return () => document.body.classList.remove(...introClasses, ...cueClasses);
-  }, [pathname, revealStage, status]);
+    const scrollbarWidth = introLocksScroll ? window.innerWidth - document.documentElement.clientWidth : 0;
+    document.body.style.paddingRight = scrollbarWidth > 0 ? `${scrollbarWidth}px` : "";
+
+    return () => {
+      document.body.classList.remove(...introClasses, ...cueClasses);
+      document.body.style.paddingRight = "";
+    };
+  }, [introLocksScroll, pathname, revealStage, status]);
 
   const value = useMemo<HomeIntroContextValue>(() => ({
     status,
@@ -161,8 +176,9 @@ export function HomeIntroProvider({ children }: { children: React.ReactNode }) {
     advanceReveal,
     hideLogo,
     complete,
-    fail
-  }), [advanceReveal, beginReveal, complete, fail, forceIntro, heroVisible, hideLogo, introActive, logoHidden, markPlaying, revealStage, status]);
+    fail,
+    skipIntro
+  }), [advanceReveal, beginReveal, complete, fail, forceIntro, heroVisible, hideLogo, introActive, logoHidden, markPlaying, revealStage, skipIntro, status]);
 
   return <HomeIntroContext.Provider value={value}>{children}</HomeIntroContext.Provider>;
 }

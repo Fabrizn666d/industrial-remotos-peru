@@ -1,11 +1,21 @@
 "use client";
 
 import type { CSSProperties } from "react";
+import { useEffect } from "react";
 import Loader from "@/components/Loader";
 import { HOME_INTRO_ASSETS, HOME_INTRO_TIMING, useHomeIntro } from "@/components/HomeIntroController";
+import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 
 export function IntroLoader() {
-  const { status, introActive, logoHidden } = useHomeIntro();
+  const { status, introActive, logoHidden, skipIntro } = useHomeIntro();
+  const reduceMotion = usePrefersReducedMotion();
+
+  useEffect(() => {
+    if (!introActive || !reduceMotion) return;
+    const timeout = window.setTimeout(skipIntro, 600);
+    return () => window.clearTimeout(timeout);
+  }, [introActive, reduceMotion, skipIntro]);
+
   if (!introActive) return null;
 
   const timingStyles = {
@@ -33,6 +43,10 @@ export function IntroLoader() {
           />
         </div>
       </Loader>
+
+      <button className="irp-entry-loader__skip" type="button" onClick={skipIntro}>
+        Saltar intro
+      </button>
 
       <span className="sr-only">Abriendo el acceso</span>
     </div>

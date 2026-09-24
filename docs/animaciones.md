@@ -38,7 +38,7 @@ Definidos en `lib/motion.ts`:
 
 - [x] Fase 1 — lectura, plan, tokens y componente de reveal reutilizable.
 - [x] Fase 2 — defectos visibles del intro, título y primer pintado.
-- [ ] Fase 3 — coreografía del intro y opción “Saltar intro”.
+- [x] Fase 3 — coreografía del intro y opción “Saltar intro”.
 - [ ] Fase 4 — entrada y movimiento continuo del hero.
 - [ ] Fase 5 — movimiento del resto de la web.
 - [ ] Fase 6 — responsive, accesibilidad, rendimiento, limpieza y QA final.

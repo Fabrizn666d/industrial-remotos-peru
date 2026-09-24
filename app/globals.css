@@ -3447,10 +3447,17 @@ body:not(:has(.adminBoundary)) main .irp-advisor__copy p {
 }
 
 .irp-loader-spinner {
-  padding: 0;
-  clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%);
-  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
-  mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
+  filter: drop-shadow(0 0 18px rgba(22,119,255,.18));
+}
+.irp-loader-spinner__track,
+.irp-loader-spinner__progress {
+  fill: none;
+  stroke-width: .55;
+}
+.irp-loader-spinner__track { stroke: rgba(255,255,255,.3); }
+.irp-loader-spinner__progress {
+  stroke: url("#irp-loader-gradient");
+  stroke-linecap: round;
 }
 
 .irp-entry-loader__brand-stage {
@@ -3489,14 +3496,37 @@ body:not(:has(.adminBoundary)) main .irp-advisor__copy p {
   object-fit: contain;
   filter: drop-shadow(0 6px 12px rgba(0,20,48,.22));
   image-rendering: auto;
-  animation: irp-intro-logo-arrive 920ms cubic-bezier(.22,.61,.36,1) both;
+  animation: irp-intro-logo-arrive 1s cubic-bezier(.22,1,.36,1) .4s both;
   will-change: opacity, transform, filter;
 }
 
 @keyframes irp-intro-logo-arrive {
-  from { opacity: 0; transform: translate3d(0, 8px, 0) scale(.985); filter: blur(1.5px) drop-shadow(0 5px 8px rgba(0,20,48,0)); }
+  from { opacity: 0; transform: translate3d(0, 8px, 0) scale(.96); filter: blur(10px) drop-shadow(0 5px 8px rgba(0,20,48,0)); }
   to { opacity: 1; transform: scale(1); filter: blur(0) drop-shadow(0 6px 12px rgba(0,20,48,.22)); }
 }
+
+.irp-entry-loader__skip {
+  position: absolute;
+  right: max(24px, env(safe-area-inset-right));
+  bottom: max(24px, env(safe-area-inset-bottom));
+  z-index: 8;
+  border: 1px solid rgba(255,255,255,.48);
+  border-radius: 999px;
+  background: rgba(4,16,34,.26);
+  padding: 10px 16px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  opacity: 0;
+  transform: translate3d(0, 8px, 0);
+  animation: irp-skip-arrive .6s cubic-bezier(.22,1,.36,1) 1s forwards;
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+}
+.irp-entry-loader__skip:hover { transform: translate3d(0, -2px, 0); background: rgba(4,16,34,.42); }
+.irp-entry-loader__skip:active { transform: scale(.98); }
+@keyframes irp-skip-arrive { to { opacity: 1; transform: translate3d(0,0,0); } }
 
 /* El Hero se construye sobre los últimos segundos del video. */
 /* HOME HERO REVEAL */
@@ -3534,6 +3564,7 @@ body:has(.irp-home) .site-header--scrolled {
 
 body.intro-loading,
 body.intro-playing,
+body.intro-revealing,
 body:has(.irp-entry-loader):not(.intro-revealing) { overflow: hidden; }
 
 body.intro-loading .site-header,

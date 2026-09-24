@@ -39,14 +39,36 @@ export default function Loader({ children, durationMs = 2600, visible = true }: 
         >
           <motion.div
             className="relative grid place-items-center will-change-transform"
-            animate={reduceMotion ? undefined : { scale: [0.8, 1, 0.8] }}
-            transition={{ duration: 2, ease: "easeInOut", repeat: Infinity }}
+            initial={reduceMotion ? false : { scale: 0.96 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: reduceMotion ? 0.01 : 1, ease: [0.22, 1, 0.36, 1] }}
           >
-            <motion.span
-              className="irp-loader-spinner absolute h-96 w-96 rounded-full bg-gradient-primary opacity-75 shadow-[0_0_55px_rgba(37,139,255,0.22)] sm:h-[32rem] sm:w-[32rem]"
-              animate={reduceMotion ? undefined : { rotate: 360 }}
-              transition={{ duration: 2.2, ease: "linear", repeat: Infinity }}
-            />
+            <motion.svg
+              className="irp-loader-spinner absolute h-96 w-96 overflow-visible sm:h-[32rem] sm:w-[32rem]"
+              viewBox="0 0 100 100"
+              fill="none"
+              aria-hidden="true"
+            >
+              <defs>
+                <linearGradient id="irp-loader-gradient" x1="12" y1="12" x2="88" y2="88" gradientUnits="userSpaceOnUse">
+                  <stop stopColor="#1677FF" />
+                  <stop offset="0.55" stopColor="#2D8CFF" />
+                  <stop offset="1" stopColor="#6BB6FF" />
+                </linearGradient>
+              </defs>
+              <circle className="irp-loader-spinner__track" cx="50" cy="50" r="47" />
+              <motion.circle
+                className="irp-loader-spinner__progress"
+                cx="50"
+                cy="50"
+                r="47"
+                pathLength={1}
+                initial={reduceMotion ? false : { pathLength: 0, opacity: 0 }}
+                animate={{ pathLength: 1, opacity: 1 }}
+                transition={{ duration: reduceMotion ? 0.01 : 1.1, delay: reduceMotion ? 0 : 0.35, ease: [0.22, 1, 0.36, 1] }}
+                transform="rotate(-90 50 50)"
+              />
+            </motion.svg>
             <div className="relative z-[1]">{children}</div>
           </motion.div>
         </motion.div>

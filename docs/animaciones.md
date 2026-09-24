@@ -40,7 +40,7 @@ Definidos en `lib/motion.ts`:
 - [x] Fase 2 — defectos visibles del intro, título y primer pintado.
 - [x] Fase 3 — coreografía del intro y opción “Saltar intro”.
 - [x] Fase 4 — entrada y movimiento continuo del hero.
-- [ ] Fase 5 — movimiento del resto de la web.
+- [x] Fase 5 — movimiento del resto de la web.
 - [ ] Fase 6 — responsive, accesibilidad, rendimiento, limpieza y QA final.
 
 ## Cronología final
@@ -61,3 +61,11 @@ Se completará al terminar la Fase 6 con tiempos medidos sobre el MP4 real.
 - La barra de la burbuja completa un ciclo de `6 s` y las palabras azules reciben un solo barrido de luz después de entrar.
 - Los bucles se detienen cuando el hero sale del viewport o la pestaña deja de estar visible. Con movimiento reducido quedan desactivados.
 - Los botones usan desplazamiento de `2 px`, presión a escala `.98`, foco visible y desplazamiento del degradado sin alterar el layout.
+
+## Movimiento del resto del sitio
+
+- Las secciones principales activan una sola vez al `20%` visible con fade y desplazamiento de `28 px`; las tarjetas usan una cascada de `0.08 s`.
+- Las líneas decorativas se dibujan con `scaleX`, mientras títulos, galerías, proceso, soluciones y rutas de proyecto comparten los mismos tokens.
+- El menú móvil escalona sus enlaces, el contador de “Mi proyecto” responde a cambios y los paneles combinan fondo gradual con desplazamiento corto.
+- Las rutas públicas tienen un fade de `0.3 s`; cobertura, contacto y footer también aparecen al entrar en pantalla.
+- Los hovers de tarjetas no superan `6 px`, amplían sus imágenes dentro del marco y los flotantes mantienen pulsos discretos de `9 s`.

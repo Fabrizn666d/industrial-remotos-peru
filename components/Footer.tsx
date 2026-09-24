@@ -13,17 +13,9 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { companyLegalData, siteConfig } from "@/data/site";
+import { createFadeUpVariants, createStaggerContainer, scrollViewport } from "@/lib/motion";
+import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import styles from "./Footer.module.css";
-
-const revealContainer = {
-  hidden: {},
-  visible: { transition: { staggerChildren: .085 } },
-};
-
-const revealColumn = {
-  hidden: { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0, transition: { duration: .62, ease: [0.16, 1, 0.3, 1] as const } },
-};
 
 const footerNavigation = [
   { label: "Nosotros", href: "/nosotros" },
@@ -38,6 +30,10 @@ function WhatsAppIcon() {
 }
 
 export function Footer() {
+  const reduceMotion = usePrefersReducedMotion();
+  const revealContainer = createStaggerContainer(reduceMotion);
+  const revealColumn = createFadeUpVariants(reduceMotion);
+
   return (
     <footer className={`site-footer ${styles.footer}`}>
       <div className={styles.background} aria-hidden="true" />
@@ -47,7 +43,7 @@ export function Footer() {
         variants={revealContainer}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, amount: .15 }}
+        viewport={scrollViewport}
       >
         <motion.section className={styles.brand} aria-label="Industrial Remotos Perú" variants={revealColumn}>
           <Link href="/" aria-label="Ir al inicio">

@@ -327,11 +327,11 @@
 .step:hover .card {
   border-color: rgba(65, 183, 255, .82);
   box-shadow: inset 0 1px 0 rgba(171, 228, 255, .14), 0 25px 60px rgba(0, 78, 181, .28);
-  transform: translateY(-5px);
+  transform: translateY(-6px);
 }
 
 .step:hover .icon { transform: scale(1.05); }
-.step:hover .cardMedia img { filter: saturate(.92) contrast(1.04) brightness(.84); transform: scale(1.035); }
+.step:hover .cardMedia img { filter: saturate(.92) contrast(1.04) brightness(.84); transform: scale(1.05); }
 .step:hover .number { border-color: #51c2ff; box-shadow: 0 0 0 4px rgba(4, 36, 76, .8), 0 0 28px rgba(12, 142, 255, .52); }
 .cta:hover { box-shadow: 0 17px 36px rgba(0, 111, 240, .36), inset 0 1px 0 rgba(255, 255, 255, .2); transform: scale(1.02); }
 .cta:hover svg { transform: translateX(4px); }

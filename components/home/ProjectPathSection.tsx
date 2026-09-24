@@ -13,6 +13,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
+import { createFadeUpVariants, createLineRevealVariants, motionDuration, motionEase, scrollViewport } from "@/lib/motion";
 import styles from "./ProjectPathSection.module.css";
 
 const PATH_ASSETS = {
@@ -23,19 +24,15 @@ const PATH_ASSETS = {
 
 export function ProjectPathSection() {
   const reduceMotion = usePrefersReducedMotion();
-  const ease = [0.16, 1, 0.3, 1] as const;
-
-  const fadeUp: Variants = {
-    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 12 },
-    visible: { opacity: 1, y: 0, transition: { duration: reduceMotion ? 0 : 0.74, ease } }
-  };
+  const fadeUp = createFadeUpVariants(reduceMotion);
+  const lineReveal = createLineRevealVariants(reduceMotion, .12);
   const cardLeft: Variants = {
-    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, x: -14 },
-    visible: { opacity: 1, x: 0, transition: { delay: reduceMotion ? 0 : 0.14, duration: reduceMotion ? 0 : 0.68, ease } }
+    hidden: reduceMotion ? { opacity: 0 } : { opacity: 0, x: -28 },
+    visible: { opacity: 1, x: 0, transition: { delay: reduceMotion ? 0 : 0.12, duration: reduceMotion ? motionDuration.reduced : motionDuration.normal, ease: motionEase.enter } }
   };
   const cardRight: Variants = {
-    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, x: 14 },
-    visible: { opacity: 1, x: 0, transition: { delay: reduceMotion ? 0 : 0.18, duration: reduceMotion ? 0 : 0.68, ease } }
+    hidden: reduceMotion ? { opacity: 0 } : { opacity: 0, x: 28 },
+    visible: { opacity: 1, x: 0, transition: { delay: reduceMotion ? 0 : 0.2, duration: reduceMotion ? motionDuration.reduced : motionDuration.normal, ease: motionEase.enter } }
   };
 
   return (
@@ -45,7 +42,7 @@ export function ProjectPathSection() {
       aria-labelledby="project-path-title"
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, amount: 0.12 }}
+      viewport={scrollViewport}
     >
       <div className={styles.background} aria-hidden="true">
         <img className={styles.desktopBackground} src={PATH_ASSETS.desktopBackground} alt="" />
@@ -55,7 +52,7 @@ export function ProjectPathSection() {
       <div className={styles.content}>
         <header className={styles.header}>
           <motion.span className={styles.kicker} variants={fadeUp}>Empieza tu proyecto</motion.span>
-          <motion.i className={styles.kickerLine} variants={fadeUp} aria-hidden="true" />
+          <motion.i className={styles.kickerLine} variants={lineReveal} aria-hidden="true" />
           <motion.h2 id="project-path-title" variants={fadeUp}>¿Cómo quieres <span>avanzar?</span></motion.h2>
           <motion.p variants={fadeUp}>Elige si prefieres conversar con nuestro asistente o configurar tu proyecto para obtener una referencia inicial.</motion.p>
         </header>

@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { projects } from "@/data/projects";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
+import { createFadeUpVariants, createLineRevealVariants, createStaggerContainer, motionDuration, motionEase, scrollViewport } from "@/lib/motion";
 import styles from "./ProjectsShowcase.module.css";
 
 const homeProjects = projects.slice(0, 4);
@@ -25,21 +26,16 @@ export function ProjectsShowcase() {
   const activeProject = homeProjects.find((project) => project.id === activeId) ?? homeProjects[0];
   const secondaryProjects = homeProjects.filter((project) => project.id !== activeProject.id);
 
-  const fadeUp: Variants = {
-    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 18 },
-    visible: { opacity: 1, y: 0, transition: { duration: reduceMotion ? 0 : 0.72, ease: [0.16, 1, 0.3, 1] } }
-  };
+  const fadeUp = createFadeUpVariants(reduceMotion);
+  const lineReveal = createLineRevealVariants(reduceMotion, .12);
   const featuredReveal: Variants = {
-    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, x: -14 },
-    visible: { opacity: 1, x: 0, transition: { delay: reduceMotion ? 0 : 0.16, duration: reduceMotion ? 0 : 0.68, ease: [0.16, 1, 0.3, 1] } }
+    hidden: reduceMotion ? { opacity: 0 } : { opacity: 0, x: -28 },
+    visible: { opacity: 1, x: 0, transition: { delay: reduceMotion ? 0 : 0.12, duration: reduceMotion ? motionDuration.reduced : motionDuration.normal, ease: motionEase.enter } }
   };
-  const secondaryList: Variants = {
-    hidden: {},
-    visible: { transition: { delayChildren: reduceMotion ? 0 : 0.18, staggerChildren: reduceMotion ? 0 : 0.06 } }
-  };
+  const secondaryList = createStaggerContainer(reduceMotion, .18);
   const secondaryReveal: Variants = {
-    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, x: 14 },
-    visible: { opacity: 1, x: 0, transition: { duration: reduceMotion ? 0 : 0.68, ease: [0.16, 1, 0.3, 1] } }
+    hidden: reduceMotion ? { opacity: 0 } : { opacity: 0, x: 28 },
+    visible: { opacity: 1, x: 0, transition: { duration: reduceMotion ? motionDuration.reduced : motionDuration.normal, ease: motionEase.enter } }
   };
 
   return (
@@ -49,12 +45,12 @@ export function ProjectsShowcase() {
       aria-labelledby="projects-showcase-title"
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, amount: 0.12 }}
+      viewport={scrollViewport}
     >
       <div className={styles.content}>
         <header className={styles.header}>
           <motion.span className={styles.kicker} variants={fadeUp}>Nuestros proyectos</motion.span>
-          <motion.i className={styles.kickerLine} variants={fadeUp} aria-hidden="true" />
+          <motion.i className={styles.kickerLine} variants={lineReveal} aria-hidden="true" />
           <motion.h2 id="projects-showcase-title" variants={fadeUp}>
             Proyectos reales que <span>inspiran confianza</span>
           </motion.h2>
@@ -73,7 +69,7 @@ export function ProjectsShowcase() {
                 initial={reduceMotion ? false : { opacity: 0, scale: 1.015 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={reduceMotion ? { opacity: 1 } : { opacity: 0, scale: 0.985 }}
-                transition={{ duration: reduceMotion ? 0 : 0.24, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: reduceMotion ? motionDuration.reduced : motionDuration.micro, ease: motionEase.enter }}
               >
                 <Image
                   src={activeProject.image}

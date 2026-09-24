@@ -1,10 +1,11 @@
 "use client";
 
-import { motion, type Variants } from "framer-motion";
+import { motion } from "framer-motion";
 import { ArrowRight, Blocks, Cog, DoorOpen, PencilRuler, UserRoundCheck, Wrench } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
+import { createFadeUpVariants, createLineRevealVariants, createStaggerContainer, scrollViewport } from "@/lib/motion";
 import styles from "./NeedsSection.module.css";
 
 const services = [
@@ -93,26 +94,11 @@ const secondaryServices = [
 export function NeedsSection() {
   const reduceMotion = usePrefersReducedMotion();
 
-  const fadeUp: Variants = {
-    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 18 },
-    visible: { opacity: 1, y: 0, transition: { delay: reduceMotion ? 0 : 0.32, duration: reduceMotion ? 0 : 0.7, ease: [0.16, 1, 0.3, 1] } }
-  };
-  const processReveal: Variants = {
-    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 10 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: reduceMotion ? 0 : 0.62, ease: [0.16, 1, 0.3, 1] }
-    }
-  };
-  const serviceReveal: Variants = {
-    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 12 },
-    visible: { opacity: 1, y: 0, transition: { duration: reduceMotion ? 0 : 0.64, ease: [0.16, 1, 0.3, 1] } }
-  };
-  const stagger: Variants = {
-    hidden: {},
-    visible: { transition: { staggerChildren: reduceMotion ? 0 : 0.055, delayChildren: reduceMotion ? 0 : 0.22 } }
-  };
+  const fadeUp = createFadeUpVariants(reduceMotion, { delay: .18 });
+  const processReveal = createFadeUpVariants(reduceMotion, { delay: .04 });
+  const serviceReveal = createFadeUpVariants(reduceMotion);
+  const stagger = createStaggerContainer(reduceMotion, .18);
+  const lineReveal = createLineRevealVariants(reduceMotion, .24);
 
   return (
     <motion.section
@@ -121,7 +107,7 @@ export function NeedsSection() {
       aria-labelledby="needs-title"
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, amount: 0.16 }}
+      viewport={scrollViewport}
     >
       <div className={`${styles.sideNote} ${styles.sideNoteLeft}`} aria-hidden="true">
         <i />
@@ -147,7 +133,7 @@ export function NeedsSection() {
 
         <header className={styles.header}>
           <motion.span className={styles.kicker} variants={fadeUp}>Soluciones a medida</motion.span>
-          <motion.i className={styles.kickerLine} variants={fadeUp} aria-hidden="true" />
+          <motion.i className={styles.kickerLine} variants={lineReveal} aria-hidden="true" />
           <motion.h2 id="needs-title" variants={fadeUp}>
             ¿Qué necesitas <span>construir?</span>
           </motion.h2>

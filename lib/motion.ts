@@ -73,6 +73,21 @@ export function createStaggerContainer(
   };
 }
 
+export function createLineRevealVariants(reduceMotion: boolean, delay = 0.08): Variants {
+  return {
+    hidden: reduceMotion ? { opacity: 0 } : { opacity: 0, scaleX: 0, transformOrigin: "left center" },
+    visible: {
+      opacity: 1,
+      scaleX: 1,
+      transition: {
+        duration: reduceMotion ? motionDuration.reduced : 0.72,
+        delay: reduceMotion ? 0 : delay,
+        ease: motionEase.enter
+      }
+    }
+  };
+}
+
 export function motionTransition(
   reduceMotion: boolean,
   duration = motionDuration.normal,

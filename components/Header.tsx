@@ -1,15 +1,19 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { BriefcaseBusiness, ChevronDown, Facebook, Instagram, Menu, MessageCircle, Music2, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Logo } from "@/components/Logo";
 import { useProject } from "@/components/ProjectContext";
 import { navItems, serviceNavItems, siteConfig } from "@/data/site";
 import { cn } from "@/lib/utils";
 import { SiteSearch } from "@/components/SiteSearch";
+import { createFadeUpVariants, createStaggerContainer, motionDuration, motionEase } from "@/lib/motion";
+import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
+
+const MotionLink = motion.create(Link);
 
 export function Header() {
   const pathname = usePathname();
@@ -20,6 +24,17 @@ export function Header() {
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const mobileMenuRef = useRef<HTMLElement>(null);
   const { count, setDrawerOpen } = useProject();
+  const reduceMotion = usePrefersReducedMotion();
+  const mobileList = useMemo(() => createStaggerContainer(reduceMotion, .08), [reduceMotion]);
+  const mobileItem = useMemo(() => createFadeUpVariants(reduceMotion, { distance: 22, duration: .62 }), [reduceMotion]);
+  const mobileExtras = useMemo<Variants>(() => ({
+    hidden: reduceMotion ? { opacity: 0 } : { opacity: 0, y: 14 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: reduceMotion ? motionDuration.reduced : .62, delay: reduceMotion ? 0 : .32, ease: motionEase.enter }
+    }
+  }), [reduceMotion]);
 
   useEffect(() => {
     const update = () => setScrolled(!home || window.scrollY > 82);
@@ -86,7 +101,7 @@ export function Header() {
             <button className="project-chip" type="button" onClick={() => setDrawerOpen(true)} aria-label={"Abrir Mi proyecto con " + count + " elementos"}>
               <BriefcaseBusiness size={17} />
               <span>Mi proyecto</span>
-              <b>{count}</b>
+              <motion.b key={count} initial={reduceMotion ? false : { scale: .72 }} animate={{ scale: 1 }} transition={{ duration: motionDuration.micro, ease: motionEase.enter }}>{count}</motion.b>
             </button>
             <button
               ref={menuButtonRef}
@@ -105,27 +120,27 @@ export function Header() {
 
       <AnimatePresence>
         {menuOpen && (
-          <motion.nav ref={mobileMenuRef} className="mobile-nav" id="mobile-menu" aria-label="Navegación móvil" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <motion.div className="mobile-nav__sheet" initial={{ y: -28, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }} transition={{ duration: .42, ease: [0.2, .75, 0, 1] }}>
+          <motion.nav ref={mobileMenuRef} className="mobile-nav" id="mobile-menu" aria-label="Navegación móvil" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: reduceMotion ? motionDuration.reduced : .32, ease: motionEase.enter }}>
+            <motion.div className="mobile-nav__sheet" initial={reduceMotion ? { opacity: 0 } : { y: -28, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={reduceMotion ? { opacity: 0 } : { y: -20, opacity: 0 }} transition={{ duration: reduceMotion ? motionDuration.reduced : .48, ease: motionEase.enter }}>
               <span className="eyebrow">Explora Industrial Remotos</span>
-              <div className="mobile-nav__links">
+              <motion.div className="mobile-nav__links" variants={mobileList} initial="hidden" animate="visible">
                 {navItems.map((item, index) => (
-                  <Link href={item.href} key={item.href} onClick={() => setMenuOpen(false)}>
+                  <MotionLink variants={mobileItem} href={item.href} key={item.href} onClick={() => setMenuOpen(false)}>
                     <small>0{index + 1}</small><span>{item.label}</span><i>↗</i>
-                  </Link>
+                  </MotionLink>
                 ))}
-              </div>
-              <div className="mobile-nav__actions">
+              </motion.div>
+              <motion.div className="mobile-nav__actions" variants={mobileExtras} initial="hidden" animate="visible">
                 <a href={siteConfig.social.whatsapp} target="_blank" rel="noreferrer" onClick={() => setMenuOpen(false)}><MessageCircle size={17} /> Hablar por WhatsApp</a>
                 <Link href="/cotizar" onClick={() => setMenuOpen(false)}>Cotizar mi proyecto</Link>
                 <button type="button" onClick={() => { setMenuOpen(false); setDrawerOpen(true); }}>
                   <BriefcaseBusiness size={17} /> Mi proyecto <b>{count}</b>
                 </button>
-              </div>
-              <div className="mobile-nav__footer">
+              </motion.div>
+              <motion.div className="mobile-nav__footer" variants={mobileExtras} initial="hidden" animate="visible">
                 {siteConfig.hours && <p>{siteConfig.hours}</p>}
                 <div className="mobile-nav__socials"><a href={siteConfig.social.facebook} aria-label="Facebook" target="_blank" rel="noreferrer"><Facebook size={17} /></a><a href={siteConfig.social.instagram} aria-label="Instagram" target="_blank" rel="noreferrer"><Instagram size={17} /></a><a href={siteConfig.social.tiktok} aria-label="TikTok" target="_blank" rel="noreferrer"><Music2 size={17} /></a><a href={siteConfig.social.whatsapp} aria-label="WhatsApp" target="_blank" rel="noreferrer"><MessageCircle size={17} /></a></div>
-              </div>
+              </motion.div>
             </motion.div>
           </motion.nav>
         )}

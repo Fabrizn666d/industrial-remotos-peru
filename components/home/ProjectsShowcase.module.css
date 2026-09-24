@@ -283,8 +283,8 @@
 }
 
 .secondaryArrow svg { width: 15px; }
-.secondaryCard:hover { border-color: rgba(7, 92, 255, .42); box-shadow: 0 20px 42px rgba(24, 75, 127, .15); transform: translateY(-3px); }
-.secondaryCard:hover .secondaryImage img { transform: scale(1.035); }
+.secondaryCard:hover { border-color: rgba(7, 92, 255, .42); box-shadow: 0 24px 48px rgba(24, 75, 127, .18); transform: translateY(-6px); }
+.secondaryCard:hover .secondaryImage img { transform: scale(1.05); }
 .secondaryCard:hover .secondaryArrow { background: #075cff; color: #fff; transform: translateX(3px); }
 .secondaryCard:focus-visible { outline: 3px solid rgba(7, 92, 255, .38); outline-offset: 3px; }
 

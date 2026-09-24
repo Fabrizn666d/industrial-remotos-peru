@@ -2241,10 +2241,10 @@ body.intro-skipped .irp-hero__content h1 em::after {
 /* Compact, non-intrusive assistant on the Home. */
 body:has(.irp-home) .quote-assistant { right: clamp(16px, 2vw, 28px); bottom: clamp(16px, 2vw, 28px); }
 body:has(.irp-home) .quote-assistant__button { width: 64px; height: 64px; overflow: hidden; border-width: 1px; animation: none; box-shadow: 0 16px 42px rgba(3,27,54,.35), 0 0 0 5px rgba(34,132,255,.09), 0 0 27px rgba(40,145,255,.18); }
-body:has(.irp-home) .quote-assistant__button::before { position: absolute; inset: -1px; border: 1px solid rgba(96,184,255,.42); border-radius: 50%; content: ""; animation: irp-bot-pulse 5.5s ease-out infinite; }
+body:has(.irp-home) .quote-assistant__button::before { position: absolute; inset: -1px; border: 1px solid rgba(96,184,255,.42); border-radius: 50%; content: ""; animation: irp-bot-pulse 9s ease-out infinite; }
 body:has(.irp-home) .quote-assistant__button > svg { inset: 5px 7px 1px; width: calc(100% - 14px); height: calc(100% - 6px); }
 body:has(.irp-home) .quote-assistant__button > span { display: none; }
-body:has(.irp-home) .quote-assistant__button:hover { transform: translateY(-3px) scale(1.045); box-shadow: 0 19px 46px rgba(3,27,54,.42), 0 0 0 7px rgba(34,132,255,.11), 0 0 36px rgba(40,145,255,.25); }
+body:has(.irp-home) .quote-assistant__button:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 19px 46px rgba(3,27,54,.42), 0 0 0 7px rgba(34,132,255,.11), 0 0 36px rgba(40,145,255,.25); }
 body:has(.irp-home) .quote-assistant__tip { bottom: 9px; font-size: 12px; }
 
 @keyframes irp-bot-pulse {

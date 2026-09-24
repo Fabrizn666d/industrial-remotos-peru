@@ -8,6 +8,8 @@ import { useEffect, useState } from "react";
 import { useProject } from "@/components/ProjectContext";
 import { RobotAvatar } from "@/components/RobotAvatar";
 import { products } from "@/data/products";
+import { motionDuration, motionEase } from "@/lib/motion";
+import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 
 const quickReplies = [
   { label: "Puerta automática / garaje", product: "seccionales" },
@@ -36,6 +38,7 @@ export function ProjectExperience() {
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [tip, setTip] = useState(false);
   const [selected, setSelected] = useState("");
+  const reduceMotion = usePrefersReducedMotion();
 
   useEffect(() => {
     if (sessionStorage.getItem("irp-assistant-tip")) return;
@@ -80,7 +83,7 @@ export function ProjectExperience() {
 
       <AnimatePresence>
         {assistantOpen && (
-          <motion.aside className="assistant-panel" role="dialog" aria-modal="true" aria-label="Asistente de cotización" initial={{ opacity: 0, y: 24, scale: .97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 18, scale: .98 }} transition={{ duration: .45, ease: [0.2, .75, 0, 1] }}>
+          <motion.aside className="assistant-panel" role="dialog" aria-modal="true" aria-label="Asistente de cotización" initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 24, scale: .98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 18, scale: .98 }} transition={{ duration: reduceMotion ? motionDuration.reduced : .48, ease: motionEase.enter }}>
             <button className="panel-close" type="button" onClick={() => setAssistantOpen(false)} aria-label="Cerrar asistente"><X size={18} /></button>
             <div className="assistant-panel__head">
               <span className="assistant-panel__avatar"><RobotAvatar /></span>
@@ -115,8 +118,8 @@ export function ProjectExperience() {
 
       <AnimatePresence>
         {drawerOpen && (
-          <div className="project-overlay" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setDrawerOpen(false)}>
-            <motion.aside className="project-drawer" role="dialog" aria-modal="true" aria-label="Mi proyecto" initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ duration: .48, ease: [0.2, .75, 0, 1] }}>
+          <motion.div className="project-overlay" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setDrawerOpen(false)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: reduceMotion ? motionDuration.reduced : .32, ease: motionEase.enter }}>
+            <motion.aside className="project-drawer" role="dialog" aria-modal="true" aria-label="Mi proyecto" initial={reduceMotion ? { opacity: 0 } : { x: "100%" }} animate={{ x: 0, opacity: 1 }} exit={reduceMotion ? { opacity: 0 } : { x: "100%" }} transition={{ duration: reduceMotion ? motionDuration.reduced : .52, ease: motionEase.enter }}>
               <div className="project-drawer__head">
                 <div><small>Selección local</small><h2>Mi proyecto <b>{count}</b></h2></div>
                 <button className="panel-close" type="button" onClick={() => setDrawerOpen(false)} aria-label="Cerrar Mi proyecto"><X /></button>
@@ -155,7 +158,7 @@ export function ProjectExperience() {
                 </div>
               )}
             </motion.aside>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </>

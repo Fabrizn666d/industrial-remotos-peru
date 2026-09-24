@@ -290,7 +290,7 @@
   line-height: 1.35;
 }
 
-.service:hover .photo img { filter: saturate(1.04); transform: scale(1.035); }
+.service:hover .photo img { filter: saturate(1.04); transform: scale(1.05); }
 .service:hover .ring { box-shadow: 0 0 0 5px rgba(255,255,255,.8), 0 18px 40px rgba(25,94,183,.18); transform: rotate(5deg); }
 .service:hover .icon { box-shadow: 0 14px 28px rgba(0,68,201,.34), 0 0 0 1px rgba(17,93,255,.4); transform: scale(1.07); }
 .service:hover .copy { transform: translateY(-2px); }

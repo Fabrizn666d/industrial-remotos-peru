@@ -14,6 +14,7 @@ import {
 import Link from "next/link";
 import { useId, useState, type PointerEvent } from "react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
+import { createFadeUpVariants, createLineRevealVariants, createStaggerContainer, motionDuration, motionEase, scrollViewport } from "@/lib/motion";
 import styles from "./InteractiveSolutionsSection.module.css";
 
 const SCENE_ASSETS = {
@@ -104,19 +105,12 @@ export function InteractiveSolutionsSection() {
   const activeId = previewId ?? selectedId;
   const active = services.find((service) => service.id === activeId) ?? services[0];
   const ActiveIcon = active.icon;
-  const ease = [0.16, 1, 0.3, 1] as const;
-
-  const reveal: Variants = {
-    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 12 },
-    visible: { opacity: 1, y: 0, transition: { duration: reduceMotion ? 0 : 0.76, ease } }
-  };
-  const list: Variants = {
-    hidden: {},
-    visible: { transition: { delayChildren: reduceMotion ? 0 : 0.16, staggerChildren: reduceMotion ? 0 : 0.055 } }
-  };
+  const reveal = createFadeUpVariants(reduceMotion);
+  const lineReveal = createLineRevealVariants(reduceMotion, .12);
+  const list = createStaggerContainer(reduceMotion, .16);
   const row: Variants = {
-    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, x: -20 },
-    visible: { opacity: 1, x: 0, transition: { duration: reduceMotion ? 0 : 0.58, ease } }
+    hidden: reduceMotion ? { opacity: 0 } : { opacity: 0, x: -28 },
+    visible: { opacity: 1, x: 0, transition: { duration: reduceMotion ? motionDuration.reduced : .68, ease: motionEase.enter } }
   };
 
   function preview(serviceId: ServiceId, event: PointerEvent<HTMLElement>) {
@@ -143,12 +137,12 @@ export function InteractiveSolutionsSection() {
       aria-labelledby="integrated-solutions-title"
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, amount: 0.1 }}
+      viewport={scrollViewport}
     >
       <div className={styles.shell}>
         <motion.div className={styles.intro} variants={reveal}>
           <span className={styles.kicker}>Soluciones para cada espacio</span>
-          <i className={styles.kickerLine} aria-hidden="true" />
+          <motion.i className={styles.kickerLine} variants={lineReveal} aria-hidden="true" />
           <h2 id="integrated-solutions-title">
             Soluciones que<br />se integran a tu <span>espacio</span>
           </h2>
@@ -188,7 +182,7 @@ export function InteractiveSolutionsSection() {
           className={styles.scene}
           variants={{
             hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, scale: 1.02 },
-            visible: { opacity: 1, scale: 1, transition: { duration: reduceMotion ? 0 : 0.86, ease } }
+            visible: { opacity: 1, scale: 1, transition: { duration: reduceMotion ? motionDuration.reduced : 0.86, ease: motionEase.enter } }
           }}
           onPointerMove={moveScene}
           onPointerLeave={resetScene}
@@ -215,7 +209,7 @@ export function InteractiveSolutionsSection() {
                   initial={reduceMotion ? false : { opacity: 0, scale: 0.6 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
-                  transition={{ delay: reduceMotion ? 0 : 0.38 + index * 0.08, duration: reduceMotion ? 0 : 0.5, ease }}
+                  transition={{ delay: reduceMotion ? 0 : 0.38 + index * 0.08, duration: reduceMotion ? motionDuration.reduced : 0.5, ease: motionEase.enter }}
                   onClick={() => setSelectedId(service.id)}
                   onPointerEnter={(event) => preview(service.id, event)}
                   onPointerLeave={() => setPreviewId(null)}
@@ -244,7 +238,7 @@ export function InteractiveSolutionsSection() {
                 initial={reduceMotion ? false : { opacity: 0, scale: 0.96, y: 7 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={reduceMotion ? { opacity: 1 } : { opacity: 0, scale: 0.96, y: -5 }}
-                transition={{ duration: reduceMotion ? 0 : 0.34, ease }}
+                transition={{ duration: reduceMotion ? motionDuration.reduced : 0.34, ease: motionEase.enter }}
               >
                 <ActiveIcon aria-hidden="true" />
                 <div>
@@ -285,7 +279,7 @@ export function InteractiveSolutionsSection() {
               initial={reduceMotion ? false : { opacity: 0, scale: 0.97, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={reduceMotion ? { opacity: 1 } : { opacity: 0, scale: 0.97, y: -6 }}
-              transition={{ duration: reduceMotion ? 0 : 0.34, ease }}
+              transition={{ duration: reduceMotion ? motionDuration.reduced : 0.34, ease: motionEase.enter }}
             >
               <ActiveIcon aria-hidden="true" />
               <div>

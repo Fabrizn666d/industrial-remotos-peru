@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, type Variants } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   ArrowRight,
   BadgeCheck,
@@ -14,6 +14,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
+import { createFadeUpVariants, createLineRevealVariants, createStaggerContainer, motionDuration, motionEase, scrollViewport } from "@/lib/motion";
 import styles from "./StatsWaveSection.module.css";
 
 const PROCESS_ASSETS = {
@@ -64,26 +65,10 @@ const benefits = [
 
 export function StatsWaveSection() {
   const reduceMotion = usePrefersReducedMotion();
-  const duration = reduceMotion ? 0 : 0.72;
-  const easing = [0.16, 1, 0.3, 1] as const;
-
-  const fadeUp: Variants = {
-    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 12 },
-    visible: { opacity: 1, y: 0, transition: { duration, ease: easing } }
-  };
-  const stepList: Variants = {
-    hidden: {},
-    visible: {
-      transition: {
-        delayChildren: reduceMotion ? 0 : 0.16,
-        staggerChildren: reduceMotion ? 0 : 0.06
-      }
-    }
-  };
-  const stepReveal: Variants = {
-    hidden: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 12 },
-    visible: { opacity: 1, y: 0, transition: { duration: reduceMotion ? 0 : 0.68, ease: easing } }
-  };
+  const fadeUp = createFadeUpVariants(reduceMotion);
+  const lineReveal = createLineRevealVariants(reduceMotion, .12);
+  const stepList = createStaggerContainer(reduceMotion, .16);
+  const stepReveal = createFadeUpVariants(reduceMotion);
 
   return (
     <motion.section
@@ -92,7 +77,7 @@ export function StatsWaveSection() {
       aria-labelledby="process-title"
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, amount: 0.12 }}
+      viewport={scrollViewport}
     >
       <div className={styles.background} aria-hidden="true">
         <img className={styles.backgroundDesktop} src={PROCESS_ASSETS.desktopBackground} alt="" />
@@ -109,7 +94,7 @@ export function StatsWaveSection() {
       <div className={styles.content}>
         <header className={styles.header}>
           <motion.span className={styles.kicker} variants={fadeUp}>De la idea a la instalación</motion.span>
-          <motion.i className={styles.kickerLine} variants={fadeUp} aria-hidden="true" />
+          <motion.i className={styles.kickerLine} variants={lineReveal} aria-hidden="true" />
           <motion.h2 id="process-title" variants={fadeUp}>
             Así convertimos tu proyecto<br />en una <span>solución instalada</span>
           </motion.h2>
@@ -123,7 +108,7 @@ export function StatsWaveSection() {
             className={styles.connector}
             variants={{
               hidden: reduceMotion ? { scaleX: 1, opacity: 1 } : { scaleX: 0, opacity: 0 },
-              visible: { scaleX: 1, opacity: 1, transition: { delay: reduceMotion ? 0 : 0.32, duration: reduceMotion ? 0 : 0.85, ease: easing } }
+              visible: { scaleX: 1, opacity: 1, transition: { delay: reduceMotion ? 0 : 0.32, duration: reduceMotion ? motionDuration.reduced : 0.85, ease: motionEase.enter } }
             }}
             aria-hidden="true"
           >
@@ -136,7 +121,7 @@ export function StatsWaveSection() {
                 className={styles.number}
                 variants={{
                   hidden: reduceMotion ? { scale: 1 } : { scale: 0.8 },
-                  visible: { scale: 1, transition: { duration: reduceMotion ? 0 : 0.62, ease: easing } }
+                  visible: { scale: 1, transition: { duration: reduceMotion ? motionDuration.reduced : 0.62, ease: motionEase.enter } }
                 }}
               >
                 {number}

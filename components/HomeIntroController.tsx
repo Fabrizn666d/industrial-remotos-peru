@@ -5,21 +5,18 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 
 export const HOME_INTRO_ASSETS = {
   logo: "/NUEVO/ChatGPT Image 19 sept 2026%2C 19_13_22.png",
-  video: "/NUEVO/Garage_door_opening_transition_1080p_polished.mp4",
+  video: "/NUEVO/Garage_door_opening_transition_1080p_20260921110657.mp4",
   firstFrame: "/NUEVO/garage-door-closed-polished.png",
   exterior: "/NUEVO/ChatGPT Image 21 sept 2026%2C 11_01_15.png"
 } as const;
 
 export const HOME_INTRO_TIMING = {
-  playbackRate: 1.25,
-  revealBeforeEndSeconds: 3.75,
-  logoFadeAtVideoSeconds: 1.875,
-  logoFadeMs: 500,
+  playbackRate: 1,
   playbackStartTimeoutMs: 4000
 } as const;
 
-// Coreografía del Hero medida desde el momento en que faltan cinco segundos.
-// Cada cue desbloquea una capa distinta; ninguna depende de un fade global.
+// Coreografía posterior a onEnded. Mientras el MP4 está reproduciéndose no
+// se revela ninguna capa de la interfaz del Hero.
 export const HOME_HERO_REVEAL_CUES = [
   { key: "overlay", at: 0 },
   { key: "header", at: .125 },
@@ -86,13 +83,6 @@ export function HomeIntroProvider({ children }: { children: React.ReactNode }) {
     const force = queryForcesIntro || environmentForcesIntro || developmentForcesIntro;
     setForceIntro(force);
 
-    if (!force && sessionStorage.getItem(HOME_INTRO_SESSION_KEY) === "seen") {
-      setLogoHidden(true);
-      setRevealStage(HOME_HERO_REVEAL_CUES.length);
-      setStatus("skipped");
-      return;
-    }
-
     setLogoHidden(false);
     setRevealStage(0);
     setStatus((current) => (
@@ -107,7 +97,11 @@ export function HomeIntroProvider({ children }: { children: React.ReactNode }) {
   ), []);
   const beginReveal = useCallback(() => {
     setRevealStage((current) => Math.max(current, 1));
-    setStatus((current) => current === "playing" ? "revealing" : current);
+    setStatus((current) => (
+      current === "checking" || current === "loading" || current === "playing"
+        ? "revealing"
+        : current
+    ));
   }, []);
   const advanceReveal = useCallback((stage: number) => {
     const safeStage = Math.max(0, Math.min(HOME_HERO_REVEAL_CUES.length, stage));

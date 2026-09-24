@@ -3566,7 +3566,7 @@ body:not(:has(.adminBoundary)) main .irp-advisor__copy p {
 .irp-entry-loader__skip:active { transform: scale(.98); }
 @keyframes irp-skip-arrive { to { opacity: 1; transform: translate3d(0,0,0); } }
 
-/* El Hero se construye sobre los últimos segundos del video. */
+/* El Hero se construye recién después del último frame del video. */
 /* HOME HERO REVEAL */
 body:has(.irp-home) .site-header {
   background: linear-gradient(180deg, rgba(0,10,19,.58), rgba(0,10,19,.16));
@@ -3598,6 +3598,26 @@ body:has(.irp-home) .site-header--scrolled {
   background: rgba(0,10,19,.89);
   box-shadow: 0 1px rgba(255,255,255,.055), 0 12px 34px rgba(0,8,18,.14);
   backdrop-filter: blur(10px) saturate(1.05);
+}
+
+/* Estado inicial SSR: antes de hidratar React solo se ve el MP4. Evita que la
+   navbar, el overlay o el contenido aparezcan un instante y luego se oculten. */
+body:has(.irp-home):not(.intro-revealing):not(.intro-complete):not(.intro-skipped) .site-header,
+body:has(.irp-home):not(.intro-revealing):not(.intro-complete):not(.intro-skipped) .site-header__logo,
+body:has(.irp-home):not(.intro-revealing):not(.intro-complete):not(.intro-skipped) .site-header__links,
+body:has(.irp-home):not(.intro-revealing):not(.intro-complete):not(.intro-skipped) .site-header__actions,
+body:has(.irp-home):not(.intro-revealing):not(.intro-complete):not(.intro-skipped) .irp-hero__content .irp-kicker,
+body:has(.irp-home):not(.intro-revealing):not(.intro-complete):not(.intro-skipped) .irp-hero__title-line,
+body:has(.irp-home):not(.intro-revealing):not(.intro-complete):not(.intro-skipped) .irp-hero__content > p,
+body:has(.irp-home):not(.intro-revealing):not(.intro-complete):not(.intro-skipped) .irp-hero__actions,
+body:has(.irp-home):not(.intro-revealing):not(.intro-complete):not(.intro-skipped) .irp-hero__proof,
+body:has(.irp-home):not(.intro-revealing):not(.intro-complete):not(.intro-skipped) .quote-assistant,
+body:has(.irp-home):not(.intro-revealing):not(.intro-complete):not(.intro-skipped) .irp-hero__cinema,
+body:has(.irp-home):not(.intro-revealing):not(.intro-complete):not(.intro-skipped) .irp-hero__ambient,
+body:has(.irp-home):not(.intro-revealing):not(.intro-complete):not(.intro-skipped) .irp-hero__wave {
+  opacity: 0;
+  pointer-events: none;
+  transition: none;
 }
 
 body.intro-loading,
@@ -3852,7 +3872,7 @@ body.intro-loading .irp-hero__ambient,
 body.intro-playing .irp-hero__ambient,
 body:has(.irp-entry-loader):not(.intro-revealing) .irp-hero__ambient { opacity: 0; }
 
-/* Reveal por cues reales del MP4. Cada capa permanece bloqueada hasta su fase. */
+/* Reveal posterior al MP4. Cada capa permanece bloqueada hasta su fase. */
 body.intro-revealing .site-header {
   pointer-events: none;
   opacity: 0;
@@ -4074,6 +4094,40 @@ body.intro-revealing.intro-cue-assistant .quote-assistant {
 }
 .irp-hero__proof { color: rgba(255,255,255,.64); }
 
+/* El Hero usa los presets compartidos para todas sus entradas. El grid separa
+   el contenido editorial del personaje sin alterar la capa de video. */
+body:has(.irp-home) .irp-hero__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(360px, .92fr);
+  gap: clamp(24px, 4vw, 72px);
+}
+body:has(.irp-home) .irp-hero__content {
+  width: 100%;
+  max-width: 760px;
+  margin-right: 0;
+}
+.irp-hero__visual { position: relative; align-self: stretch; min-width: 0; pointer-events: none; }
+.irp-hero__advisor-stage { position: absolute; inset: 0; pointer-events: none; }
+.irp-hero__advisor-stage .irp-hero__advisor { pointer-events: auto; }
+
+/* La interpolación pertenece a FadeInUp/SlideInRight. Estas reglas neutralizan
+   el antiguo reveal CSS para evitar dos animaciones compitiendo entre sí. */
+.irp-motion-preset,
+.irp-motion-preset .irp-hero__title-line {
+  filter: none !important;
+  clip-path: none !important;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+  transition: none !important;
+}
+.irp-motion-preset .irp-hero__title-line {
+  opacity: 1 !important;
+  transform: none !important;
+}
+.irp-motion-preset--title .irp-hero__content h1 em::after,
+.irp-motion-preset--title h1 em::after { content: none; animation: none; }
+.irp-hero__advisor-progress { transform: scaleX(.12); }
+
 /* HOME MOBILE */
 @media (max-width: 767px) {
   .irp-entry-loader__brand {
@@ -4086,6 +4140,9 @@ body.intro-revealing.intro-cue-assistant .quote-assistant {
     width: 100%;
     max-width: 370px;
   }
+
+  body:has(.irp-home) .irp-hero__layout { grid-template-columns: minmax(0, 1fr); }
+  .irp-hero__visual { position: absolute; inset: 0; }
 
   .irp-hero__content h1 {
     font-size: clamp(2.2rem, 9.2vw, 2.8rem);
@@ -4105,7 +4162,11 @@ body.intro-revealing.intro-cue-assistant .quote-assistant {
 }
 
 @media (min-width: 768px) and (max-width: 1080px) {
-  body:has(.irp-home) .irp-hero__content { width: min(630px, 68%); }
+  body:has(.irp-home) .irp-hero__layout {
+    grid-template-columns: minmax(0, 1.12fr) minmax(280px, .88fr);
+    gap: 20px;
+  }
+  body:has(.irp-home) .irp-hero__content { width: 100%; }
   .irp-hero__title-line { white-space: normal; }
   .irp-hero__content h1 { font-size: clamp(2.7rem, 6vw, 3.35rem); line-height: 1.01; }
 }

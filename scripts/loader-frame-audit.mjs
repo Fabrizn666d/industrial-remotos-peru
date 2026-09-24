@@ -4,7 +4,7 @@ import { chromium } from "playwright-core";
 const baseUrl = process.env.SITE_URL || "http://127.0.0.1:3000";
 const outputDirectory = `${process.cwd()}\\.visual-audit\\loader-frames`;
 const executablePath = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
-const revealBeforeEndSeconds = 5;
+const revealBeforeEndSeconds = 3.75;
 const viewports = [
   ["desktop", 1440, 900],
   ["mobile", 390, 844]
@@ -129,10 +129,10 @@ try {
     frames.reveal = await readState(page);
 
     let elapsed = 0;
-    for (const offset of [300, 900, 1600, 2400, 3300, 4300]) {
+    for (const offset of [250, 650, 1050, 1500, 2100, 2700]) {
       await page.waitForTimeout(offset - elapsed);
       elapsed = offset;
-      if (offset === 4300) {
+      if (offset === 2700) {
         await page.locator(".irp-hero__advisor").evaluate((element) => element.setAttribute("data-qa-persist", "worker-before-ended"));
       }
       frames[`reveal-plus-${offset}ms`] = await readState(page);
@@ -163,12 +163,12 @@ try {
       ["4500ms", "fixed", 4.5],
       ["reveal-minus-300ms", "fixed", revealAt - .3],
       ["reveal", "reveal-offset", 0],
-      ["reveal-plus-300ms", "reveal-offset", 300],
-      ["reveal-plus-900ms", "reveal-offset", 900],
-      ["reveal-plus-1600ms", "reveal-offset", 1600],
-      ["reveal-plus-2400ms", "reveal-offset", 2400],
-      ["reveal-plus-3300ms", "reveal-offset", 3300],
-      ["reveal-plus-4300ms", "reveal-offset", 4300],
+      ["reveal-plus-250ms", "reveal-offset", 250],
+      ["reveal-plus-650ms", "reveal-offset", 650],
+      ["reveal-plus-1050ms", "reveal-offset", 1050],
+      ["reveal-plus-1500ms", "reveal-offset", 1500],
+      ["reveal-plus-2100ms", "reveal-offset", 2100],
+      ["reveal-plus-2700ms", "reveal-offset", 2700],
       ["ended-minus-200ms", "before-end", .2],
       ["ended-plus-100ms", "after-end", 100],
       ["ended-plus-500ms", "after-end", 500]
@@ -190,7 +190,7 @@ console.log(JSON.stringify(report, null, 2));
 const failed = report.some(({ duration, revealAt, frames, errors }) => {
   const beforeReveal = frames["reveal-minus-300ms"];
   const reveal = frames.reveal;
-  const staged = frames["reveal-plus-4300ms"];
+  const staged = frames["reveal-plus-2700ms"];
   const beforeEnd = frames["ended-minus-200ms"];
   const afterEnd = frames["ended-plus-100ms"];
 

@@ -41,11 +41,19 @@ Definidos en `lib/motion.ts`:
 - [x] Fase 3 — coreografía del intro y opción “Saltar intro”.
 - [x] Fase 4 — entrada y movimiento continuo del hero.
 - [x] Fase 5 — movimiento del resto de la web.
-- [ ] Fase 6 — responsive, accesibilidad, rendimiento, limpieza y QA final.
+- [x] Fase 6 — responsive, accesibilidad, rendimiento, limpieza y QA final.
 
 ## Cronología final
 
-Se completará al terminar la Fase 6 con tiempos medidos sobre el MP4 real.
+- El MP4 dura `10 s` y se reproduce a `1.25x`: duración real aproximada `8 s`.
+- `0–0.5 s`: primer fotograma ya pintado y entrada progresiva del loader.
+- `0.4–1.4 s`: logo y anillo; el logo inicia su salida alrededor de `1.5 s` reales.
+- `0–5 s`: el video conserva el protagonismo sin hero superpuesto.
+- `5 s`: comienza el reveal sobre el video; header y asesor entran primero.
+- `5.7–6.1 s`: kicker y tres líneas del título aparecen en secuencia.
+- `6.7–7.1 s`: descripción y botones.
+- `7.3–8 s`: pruebas, ola y asistente; `onEnded` confirma el estado final.
+- Con movimiento reducido, el intro se sustituye por un fade de `0.6 s`.
 
 ## Correcciones de fuente
 
@@ -69,3 +77,12 @@ Se completará al terminar la Fase 6 con tiempos medidos sobre el MP4 real.
 - El menú móvil escalona sus enlaces, el contador de “Mi proyecto” responde a cambios y los paneles combinan fondo gradual con desplazamiento corto.
 - Las rutas públicas tienen un fade de `0.3 s`; cobertura, contacto y footer también aparecen al entrar en pantalla.
 - Los hovers de tarjetas no superan `6 px`, amplían sus imágenes dentro del marco y los flotantes mantienen pulsos discretos de `9 s`.
+
+## QA final
+
+- `npm run typecheck`: correcto.
+- `npm run build`: correcto, `52` páginas generadas.
+- `npm run visual-check`: correcto en `12` viewports y todas las rutas públicas, sin overflow ni errores de consola.
+- `npm run loader-frame-audit`: correcto en `1440×900` y `390×844`; el video reporta `1920×1080`, `10 s`, sin error y conserva el asesor después de `ended`.
+- Comprobación específica en `768×1024` y `390×844`: título dentro del viewport, sin scroll horizontal; movimiento reducido termina en `intro-skipped` sin mantener video ni loader.
+- En móvil se reduce y desplaza ligeramente el asesor para que no bloquee los CTA. En tablet el contenido tiene ancho propio y permite saltos naturales, evitando recortes de texto.

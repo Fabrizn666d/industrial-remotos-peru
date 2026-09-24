@@ -80,8 +80,8 @@ export function StatsWaveSection() {
       viewport={scrollViewport}
     >
       <div className={styles.background} aria-hidden="true">
-        <img className={styles.backgroundDesktop} src={PROCESS_ASSETS.desktopBackground} alt="" />
-        <img className={styles.backgroundMobile} src={PROCESS_ASSETS.mobileBackground} alt="" />
+        <Image className={styles.backgroundDesktop} src={PROCESS_ASSETS.desktopBackground} alt="" fill sizes="100vw" />
+        <Image className={styles.backgroundMobile} src={PROCESS_ASSETS.mobileBackground} alt="" fill sizes="100vw" />
       </div>
 
       <span className={styles.leftNote} aria-hidden="true">

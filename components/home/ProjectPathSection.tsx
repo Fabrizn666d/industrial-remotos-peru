@@ -45,8 +45,8 @@ export function ProjectPathSection() {
       viewport={scrollViewport}
     >
       <div className={styles.background} aria-hidden="true">
-        <img className={styles.desktopBackground} src={PATH_ASSETS.desktopBackground} alt="" />
-        <img className={styles.mobileBackground} src={PATH_ASSETS.mobileBackground} alt="" />
+        <Image className={styles.desktopBackground} src={PATH_ASSETS.desktopBackground} alt="" fill sizes="100vw" />
+        <Image className={styles.mobileBackground} src={PATH_ASSETS.mobileBackground} alt="" fill sizes="100vw" />
       </div>
 
       <div className={styles.content}>

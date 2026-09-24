@@ -12,6 +12,7 @@ import {
   Zap
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useId, useState, type PointerEvent } from "react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { createFadeUpVariants, createLineRevealVariants, createStaggerContainer, motionDuration, motionEase, scrollViewport } from "@/lib/motion";
@@ -188,8 +189,8 @@ export function InteractiveSolutionsSection() {
           onPointerLeave={resetScene}
         >
           <motion.div className={styles.sceneArtwork} style={reduceMotion ? undefined : { x: smoothX, y: smoothY }}>
-            <img className={styles.desktopScene} src={SCENE_ASSETS.desktop} alt="Casa moderna con soluciones de acceso, protección y acondicionamiento" />
-            <img className={styles.mobileScene} src={SCENE_ASSETS.mobile} alt="Casa moderna con soluciones integradas" />
+            <Image className={styles.desktopScene} src={SCENE_ASSETS.desktop} alt="Casa moderna con soluciones de acceso, protección y acondicionamiento" fill sizes="(min-width: 1101px) 62vw, 100vw" />
+            <Image className={styles.mobileScene} src={SCENE_ASSETS.mobile} alt="Casa moderna con soluciones integradas" fill sizes="100vw" />
 
             {services.map((service, index) => {
               const isActive = service.id === activeId;

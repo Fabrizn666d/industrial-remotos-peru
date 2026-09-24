@@ -62,8 +62,25 @@ export function FadeInUp({
 
 type SlideInRightProps = Omit<MotionPresetProps, "as" | "offset"> & {
   distance?: number;
+  mobileDistance?: number;
+  mobileDuration?: number;
+  opacityDuration?: number;
   initialY?: number;
 };
+
+function useHydratedMobile() {
+  const [mobile, setMobile] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 900px)");
+    const update = () => setMobile(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+
+  return mobile;
+}
 
 export function SlideInRight({
   children,
@@ -72,13 +89,18 @@ export function SlideInRight({
   duration = 0.85,
   visible = true,
   ariaHidden,
-  distance = 65,
-  initialY = 4,
-  initialScale = 0.99,
+  distance = 125,
+  mobileDistance = 70,
+  mobileDuration = 0.8,
+  opacityDuration = 0.3,
+  initialY = 0,
+  initialScale = 1,
   style
 }: SlideInRightProps) {
   const reduceMotion = useHydratedReducedMotion();
-  const x = reduceMotion ? 0 : distance;
+  const mobile = useHydratedMobile();
+  const activeDuration = mobile ? mobileDuration : duration;
+  const x = reduceMotion ? 0 : mobile ? mobileDistance : distance;
   const y = reduceMotion ? 0 : initialY;
 
   return (
@@ -89,7 +111,12 @@ export function SlideInRight({
       animate={visible
         ? { opacity: 1, x: 0, y: 0, scale: 1 }
         : { opacity: 0, x, y, scale: initialScale }}
-      transition={{ duration, delay: visible ? delay : 0, ease: SOFT_EASE }}
+      transition={{
+        opacity: { duration: visible ? opacityDuration : 0.2, delay: visible ? delay : 0, ease: SOFT_EASE },
+        x: { duration: activeDuration, delay: visible ? delay : 0, ease: SOFT_EASE },
+        y: { duration: activeDuration, delay: visible ? delay : 0, ease: SOFT_EASE },
+        scale: { duration: activeDuration, delay: visible ? delay : 0, ease: SOFT_EASE }
+      }}
       style={{ ...style, pointerEvents: visible ? undefined : "none" }}
     >
       {children}

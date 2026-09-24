@@ -51,16 +51,17 @@ Definidos en `lib/motion.ts`:
 - `5 s`: comienza el reveal progresivo mientras el MP4 continúa reproduciéndose.
 - `5.14–5.98 s`: navbar, asesor, kicker y las tres líneas del título entran por cues independientes.
 - `6.20–6.72 s`: descripción, ambos CTA y prueba social completan la composición.
-- `6.86–6.96 s`: ola y asistente cierran la secuencia; quedan cerca de tres segundos de video estable.
+- `6.86 s`: la ola cierra la composición; el asistente flotante espera hasta `completed + 380 ms` para no competir con el reveal.
 - `10 s`: `onEnded` marca la sesión como vista sin remontar ni reiniciar el hero.
 - Con movimiento reducido se respetan los mismos cues; los presets eliminan traslaciones y escalas no esenciales.
 
 ## Correcciones de fuente
 
-- El MP4 original se conserva intacto y `garage-door-closed-polished.png` funciona únicamente como poster del mismo elemento `<video>`.
+- El MP4 original se conserva intacto, se monta desde el primer paint y no usa `poster`; mientras el navegador decodifica solo existe el color base neutro del mismo marco.
 - Los puntos blancos de las bisagras pertenecen al metraje. Se suavizan durante la fase interior con una capa óptica localizada de bajo contraste que desaparece antes del hero.
 - Las líneas del título tienen `line-height` y reserva inferior propia para no recortar descendentes, comas, tildes ni eñes; el `h1` mantiene su texto completo mediante `aria-label`.
-- El loader tiene poster y color base desde el HTML/CSS inicial, por lo que no depende de la hidratación para pintar el primer fotograma.
+- El logo existe desde el HTML inicial con `opacity: 1`, sin transición de entrada, y solo hace fade-out a los `2.6 s` durante `850 ms`.
+- La scrollbar nativa se oculta sin interceptar el scroll; un track decorativo con punto azul refleja el progreso únicamente en desktop y después del intro.
 
 ## Movimiento continuo del hero
 

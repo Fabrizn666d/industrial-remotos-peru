@@ -1,7 +1,6 @@
 "use client";
 
-import { HOME_INTRO_ASSETS, HOME_INTRO_TIMING, useHomeIntro } from "@/components/HomeIntroController";
-import { FadeInUp } from "@/components/ui/motion-presets";
+import { HOME_INTRO_ASSETS, useHomeIntro } from "@/components/HomeIntroController";
 
 export function IntroLoader() {
   const { status, introActive, logoHidden } = useHomeIntro();
@@ -15,13 +14,7 @@ export function IntroLoader() {
       aria-live="polite"
       role="status"
     >
-      <FadeInUp
-        className="irp-entry-loader__brand-stage"
-        visible={!logoHidden}
-        duration={HOME_INTRO_TIMING.logoFadeMs / 1000}
-        offset={0}
-        initialScale={0.985}
-      >
+      <div className="irp-entry-loader__brand-stage">
         <div className="irp-entry-loader__brand">
           <img
             className="irp-entry-loader__logo"
@@ -33,7 +26,7 @@ export function IntroLoader() {
             decoding="sync"
           />
         </div>
-      </FadeInUp>
+      </div>
 
       <span className="sr-only">Abriendo el acceso</span>
     </div>

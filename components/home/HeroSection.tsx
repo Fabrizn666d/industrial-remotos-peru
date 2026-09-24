@@ -73,7 +73,7 @@ export function HeroSection() {
 
   const attemptPlayback = useCallback(() => {
     const video = videoRef.current;
-    if (!video || video.ended) return;
+    if (!video || video.ended || (status !== "checking" && status !== "loading")) return;
 
     applyPlaybackRate();
     if (!video.paused) {
@@ -87,10 +87,10 @@ export function HeroSection() {
       }
       fail();
     });
-  }, [applyPlaybackRate, fail, markPlaying, videoDiagnostics]);
+  }, [applyPlaybackRate, fail, markPlaying, status, videoDiagnostics]);
 
   useEffect(() => {
-    for (const src of [HOME_INTRO_ASSETS.logo, HOME_INTRO_ASSETS.firstFrame, HOME_INTRO_ASSETS.exterior, HERO_ADVISOR_ASSET]) {
+    for (const src of [HOME_INTRO_ASSETS.logo, HOME_INTRO_ASSETS.exterior, HERO_ADVISOR_ASSET]) {
       const image = new window.Image();
       image.src = src;
     }
@@ -103,20 +103,7 @@ export function HeroSection() {
 
     const video = videoRef.current;
     if (video && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) attemptPlayback();
-
-    const playbackWatchdog = window.setTimeout(() => {
-      const currentVideo = videoRef.current;
-      const hasStarted = Boolean(currentVideo && !currentVideo.paused && currentVideo.currentTime > 0.05);
-      if (hasStarted) return;
-
-      if (process.env.NODE_ENV === "development") {
-        console.error("[HeroSection] El video del intro no inició dentro del tiempo esperado.", videoDiagnostics());
-      }
-      fail();
-    }, HOME_INTRO_TIMING.playbackStartTimeoutMs);
-
-    return () => window.clearTimeout(playbackWatchdog);
-  }, [attemptPlayback, fail, status, videoDiagnostics]);
+  }, [attemptPlayback, status]);
 
   useEffect(() => {
     if (status !== "playing" && status !== "revealing") return;
@@ -146,12 +133,23 @@ export function HeroSection() {
     complete();
   };
 
-  const handleVideoError = () => {
+  const handleVideoError = useCallback(() => {
     if (process.env.NODE_ENV === "development") {
       console.error("[HeroSection] El MP4 del intro no pudo cargarse.", videoDiagnostics());
     }
     fail();
-  };
+  }, [fail, videoDiagnostics]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || status === "failed" || status === "skipped") return;
+
+    // A native listener also covers an immediate network/decode failure that can
+    // happen before React finishes hydrating and attaches its synthetic handler.
+    video.addEventListener("error", handleVideoError);
+    if (video.error) handleVideoError();
+    return () => video.removeEventListener("error", handleVideoError);
+  }, [handleVideoError, status]);
 
   const renderFallback = status === "failed" || status === "skipped";
   const stageIsVisible = (key: (typeof HOME_HERO_REVEAL_CUES)[number]["key"]) => {
@@ -176,8 +174,8 @@ export function HeroSection() {
             <video
               ref={videoRef}
               className="irp-hero__video"
+              data-intro-video="approved-source"
               src={HOME_INTRO_ASSETS.video}
-              poster={HOME_INTRO_ASSETS.firstFrame}
               preload="auto"
               autoPlay
               muted
@@ -295,10 +293,11 @@ export function HeroSection() {
           <SlideInRight
             className="irp-hero__advisor-stage"
             visible={stageIsVisible("advisor")}
-            duration={0.85}
-            distance={65}
-            initialY={4}
-            initialScale={0.99}
+            duration={0.95}
+            distance={125}
+            mobileDistance={70}
+            mobileDuration={0.8}
+            opacityDuration={0.3}
           >
             <Link className="irp-hero__advisor" href="/asistente" data-analytics="irp_start" aria-label="Abrir IRP Asistente">
               <span className="irp-hero__advisor-depth">

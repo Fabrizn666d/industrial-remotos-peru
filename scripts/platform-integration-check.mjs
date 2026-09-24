@@ -42,6 +42,8 @@ try {
   await introPage.waitForFunction(() => document.body.classList.contains("intro-revealing"));
   const revealState = await introPage.evaluate(() => {
     const video = document.querySelector(".irp-hero__video");
+    const advisor = document.querySelector(".irp-hero__advisor-stage");
+    const advisorTransform = advisor ? getComputedStyle(advisor).transform : "none";
     return {
       currentTime: video?.currentTime ?? 0,
       duration: video?.duration ?? 0,
@@ -50,7 +52,8 @@ try {
       session: sessionStorage.getItem("irp-intro-v4"),
       bodyClass: document.body.className,
       headerOpacity: Number(getComputedStyle(document.querySelector(".site-header")).opacity),
-      advisorOpacity: Number(getComputedStyle(document.querySelector(".irp-hero__advisor-stage")).opacity)
+      advisorOpacity: Number(getComputedStyle(advisor).opacity),
+      advisorTranslateX: advisorTransform === "none" ? 0 : new DOMMatrix(advisorTransform).m41
     };
   });
   console.log(JSON.stringify({ revealState }));
@@ -58,7 +61,7 @@ try {
   check(revealState.paused === false && revealState.ended === false, "El video se detuvo al iniciar el reveal");
   check(revealState.session !== "seen", "La sesión se marcó antes de onEnded");
   check(revealState.bodyClass.includes("intro-revealing"), "Falta la clase intro-revealing");
-  check(revealState.advisorOpacity < .95, "El trabajador apareció de golpe al iniciar el reveal");
+  check(revealState.advisorOpacity >= 0 && revealState.advisorTranslateX > 4, "El trabajador no conserva recorrido horizontal durante el reveal");
 
   await introPage.waitForTimeout(4300);
   const stagedReveal = await introPage.evaluate(() => ({

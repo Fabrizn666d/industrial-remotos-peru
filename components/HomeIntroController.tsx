@@ -6,7 +6,6 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 export const HOME_INTRO_ASSETS = {
   logo: "/NUEVO/ChatGPT Image 19 sept 2026%2C 19_13_22.png",
   video: "/NUEVO/Garage_door_opening_transition_1080p_20260921110657.mp4",
-  firstFrame: "/NUEVO/garage-door-closed-polished.png",
   exterior: "/NUEVO/ChatGPT Image 21 sept 2026%2C 11_01_15.png"
 } as const;
 
@@ -14,8 +13,7 @@ export const HOME_INTRO_TIMING = {
   playbackRate: 1,
   revealBeforeEndSeconds: 5,
   logoFadeAtVideoSeconds: 2.6,
-  logoFadeMs: 850,
-  playbackStartTimeoutMs: 4000
+  logoFadeMs: 850
 } as const;
 
 // Una sola línea de tiempo, relativa al instante en que comienza el reveal.
@@ -93,7 +91,7 @@ export function HomeIntroProvider({ children }: { children: React.ReactNode }) {
     setLogoHidden(false);
     setRevealStage(0);
     setStatus((current) => (
-      current === "playing" || current === "revealing" || current === "completed"
+      current === "playing" || current === "revealing" || current === "completed" || current === "failed"
         ? current
         : "loading"
     ));
@@ -136,7 +134,6 @@ export function HomeIntroProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const introActive = pathname === "/" && ["checking", "loading", "playing"].includes(status);
-  const introLocksScroll = pathname === "/" && ["checking", "loading", "playing", "revealing"].includes(status);
   const heroVisible = pathname !== "/" || ["revealing", "completed", "failed", "skipped"].includes(status);
 
   useEffect(() => {
@@ -156,14 +153,10 @@ export function HomeIntroProvider({ children }: { children: React.ReactNode }) {
       document.body.classList.add(...cueClasses.slice(0, revealStage));
     }
 
-    const scrollbarWidth = introLocksScroll ? window.innerWidth - document.documentElement.clientWidth : 0;
-    document.body.style.paddingRight = scrollbarWidth > 0 ? `${scrollbarWidth}px` : "";
-
     return () => {
       document.body.classList.remove(...introClasses, ...cueClasses);
-      document.body.style.paddingRight = "";
     };
-  }, [introLocksScroll, pathname, revealStage, status]);
+  }, [pathname, revealStage, status]);
 
   const value = useMemo<HomeIntroContextValue>(() => ({
     status,

@@ -5,7 +5,7 @@
 - Intro y estado de sesión: `components/HomeIntroController.tsx`.
   - `?intro=1` fuerza la reproducción.
   - En producción, `sessionStorage` con la clave `irp-intro-v4` evita repetirlo durante la misma sesión.
-- Capa visual inicial: `components/IntroLoader.tsx` y `components/Loader.tsx`.
+- Capa visual inicial: `components/IntroLoader.tsx` (logo sobre el video real, sin spinner).
 - Video, fondo y contenido del hero: `components/home/HeroSection.tsx`.
 - Header y navegación móvil: `components/Header.tsx`.
 - Acciones flotantes: `components/FloatingActions.tsx` y componentes públicos del layout.
@@ -18,7 +18,7 @@
 - No se cambia la lógica de `?intro=1`, sesión, cotizador, carrito, WhatsApp ni chatbot.
 - Los colores se mantienen dentro de la paleta navy `#000A13` / azul `#1677FF` / azul claro `#6BB6FF`.
 - El video existente continúa siendo la fuente real de la apertura del portón. Los defectos que pertenezcan al metraje se tratarán con capas ópticas discretas, sin sobrescribir el MP4.
-- En movimiento reducido se conservan únicamente fades cortos.
+- En movimiento reducido se conserva la misma cronología, eliminando los desplazamientos no esenciales.
 
 ## Tokens de movimiento
 
@@ -45,19 +45,19 @@ Definidos en `lib/motion.ts`:
 
 ## Cronología final
 
-- El MP4 dura `10 s` y se reproduce a `1.25x`: duración real aproximada `8 s`.
-- `0–0.5 s`: primer fotograma ya pintado y entrada progresiva del loader.
-- `0.4–1.4 s`: logo y anillo; el logo inicia su salida alrededor de `1.5 s` reales.
-- `0–5 s`: el video conserva el protagonismo sin hero superpuesto.
-- `5 s`: comienza el reveal sobre el video; header y asesor entran primero.
-- `5.7–6.1 s`: kicker y tres líneas del título aparecen en secuencia.
-- `6.7–7.1 s`: descripción y botones.
-- `7.3–8 s`: pruebas, ola y asistente; `onEnded` confirma el estado final.
-- Con movimiento reducido, una visita normal sustituye el intro por un fade de `0.6 s`. Si se solicita explícitamente con `?intro=1` —o se ejecuta en desarrollo— se conserva el video completo para evitar un salto accidental al hero.
+- El MP4 dura exactamente `10 s` y se reproduce a `1x`.
+- `0–2.6 s`: el video es la única fuente visual y el logo permanece centrado.
+- `2.6–3.45 s`: el logo se desvanece durante `850 ms`, sin desplazamiento de salida.
+- `5 s`: comienza el reveal progresivo mientras el MP4 continúa reproduciéndose.
+- `5.14–5.98 s`: navbar, asesor, kicker y las tres líneas del título entran por cues independientes.
+- `6.20–6.72 s`: descripción, ambos CTA y prueba social completan la composición.
+- `6.86–6.96 s`: ola y asistente cierran la secuencia; quedan cerca de tres segundos de video estable.
+- `10 s`: `onEnded` marca la sesión como vista sin remontar ni reiniciar el hero.
+- Con movimiento reducido se respetan los mismos cues; los presets eliminan traslaciones y escalas no esenciales.
 
 ## Correcciones de fuente
 
-- La junta oscura central pertenece al poster y al MP4 originales. Se conservaron ambos intactos y se crearon `garage-door-closed-polished.png` y `Garage_door_opening_transition_1080p_polished.mp4` con una reparación localizada únicamente sobre esa junta.
+- El MP4 original se conserva intacto y `garage-door-closed-polished.png` funciona únicamente como poster del mismo elemento `<video>`.
 - Los puntos blancos de las bisagras pertenecen al metraje. Se suavizan durante la fase interior con una capa óptica localizada de bajo contraste que desaparece antes del hero.
 - Las líneas del título tienen `line-height` y reserva inferior propia para no recortar descendentes, comas, tildes ni eñes; el `h1` mantiene su texto completo mediante `aria-label`.
 - El loader tiene poster y color base desde el HTML/CSS inicial, por lo que no depende de la hidratación para pintar el primer fotograma.

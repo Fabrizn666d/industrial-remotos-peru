@@ -12,27 +12,27 @@ export const HOME_INTRO_ASSETS = {
 
 export const HOME_INTRO_TIMING = {
   playbackRate: 1,
+  revealBeforeEndSeconds: 5,
+  logoFadeAtVideoSeconds: 2.6,
+  logoFadeMs: 850,
   playbackStartTimeoutMs: 4000
 } as const;
 
-// Coreografía posterior a onEnded. Mientras el MP4 está reproduciéndose no
-// se revela ninguna capa de la interfaz del Hero.
+// Una sola línea de tiempo, relativa al instante en que comienza el reveal.
+// El MP4 sigue reproduciéndose por debajo durante toda esta coreografía.
 export const HOME_HERO_REVEAL_CUES = [
   { key: "overlay", at: 0 },
-  { key: "header", at: .125 },
-  { key: "nav", at: .5 },
-  { key: "advisor", at: .5 },
-  { key: "header-actions", at: .75 },
-  { key: "kicker", at: .875 },
-  { key: "title-1", at: 1 },
-  { key: "title-2", at: 1.15 },
-  { key: "title-3", at: 1.3 },
-  { key: "description", at: 2.125 },
-  { key: "cta-primary", at: 2.5 },
-  { key: "cta-secondary", at: 2.625 },
-  { key: "proof", at: 2.875 },
-  { key: "wave", at: 2.875 },
-  { key: "assistant", at: 2.875 }
+  { key: "header", at: .14 },
+  { key: "advisor", at: .32 },
+  { key: "kicker", at: .48 },
+  { key: "title-1", at: .66 },
+  { key: "title-2", at: .82 },
+  { key: "title-3", at: .98 },
+  { key: "description", at: 1.2 },
+  { key: "actions", at: 1.45 },
+  { key: "proof", at: 1.72 },
+  { key: "wave", at: 1.86 },
+  { key: "assistant", at: 1.96 }
 ] as const;
 
 export const HOME_INTRO_SESSION_KEY = "irp-intro-v4";
@@ -83,6 +83,13 @@ export function HomeIntroProvider({ children }: { children: React.ReactNode }) {
     const force = queryForcesIntro || environmentForcesIntro || developmentForcesIntro;
     setForceIntro(force);
 
+    if (!force && sessionStorage.getItem(HOME_INTRO_SESSION_KEY) === "seen") {
+      setLogoHidden(true);
+      setRevealStage(HOME_HERO_REVEAL_CUES.length);
+      setStatus("skipped");
+      return;
+    }
+
     setLogoHidden(false);
     setRevealStage(0);
     setStatus((current) => (
@@ -122,7 +129,6 @@ export function HomeIntroProvider({ children }: { children: React.ReactNode }) {
     setStatus("failed");
   }, []);
   const skipIntro = useCallback(() => {
-    sessionStorage.setItem(HOME_INTRO_SESSION_KEY, "seen");
     setLogoHidden(true);
     setRevealStage(HOME_HERO_REVEAL_CUES.length);
     setStatus("skipped");
@@ -135,7 +141,7 @@ export function HomeIntroProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (pathname !== "/") return;
-    const introClasses = ["intro-loading", "intro-playing", "intro-revealing", "intro-skipped", "intro-complete"];
+    const introClasses = ["intro-loading", "intro-playing", "intro-revealing", "intro-skipped", "intro-failed", "intro-complete"];
     const cueClasses = HOME_HERO_REVEAL_CUES.map((cue) => `intro-cue-${cue.key}`);
     document.body.classList.remove(...introClasses, ...cueClasses);
 
@@ -143,6 +149,7 @@ export function HomeIntroProvider({ children }: { children: React.ReactNode }) {
     else if (status === "playing") document.body.classList.add("intro-playing");
     else if (status === "revealing") document.body.classList.add("intro-revealing");
     else if (status === "skipped") document.body.classList.add("intro-skipped");
+    else if (status === "failed") document.body.classList.add("intro-failed");
     else document.body.classList.add("intro-complete");
 
     if (status === "revealing") {

@@ -50,7 +50,7 @@ try {
       session: sessionStorage.getItem("irp-intro-v4"),
       bodyClass: document.body.className,
       headerOpacity: Number(getComputedStyle(document.querySelector(".site-header")).opacity),
-      advisorMounted: Boolean(document.querySelector(".irp-hero__advisor"))
+      advisorOpacity: Number(getComputedStyle(document.querySelector(".irp-hero__advisor-stage")).opacity)
     };
   });
   console.log(JSON.stringify({ revealState }));
@@ -58,14 +58,14 @@ try {
   check(revealState.paused === false && revealState.ended === false, "El video se detuvo al iniciar el reveal");
   check(revealState.session !== "seen", "La sesión se marcó antes de onEnded");
   check(revealState.bodyClass.includes("intro-revealing"), "Falta la clase intro-revealing");
-  check(!revealState.advisorMounted, "El trabajador apareció de golpe al iniciar el reveal");
+  check(revealState.advisorOpacity < .95, "El trabajador apareció de golpe al iniciar el reveal");
 
   await introPage.waitForTimeout(4300);
   const stagedReveal = await introPage.evaluate(() => ({
     ended: document.querySelector(".irp-hero__video")?.ended,
     session: sessionStorage.getItem("irp-intro-v4"),
     headerOpacity: Number(getComputedStyle(document.querySelector(".site-header")).opacity),
-    workerOpacity: Number(getComputedStyle(document.querySelector(".irp-hero__advisor")).opacity),
+    workerOpacity: Number(getComputedStyle(document.querySelector(".irp-hero__advisor-stage")).opacity),
     kickerOpacity: Number(getComputedStyle(document.querySelector(".irp-kicker")).opacity),
     titleOpacity: Number(getComputedStyle(document.querySelector(".irp-hero__title-line")).opacity),
     actionsOpacity: Number(getComputedStyle(document.querySelector(".irp-hero__action-stage--primary")).opacity),

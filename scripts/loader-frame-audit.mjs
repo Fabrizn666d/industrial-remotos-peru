@@ -1,13 +1,27 @@
-import { mkdir } from "node:fs/promises";
+import { mkdir, rm } from "node:fs/promises";
 import { chromium } from "playwright-core";
 
 const baseUrl = process.env.SITE_URL || "http://127.0.0.1:3000";
 const outputDirectory = `${process.cwd()}\\.visual-audit\\loader-frames`;
 const executablePath = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
-const revealBeforeEndSeconds = 3.75;
+const revealBeforeEndSeconds = 5;
 const viewports = [
   ["desktop", 1440, 900],
   ["mobile", 390, 844]
+];
+const captures = [
+  ["reveal-minus-300ms", "before-reveal", 300],
+  ["reveal", "reveal-offset", 0],
+  ["reveal-plus-200ms", "reveal-offset", 200],
+  ["reveal-plus-500ms", "reveal-offset", 500],
+  ["reveal-plus-800ms", "reveal-offset", 800],
+  ["reveal-plus-1100ms", "reveal-offset", 1100],
+  ["reveal-plus-1450ms", "reveal-offset", 1450],
+  ["reveal-plus-1750ms", "reveal-offset", 1750],
+  ["reveal-plus-2100ms", "reveal-offset", 2100],
+  ["ended-minus-500ms", "before-ended", 500],
+  ["ended-minus-100ms", "before-ended", 100],
+  ["ended-plus-100ms", "after-ended", 100]
 ];
 
 const readState = (page) => page.evaluate(() => {
@@ -15,6 +29,10 @@ const readState = (page) => page.evaluate(() => {
   const opacity = (selector) => {
     const element = document.querySelector(selector);
     return element ? Number(getComputedStyle(element).opacity) : null;
+  };
+  const transform = (selector) => {
+    const element = document.querySelector(selector);
+    return element ? getComputedStyle(element).transform : null;
   };
 
   return {
@@ -27,181 +45,193 @@ const readState = (page) => page.evaluate(() => {
     networkState: video?.networkState ?? null,
     videoWidth: video?.videoWidth ?? null,
     videoHeight: video?.videoHeight ?? null,
+    introStatus: document.querySelector(".irp-hero")?.getAttribute("data-intro-status") ?? null,
     bodyClass: document.body.className,
     session: sessionStorage.getItem("irp-intro-v4"),
     loaderMounted: Boolean(document.querySelector(".irp-entry-loader")),
+    logoOpacity: opacity(".irp-entry-loader__brand-stage"),
     headerOpacity: opacity(".site-header"),
-    workerOpacity: opacity(".irp-hero__advisor"),
+    headerTransform: transform(".site-header"),
+    workerOpacity: opacity(".irp-hero__advisor-stage"),
+    workerTransform: transform(".irp-hero__advisor-stage"),
     workerMarker: document.querySelector(".irp-hero__advisor")?.getAttribute("data-qa-persist") ?? null,
     cinemaOpacity: opacity(".irp-hero__cinema"),
     kickerOpacity: opacity(".irp-kicker"),
     titleLineOpacities: [...document.querySelectorAll(".irp-hero__title-line")].map((element) => Number(getComputedStyle(element).opacity)),
-    descriptionOpacity: opacity(".irp-hero__content > p"),
+    descriptionOpacity: opacity(".irp-hero__description"),
     actionsOpacity: opacity(".irp-hero__action-stage--primary"),
     secondaryActionOpacity: opacity(".irp-hero__action-stage--secondary"),
     proofOpacity: opacity(".irp-hero__proof"),
-    advisorHref: document.querySelector(".irp-hero__advisor")?.getAttribute("href") ?? null
+    waveOpacity: opacity(".irp-hero__wave"),
+    assistantOpacity: opacity(".quote-assistant"),
+    advisorHref: document.querySelector(".irp-hero__advisor")?.getAttribute("href") ?? null,
+    fallbackMounted: Boolean(document.querySelector(".irp-hero__fallback"))
   };
 });
 
 const waitForVideoReady = async (page) => {
   await page.locator(".irp-hero__video").waitFor({ state: "visible" });
   await page.waitForFunction(() => {
-    const element = document.querySelector(".irp-hero__video");
-    return element && Number.isFinite(element.duration) && element.duration > 9 && element.readyState >= 2;
+    const video = document.querySelector(".irp-hero__video");
+    return video && Number.isFinite(video.duration) && video.duration > 9 && video.readyState >= 2;
   }, undefined, { timeout: 15000 });
 };
 
-const seekVideo = (page, seconds) => page.locator(".irp-hero__video").evaluate(async (element, target) => {
-  element.pause();
-  if (Math.abs(element.currentTime - target) > .03) {
+const seek = (page, seconds) => page.locator(".irp-hero__video").evaluate(async (video, target) => {
+  video.pause();
+  if (Math.abs(video.currentTime - target) > .02) {
     await new Promise((resolve) => {
-      element.addEventListener("seeked", resolve, { once: true });
-      element.currentTime = target;
+      video.addEventListener("seeked", resolve, { once: true });
+      video.currentTime = target;
     });
   }
-  element.dispatchEvent(new Event("timeupdate", { bubbles: true }));
+  await new Promise((resolve) => window.setTimeout(resolve, 80));
+  video.pause();
+  video.dispatchEvent(new Event("timeupdate", { bubbles: true }));
 }, seconds);
 
-const captureVisualFrame = async ({ context, name, label, kind, value = 0, errors }) => {
+const openAuditPage = async (context, name, label, errors) => {
   const page = await context.newPage();
   page.on("pageerror", (error) => errors.push(`[${label}] ${error.message}`));
   page.on("console", (message) => message.type() === "error" && errors.push(`[${label}] ${message.text()}`));
-  await page.goto(`${baseUrl}/?intro=1&qaFrame=${encodeURIComponent(label)}`, { waitUntil: "domcontentloaded" });
+  await page.goto(`${baseUrl}/?intro=1&audit=${name}-${label}`, { waitUntil: "domcontentloaded" });
   await waitForVideoReady(page);
-  const duration = await page.locator(".irp-hero__video").evaluate((element) => element.duration);
-  const revealAt = Math.max(0, duration - revealBeforeEndSeconds);
-
-  if (kind === "start") {
-    await seekVideo(page, 0);
-  } else if (kind === "fixed") {
-    await page.waitForFunction(() => document.body.classList.contains("intro-playing"));
-    await seekVideo(page, value);
-    await page.waitForTimeout(40);
-  } else {
-    await page.waitForFunction(() => document.body.classList.contains("intro-playing"));
-    await seekVideo(page, Math.max(0, revealAt - .12));
-    await page.locator(".irp-hero__video").evaluate((element) => element.play());
-    await page.waitForFunction(() => document.body.classList.contains("intro-revealing"), undefined, { timeout: 2500 });
-
-    if (kind === "reveal-offset") {
-      await page.waitForTimeout(value);
-    } else if (kind === "before-end") {
-      await page.waitForFunction((target) => document.querySelector(".irp-hero__video")?.currentTime >= target, duration - value, { timeout: 5000 });
-      await page.locator(".irp-hero__video").evaluate((element) => element.pause());
-    } else if (kind === "after-end") {
-      await page.waitForFunction(() => document.querySelector(".irp-hero__video")?.ended, undefined, { timeout: 5000 });
-      await page.waitForTimeout(value);
-    }
-  }
-
-  await page.screenshot({ path: `${outputDirectory}\\${name}-${label}.png`, caret: "initial" });
-  await page.close();
+  const duration = await page.locator(".irp-hero__video").evaluate((video) => video.duration);
+  await seek(page, 0);
+  await page.locator(".irp-hero__video").evaluate((video) => video.play());
+  await page.waitForFunction(() => document.body.classList.contains("intro-playing"));
+  return { page, duration, revealAt: Math.max(0, duration - revealBeforeEndSeconds) };
 };
 
+const enterReveal = async (page, revealAt) => {
+  await seek(page, revealAt - .12);
+  await page.locator(".irp-hero__video").evaluate((video) => video.play());
+  await page.waitForFunction(() => document.body.classList.contains("intro-revealing"), undefined, { timeout: 2000 });
+};
+
+await rm(outputDirectory, { recursive: true, force: true });
 await mkdir(outputDirectory, { recursive: true });
 const browser = await chromium.launch({ executablePath, headless: true });
 const report = [];
 
 try {
   for (const [name, width, height] of viewports) {
-    const context = await browser.newContext({ viewport: { width, height }, locale: "es-PE" });
+    const context = await browser.newContext({
+      viewport: { width, height },
+      locale: "es-PE",
+      reducedMotion: "no-preference"
+    });
     await context.addInitScript(() => {
       sessionStorage.removeItem("irp-intro-v4");
-      localStorage.setItem("irp_cookie_consent_v1", JSON.stringify({ necessary: true, analytics: false, optional: false, savedAt: new Date().toISOString() }));
+      localStorage.setItem("irp_cookie_consent_v1", JSON.stringify({
+        necessary: true,
+        analytics: false,
+        optional: false,
+        savedAt: new Date().toISOString()
+      }));
     });
 
-    const page = await context.newPage();
-    const errors = [];
-    page.on("pageerror", (error) => errors.push(error.message));
-    page.on("console", (message) => message.type() === "error" && errors.push(message.text()));
-    await page.goto(`${baseUrl}/?intro=1`, { waitUntil: "domcontentloaded" });
-
-    const video = page.locator(".irp-hero__video");
-    await waitForVideoReady(page);
-    const duration = await video.evaluate((element) => element.duration);
-    const revealAt = Math.max(0, duration - revealBeforeEndSeconds);
     const frames = {};
-    frames.start = await readState(page);
-    await page.waitForFunction((target) => document.querySelector(".irp-hero__video")?.currentTime >= target, revealAt - .3, { timeout: 15000 });
-    frames["reveal-minus-300ms"] = await readState(page);
-    await page.waitForFunction(() => document.body.classList.contains("intro-revealing"), undefined, { timeout: 2000 });
-    frames.reveal = await readState(page);
+    const errors = [];
+    let measuredDuration = 0;
+    let measuredRevealAt = 0;
 
-    let elapsed = 0;
-    for (const offset of [250, 650, 1050, 1500, 2100, 2700]) {
-      await page.waitForTimeout(offset - elapsed);
-      elapsed = offset;
-      if (offset === 2700) {
+    for (const [label, kind, value] of captures) {
+      const { page, duration, revealAt } = await openAuditPage(context, name, label, errors);
+      measuredDuration = duration;
+      measuredRevealAt = revealAt;
+
+      if (kind === "before-reveal") {
+        await seek(page, revealAt - value / 1000);
+      } else {
+        await enterReveal(page, revealAt);
+
+        if (kind === "reveal-offset") {
+          if (value > 0) await page.waitForTimeout(value);
+          await page.locator(".irp-hero__video").evaluate((video) => video.pause());
+        } else {
+          await page.waitForTimeout(2500);
+          if (kind === "before-ended") {
+            await seek(page, duration - value / 1000);
+          } else {
+            await seek(page, duration - .12);
+            await page.locator(".irp-hero__video").evaluate((video) => video.play());
+            await page.waitForFunction(() => document.querySelector(".irp-hero__video")?.ended, undefined, { timeout: 2000 });
+            await page.waitForTimeout(value);
+          }
+        }
+      }
+
+      if (label === "reveal-plus-2100ms") {
         await page.locator(".irp-hero__advisor").evaluate((element) => element.setAttribute("data-qa-persist", "worker-before-ended"));
       }
-      frames[`reveal-plus-${offset}ms`] = await readState(page);
+      if (label.startsWith("ended-")) {
+        await page.locator(".irp-hero__advisor").evaluate((element) => element.setAttribute("data-qa-persist", "worker-before-ended"));
+      }
+
+      await page.waitForTimeout(35);
+      frames[label] = await readState(page);
+      await page.screenshot({ path: `${outputDirectory}\\${name}-${label}.png`, caret: "initial" });
+      await page.close();
     }
 
-    await page.waitForFunction((target) => document.querySelector(".irp-hero__video")?.currentTime >= target, duration - .2, { timeout: 5000 });
-    frames["ended-minus-200ms"] = await readState(page);
-
-    await page.waitForFunction(() => {
-      const element = document.querySelector(".irp-hero__video");
-      return element?.ended && sessionStorage.getItem("irp-intro-v4") === "seen" && document.body.classList.contains("intro-complete");
-    }, undefined, { timeout: 5000 });
-
-    await page.waitForTimeout(100);
-    frames["ended-plus-100ms"] = await readState(page);
-    await page.waitForTimeout(400);
-    frames["ended-plus-500ms"] = await readState(page);
-
-    await page.close();
-
-    const visualFrames = [
-      ["0000ms", "start", 0],
-      ["0500ms", "fixed", .5],
-      ["1000ms", "fixed", 1],
-      ["2000ms", "fixed", 2],
-      ["2600ms", "fixed", 2.6],
-      ["3200ms", "fixed", 3.2],
-      ["4500ms", "fixed", 4.5],
-      ["reveal-minus-300ms", "fixed", revealAt - .3],
-      ["reveal", "reveal-offset", 0],
-      ["reveal-plus-250ms", "reveal-offset", 250],
-      ["reveal-plus-650ms", "reveal-offset", 650],
-      ["reveal-plus-1050ms", "reveal-offset", 1050],
-      ["reveal-plus-1500ms", "reveal-offset", 1500],
-      ["reveal-plus-2100ms", "reveal-offset", 2100],
-      ["reveal-plus-2700ms", "reveal-offset", 2700],
-      ["ended-minus-200ms", "before-end", .2],
-      ["ended-plus-100ms", "after-end", 100],
-      ["ended-plus-500ms", "after-end", 500]
-    ];
-
-    for (const [label, kind, value] of visualFrames) {
-      await captureVisualFrame({ context, name, label, kind, value, errors });
-    }
-
-    report.push({ name, duration, revealAt, frames, errors });
+    report.push({ name, duration: measuredDuration, revealAt: measuredRevealAt, frames, errors });
     await context.close();
   }
+
+  const fallbackContext = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "es-PE" });
+  await fallbackContext.addInitScript(() => sessionStorage.removeItem("irp-intro-v4"));
+  await fallbackContext.route("**/*.mp4", (route) => route.abort("failed"));
+  const fallbackPage = await fallbackContext.newPage();
+  await fallbackPage.goto(`${baseUrl}/?intro=1&audit=fallback`, { waitUntil: "domcontentloaded" });
+  await fallbackPage.waitForFunction(() => document.body.classList.contains("intro-failed"), undefined, { timeout: 7000 });
+  await fallbackPage.waitForTimeout(900);
+  const fallback = await readState(fallbackPage);
+  await fallbackContext.close();
+  report.push({ name: "real-load-error", fallback });
 } finally {
   await browser.close();
 }
 
 console.log(JSON.stringify(report, null, 2));
 
-const failed = report.some(({ duration, revealAt, frames, errors }) => {
-  const beforeReveal = frames["reveal-minus-300ms"];
+const visualReports = report.filter((entry) => entry.frames);
+const failedVisual = visualReports.some(({ duration, revealAt, frames, errors }) => {
+  const before = frames["reveal-minus-300ms"];
   const reveal = frames.reveal;
-  const staged = frames["reveal-plus-2700ms"];
-  const beforeEnd = frames["ended-minus-200ms"];
+  const plus200 = frames["reveal-plus-200ms"];
+  const plus500 = frames["reveal-plus-500ms"];
+  const plus800 = frames["reveal-plus-800ms"];
+  const plus1100 = frames["reveal-plus-1100ms"];
+  const plus1450 = frames["reveal-plus-1450ms"];
+  const plus1750 = frames["reveal-plus-1750ms"];
+  const stable = frames["reveal-plus-2100ms"];
+  const beforeEnd = frames["ended-minus-100ms"];
   const afterEnd = frames["ended-plus-100ms"];
 
   return errors.length > 0 ||
-    duration < 9 || duration > 12 || Math.abs(revealAt - (duration - revealBeforeEndSeconds)) > .01 ||
-    beforeReveal.bodyClass.includes("intro-revealing") || !beforeReveal.loaderMounted || beforeReveal.headerOpacity >= .1 || beforeReveal.workerOpacity !== null || beforeReveal.kickerOpacity >= .1 || beforeReveal.titleLineOpacities.some((opacity) => opacity >= .1) || beforeReveal.actionsOpacity >= .1 || beforeReveal.session === "seen" ||
-    !reveal.bodyClass.includes("intro-revealing") || reveal.loaderMounted || reveal.paused || reveal.ended || reveal.session === "seen" ||
-    staged.ended || staged.session === "seen" || staged.headerOpacity < .7 || staged.workerOpacity < .7 || staged.kickerOpacity < .5 || staged.titleLineOpacities.some((opacity) => opacity <= 0) || staged.actionsOpacity <= 0 ||
+    duration !== 10 || revealAt !== 5 ||
+    before.introStatus !== "playing" || !before.loaderMounted || before.logoOpacity > .05 || before.headerOpacity > .05 || before.workerOpacity > .05 || before.kickerOpacity > .05 || before.titleLineOpacities.some((value) => value > .05) || before.session === "seen" ||
+    reveal.introStatus !== "revealing" || reveal.loaderMounted || reveal.ended || reveal.session === "seen" || reveal.headerOpacity > .2 ||
+    plus200.headerOpacity <= 0 || plus200.workerOpacity > .15 || plus200.kickerOpacity > .15 ||
+    plus500.workerOpacity < .2 || plus500.kickerOpacity <= 0 || plus500.titleLineOpacities.some((value) => value > .15) ||
+    plus800.titleLineOpacities[0] <= .1 || plus800.titleLineOpacities[2] > .15 ||
+    plus1100.titleLineOpacities.some((value) => value <= .05) || plus1100.actionsOpacity > .15 ||
+    plus1450.descriptionOpacity < .2 || plus1450.actionsOpacity < 0 || plus1450.proofOpacity > .15 ||
+    plus1750.actionsOpacity < .25 || plus1750.proofOpacity < 0 ||
+    stable.ended || stable.session === "seen" || stable.headerOpacity < .95 || stable.workerOpacity < .95 || stable.kickerOpacity < .95 || stable.titleLineOpacities.some((value) => value < .9) || stable.actionsOpacity < .75 || stable.proofOpacity < .3 ||
     beforeEnd.ended || beforeEnd.session === "seen" || beforeEnd.workerMarker !== "worker-before-ended" ||
-    afterEnd.session !== "seen" || !afterEnd.bodyClass.includes("intro-complete") || !afterEnd.ended || afterEnd.loaderMounted || afterEnd.workerMarker !== "worker-before-ended" || afterEnd.advisorHref !== "/asistente" ||
+    afterEnd.session !== "seen" || afterEnd.introStatus !== "completed" || !afterEnd.ended || afterEnd.loaderMounted || afterEnd.workerMarker !== "worker-before-ended" || afterEnd.advisorHref !== "/asistente" ||
     afterEnd.error !== null || afterEnd.videoWidth !== 1920 || afterEnd.videoHeight !== 1080;
 });
 
-if (failed) process.exitCode = 1;
+const fallbackReport = report.find((entry) => entry.name === "real-load-error")?.fallback;
+const failedFallback = !fallbackReport ||
+  fallbackReport.introStatus !== "failed" ||
+  fallbackReport.session === "seen" ||
+  !fallbackReport.fallbackMounted ||
+  fallbackReport.loaderMounted ||
+  fallbackReport.headerOpacity < .8 ||
+  fallbackReport.workerOpacity < .8;
+
+if (failedVisual || failedFallback) process.exitCode = 1;

@@ -1,21 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
-import Loader from "@/components/Loader";
-import { HOME_INTRO_ASSETS, useHomeIntro } from "@/components/HomeIntroController";
-import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
+import { HOME_INTRO_ASSETS, HOME_INTRO_TIMING, useHomeIntro } from "@/components/HomeIntroController";
+import { FadeInUp } from "@/components/ui/motion-presets";
 
 export function IntroLoader() {
-  const { status, introActive, logoHidden, forceIntro, skipIntro } = useHomeIntro();
-  const reduceMotion = usePrefersReducedMotion();
-
-  useEffect(() => {
-    // Una preferencia del sistema no debe impedir revisar el video cuando el
-    // intro se solicita explícitamente con ?intro=1 o desde desarrollo.
-    if (!introActive || !reduceMotion || forceIntro) return;
-    const timeout = window.setTimeout(skipIntro, 600);
-    return () => window.clearTimeout(timeout);
-  }, [forceIntro, introActive, reduceMotion, skipIntro]);
+  const { status, introActive, logoHidden } = useHomeIntro();
 
   if (!introActive) return null;
 
@@ -26,7 +15,13 @@ export function IntroLoader() {
       aria-live="polite"
       role="status"
     >
-      <Loader durationMs={2600} visible={!logoHidden}>
+      <FadeInUp
+        className="irp-entry-loader__brand-stage"
+        visible={!logoHidden}
+        duration={HOME_INTRO_TIMING.logoFadeMs / 1000}
+        offset={0}
+        initialScale={0.985}
+      >
         <div className="irp-entry-loader__brand">
           <img
             className="irp-entry-loader__logo"
@@ -38,11 +33,7 @@ export function IntroLoader() {
             decoding="sync"
           />
         </div>
-      </Loader>
-
-      <button className="irp-entry-loader__skip" type="button" onClick={skipIntro}>
-        Saltar intro
-      </button>
+      </FadeInUp>
 
       <span className="sr-only">Abriendo el acceso</span>
     </div>

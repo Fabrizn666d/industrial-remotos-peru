@@ -5,12 +5,14 @@ import { ProjectExperience } from "@/components/ProjectExperience";
 import { PrivacyRuntime } from "@/components/PrivacyRuntime";
 import { FloatingActions } from "@/components/FloatingActions";
 import { HomeIntroProvider } from "@/components/HomeIntroController";
+import { IntroLoader } from "@/components/IntroLoader";
 import { PageTransition } from "@/components/PageTransition";
 
 export default function SiteLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <ProjectProvider>
       <HomeIntroProvider>
+        <IntroLoader />
         <Header />
         <PageTransition>{children}</PageTransition>
         <Footer />

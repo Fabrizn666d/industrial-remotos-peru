@@ -53,7 +53,7 @@ Definidos en `lib/motion.ts`:
 - `5.7–6.1 s`: kicker y tres líneas del título aparecen en secuencia.
 - `6.7–7.1 s`: descripción y botones.
 - `7.3–8 s`: pruebas, ola y asistente; `onEnded` confirma el estado final.
-- Con movimiento reducido, el intro se sustituye por un fade de `0.6 s`.
+- Con movimiento reducido, una visita normal sustituye el intro por un fade de `0.6 s`. Si se solicita explícitamente con `?intro=1` —o se ejecuta en desarrollo— se conserva el video completo para evitar un salto accidental al hero.
 
 ## Correcciones de fuente
 

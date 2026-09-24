@@ -7,14 +7,16 @@ import { HOME_INTRO_ASSETS, HOME_INTRO_TIMING, useHomeIntro } from "@/components
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 
 export function IntroLoader() {
-  const { status, introActive, logoHidden, skipIntro } = useHomeIntro();
+  const { status, introActive, logoHidden, forceIntro, skipIntro } = useHomeIntro();
   const reduceMotion = usePrefersReducedMotion();
 
   useEffect(() => {
-    if (!introActive || !reduceMotion) return;
+    // Una preferencia del sistema no debe impedir revisar el video cuando el
+    // intro se solicita explícitamente con ?intro=1 o desde desarrollo.
+    if (!introActive || !reduceMotion || forceIntro) return;
     const timeout = window.setTimeout(skipIntro, 600);
     return () => window.clearTimeout(timeout);
-  }, [introActive, reduceMotion, skipIntro]);
+  }, [forceIntro, introActive, reduceMotion, skipIntro]);
 
   if (!introActive) return null;
 

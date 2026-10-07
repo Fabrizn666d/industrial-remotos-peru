@@ -1,5 +1,6 @@
 import type { ProductGroup } from "@/types/catalog";
 import type { ConfiguratorFamily, ConfiguratorSchema, ConfiguratorStep } from "@/types/configurator";
+import { pricingDefinition, publishedPricingCatalog, type PublishedPricingDefinition } from "@/lib/pricing/catalog";
 
 const solutionStep: ConfiguratorStep = {
   id: "solution",
@@ -10,7 +11,7 @@ const solutionStep: ConfiguratorStep = {
   icon: "solution"
 };
 
-const dimensionsStep = (title = "Ingresa medidas aproximadas", widthLabel = "Ancho aproximado (m)", heightLabel = "Alto aproximado (m)"): ConfiguratorStep => ({
+const dimensionsStep = (title = "Ingresa medidas aproximadas", widthLabel = "Ancho aproximado (m)", heightLabel = "Alto aproximado (m)"): Extract<ConfiguratorStep, { kind: "dimensions" }> => ({
   id: "dimensions",
   kind: "dimensions",
   label: "Medidas",
@@ -60,6 +61,24 @@ const fabricationInstallationOptions = [
 ];
 
 export const configuratorSchemas: Record<ConfiguratorFamily, ConfiguratorSchema> = {
+  "puertas-medida": {
+    family: "puertas-medida",
+    productGroup: "puertas-medida",
+    version: 2,
+    steps: [
+      solutionStep,
+      { ...dimensionsStep("Ingresa las medidas de fabricación"), required: true, description: "La semilla publicada admite ancho de 2 a 6 m y alto de 2 a 3.5 m. Las medidas se verificarán antes de fabricar." },
+      { id: "door-type", kind: "choice", label: "Tipo", title: "Elige el tipo de puerta", description: "Esta selección define el punto de partida de la fabricación.", icon: "design", answerKey: "subtype", defaultValue: "Levadiza", options: ["Levadiza", "Corrediza", "Batiente", "Seccional"].map((value) => ({ value, label: value })) },
+      { id: "opening", kind: "choice", label: "Apertura", title: "Selecciona el sistema de apertura", description: "Mostramos opciones de fabricación, no variantes importadas.", icon: "design", answerKey: "openingSystem", defaultValue: "Vertical", options: ["Vertical", "Lateral", "Batiente"].map((value) => ({ value, label: value })) },
+      { id: "design", kind: "choice", label: "Diseño", title: "Elige un estilo de referencia", description: "El detalle constructivo se confirma con IRP.", icon: "design", answerKey: "design", defaultValue: "Liso", options: ["Liso", "Con aplicaciones", "Personalizado"].map((value) => ({ value, label: value })) },
+      { id: "material", kind: "choice", label: "Material", title: "Selecciona el material principal", description: "Las compatibilidades finales se verifican técnicamente.", icon: "design", answerKey: "material", defaultValue: "Acero", options: ["Acero", "Panel seccional", "Aluminio"].map((value) => ({ value, label: value })) },
+      finishStep,
+      { id: "automation", kind: "choice", label: "Automatización", title: "Define el sistema de operación", description: "La potencia y compatibilidad se confirman tras revisar el proyecto.", icon: "automation", answerKey: "automation", defaultValue: "Sistema manual", options: ["Sistema manual", "Motor opcional"].map((value) => ({ value, label: value })) },
+      { id: "accessories", kind: "multi-choice", label: "Accesorios", title: "Añade complementos compatibles", description: "Puedes seleccionar más de uno.", icon: "accessories", answerKey: "accessories", options: [{ value: "Control adicional", label: "Control adicional" }] },
+      installationStep(fabricationInstallationOptions),
+      notesStep
+    ]
+  },
   puertas: {
     family: "puertas",
     productGroup: "puertas",
@@ -348,6 +367,7 @@ export const configuratorSchemas: Record<ConfiguratorFamily, ConfiguratorSchema>
 
 export const configuratorFamilyByProductGroup: Record<ProductGroup, ConfiguratorFamily> = {
   puertas: "puertas",
+  "puertas-medida": "puertas-medida",
   automatizacion: "automatizacion",
   techos: "techos",
   ventanas: "mamparas",
@@ -358,6 +378,25 @@ export const configuratorFamilyByProductGroup: Record<ProductGroup, Configurator
   drywall: "drywall"
 };
 
-export function getConfiguratorSchema(productGroup: ProductGroup) {
+export function getConfiguratorSchema(productGroup: ProductGroup, productId?: string, catalog: PublishedPricingDefinition[] = publishedPricingCatalog) {
+  const definition = productId ? pricingDefinition(productId, catalog) : undefined;
+  if (definition?.classification === "IMPORTED") {
+    const models = definition?.importedModels ?? [];
+    return {
+      family: "puertas-principales",
+      productGroup: "puertas-principales",
+      version: 2,
+      steps: [
+        solutionStep,
+        { id: "model", kind: "choice", label: "Modelo", title: "Selecciona un modelo importado", description: "Solo se muestran modelos publicados por IRP.", icon: "design", answerKey: "model", defaultValue: "", options: models.map((model) => ({ value: model.id, label: model.name })) },
+        { id: "variant", kind: "choice", label: "Medida", title: "Selecciona una medida disponible", description: "Las puertas importadas no admiten medidas libres.", icon: "dimensions", answerKey: "variant", defaultValue: "", options: models.flatMap((model) => model.variants.map((variant) => ({ value: variant.id, label: variant.label }))) },
+        finishStep,
+        { id: "automation", kind: "choice", label: "Automatización", title: "Selecciona una opción publicada", description: "La automatización incluida u opcional depende del modelo.", icon: "automation", answerKey: "automation", defaultValue: "", options: models.flatMap((model) => model.automation.map((option) => ({ value: option.id, label: option.label }))) },
+        { id: "accessories", kind: "multi-choice", label: "Complementos", title: "Añade complementos habilitados", description: "Solo aparecen complementos compatibles con el modelo.", icon: "accessories", answerKey: "accessories", options: models.flatMap((model) => model.accessories.map((option) => ({ value: option.id, label: option.label }))) },
+        installationStep(fabricationInstallationOptions),
+        notesStep
+      ]
+    } satisfies ConfiguratorSchema;
+  }
   return configuratorSchemas[configuratorFamilyByProductGroup[productGroup]];
 }

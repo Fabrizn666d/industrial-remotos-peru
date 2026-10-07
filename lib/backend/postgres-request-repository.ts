@@ -2,18 +2,23 @@ import { createHash, randomBytes, randomUUID } from "node:crypto";
 import type { Pool, PoolClient, QueryResultRow } from "pg";
 import { businessYear } from "@/lib/backend/business-time";
 import {
+  ActivityLogSchema,
   PublicRequestCreatedSchema,
   QuoteRequestSchema,
+  RequestOperationInputSchema,
   RequestListQuerySchema,
   RequestListResultSchema,
   type DashboardStats,
+  type ActivityLog,
   type PublicRequestSubmission,
   type QuoteRequest,
+  type RequestOperationInput,
   type RequestListQuery,
   type RequestListResult,
   type StoredRequestItem
 } from "@/lib/backend/contracts";
 import type { CreatedRequest, RequestRepository } from "@/lib/backend/request-repository";
+import { calculateSubmissionPrice } from "@/lib/pricing/request-pricing";
 
 type PoolFactory = () => Pool;
 type Queryable = Pick<Pool, "query"> | Pick<PoolClient, "query">;
@@ -29,6 +34,7 @@ interface RequestRow extends QueryResultRow {
   attachment_names: string[];
   source: string;
   original_payload: unknown;
+  pricing_snapshot: unknown;
   assigned_to: string | null;
   created_at: Date | string;
   updated_at: Date | string;
@@ -46,10 +52,22 @@ interface ItemRow extends QueryResultRow {
   notes: string | null;
 }
 
+interface ActivityRow extends QueryResultRow {
+  id: string;
+  actor_type: string;
+  actor_identifier: string;
+  action: string;
+  entity_type: string;
+  entity_id: string;
+  metadata: unknown;
+  created_at: Date | string;
+}
+
 const REQUEST_COLUMNS = `
   id, code, public_token_hash, client_submission_id, status,
   contact_snapshot, details_snapshot, attachment_names, source,
   original_payload, assigned_to, created_at, updated_at
+  , pricing_snapshot
 `;
 
 function asIsoString(value: Date | string) {
@@ -90,6 +108,7 @@ function mapRequest(row: RequestRow, items: StoredRequestItem[]): QuoteRequest {
     attachmentNames: row.attachment_names,
     source: row.source,
     originalPayload: row.original_payload,
+    pricingSnapshot: row.pricing_snapshot ?? undefined,
     assignedTo: row.assigned_to,
     createdAt: asIsoString(row.created_at),
     updatedAt: asIsoString(row.updated_at)
@@ -150,6 +169,7 @@ export class PostgresRequestRepository implements RequestRepository {
             code: existing.code,
             createdAt: existing.createdAt,
             accessToken: null,
+            pricing: existing.pricingSnapshot ?? await calculateSubmissionPrice(existing.originalPayload),
             replayed: true
           }),
           request: existing
@@ -182,10 +202,11 @@ export class PostgresRequestRepository implements RequestRepository {
           id, code, public_token_hash, client_submission_id, status,
           contact_snapshot, details_snapshot, attachment_names, source,
           original_payload, assigned_to, created_at, updated_at
+          , pricing_snapshot
         ) VALUES (
           $1::uuid, $2, $3, $4::uuid, 'NEW',
           $5::jsonb, $6::jsonb, $7::text[], $8,
-          $9::jsonb, NULL, $10::timestamptz, $10::timestamptz
+          $9::jsonb, NULL, $10::timestamptz, $10::timestamptz, $11::jsonb
         )
       `, [
         id,
@@ -197,7 +218,8 @@ export class PostgresRequestRepository implements RequestRepository {
         input.attachmentNames,
         input.source,
         JSON.stringify(input),
-        createdAt
+        createdAt,
+        JSON.stringify(await calculateSubmissionPrice(input))
       ]);
 
       const storedItems: StoredRequestItem[] = [];
@@ -250,12 +272,13 @@ export class PostgresRequestRepository implements RequestRepository {
         attachmentNames: input.attachmentNames,
         source: input.source,
         originalPayload: input,
+        pricingSnapshot: await calculateSubmissionPrice(input),
         assignedTo: null,
         createdAt,
         updatedAt: createdAt
       });
       return {
-        ...PublicRequestCreatedSchema.parse({ id, code, createdAt, accessToken, replayed: false }),
+        ...PublicRequestCreatedSchema.parse({ id, code, createdAt, accessToken, pricing: request.pricingSnapshot!, replayed: false }),
         request
       };
     } catch (error) {
@@ -273,6 +296,87 @@ export class PostgresRequestRepository implements RequestRepository {
     } finally {
       client.release();
     }
+  }
+
+  async findByPublicAccess(code: string, token: string): Promise<QuoteRequest | null> {
+    const client = await this.poolFactory().connect();
+    try {
+      const result = await client.query<RequestRow>(`SELECT ${REQUEST_COLUMNS} FROM irp_quote_requests WHERE code = $1 AND public_token_hash = $2 LIMIT 1`, [code, tokenHash(token)]);
+      const row = result.rows[0];
+      if (!row) return null;
+      const items = await loadItems(client, [row.id]);
+      return mapRequest(row, items.get(row.id) ?? []);
+    } finally {
+      client.release();
+    }
+  }
+
+  async updateOperations(id: string, input: RequestOperationInput, actor: string): Promise<QuoteRequest | null> {
+    const operation = RequestOperationInputSchema.parse(input);
+    const client = await this.poolFactory().connect();
+    let transactionOpen = false;
+    try {
+      await client.query("BEGIN");
+      transactionOpen = true;
+      const currentResult = await client.query<RequestRow>(`SELECT ${REQUEST_COLUMNS} FROM irp_quote_requests WHERE id = $1::uuid FOR UPDATE`, [id]);
+      const currentRow = currentResult.rows[0];
+      if (!currentRow) {
+        await client.query("ROLLBACK");
+        transactionOpen = false;
+        return null;
+      }
+      const nextStatus = operation.status ?? currentRow.status;
+      const nextAssignee = operation.assignedTo === undefined
+        ? currentRow.assigned_to
+        : operation.assignedTo?.trim() || null;
+      const updatedAt = new Date().toISOString();
+      const updatedResult = await client.query<RequestRow>(`
+        UPDATE irp_quote_requests
+           SET status = $2, assigned_to = $3, updated_at = $4::timestamptz
+         WHERE id = $1::uuid
+         RETURNING ${REQUEST_COLUMNS}
+      `, [id, nextStatus, nextAssignee, updatedAt]);
+      await client.query(`
+        INSERT INTO irp_activity_logs (
+          id, actor_type, actor_identifier, action,
+          entity_type, entity_id, metadata, created_at
+        ) VALUES ($1::uuid, 'ADMIN', $2, 'QUOTE_REQUEST_OPERATION_UPDATED', 'QUOTE_REQUEST', $3::uuid, $4::jsonb, $5::timestamptz)
+      `, [randomUUID(), actor, id, JSON.stringify({
+        previousStatus: currentRow.status,
+        status: nextStatus,
+        previousAssignee: currentRow.assigned_to,
+        assignedTo: nextAssignee,
+        note: operation.internalNote?.trim() || null
+      }), updatedAt]);
+      await client.query("COMMIT");
+      transactionOpen = false;
+      const items = await loadItems(client, [id]);
+      return mapRequest(updatedResult.rows[0], items.get(id) ?? []);
+    } catch (error) {
+      if (transactionOpen) await client.query("ROLLBACK").catch(() => undefined);
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  async activity(id: string): Promise<ActivityLog[]> {
+    const result = await this.poolFactory().query<ActivityRow>(`
+      SELECT id, actor_type, actor_identifier, action, entity_type, entity_id, metadata, created_at
+        FROM irp_activity_logs
+       WHERE entity_type = 'QUOTE_REQUEST' AND entity_id = $1::uuid
+       ORDER BY created_at DESC
+    `, [id]);
+    return result.rows.map((row) => ActivityLogSchema.parse({
+      id: row.id,
+      actorType: row.actor_type,
+      actorIdentifier: row.actor_identifier,
+      action: row.action,
+      entityType: row.entity_type,
+      entityId: row.entity_id,
+      metadata: row.metadata,
+      createdAt: asIsoString(row.created_at)
+    }));
   }
 
   async list(input: RequestListQuery): Promise<RequestListResult> {

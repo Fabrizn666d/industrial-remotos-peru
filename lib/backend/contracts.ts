@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ProjectPricingSchema } from "@/lib/pricing/contracts";
 
 export const AdminRoleSchema = z.enum(["SUPER_ADMIN", "ADMIN", "COMMERCIAL"]);
 export type AdminRole = z.infer<typeof AdminRoleSchema>;
@@ -37,12 +38,17 @@ export const RequestContactSchema = z.object({
   phone,
   whatsapp: phone.optional(),
   documentType: z.enum(["DNI", "RUC", "OTHER"]).optional(),
-  documentNumber: optionalText(24)
+  documentNumber: optionalText(24),
+  businessName: optionalText(180)
 }).strict();
 
 export const RequestDetailsSchema = z.object({
   projectType: shortText(160),
   location: shortText(240),
+  region: optionalText(120),
+  province: optionalText(120),
+  district: optionalText(120),
+  address: optionalText(300),
   stage: optionalText(100),
   estimatedDate: z.string().trim().regex(/^\d{4}-(0[1-9]|1[0-2])$/).optional(),
   notes: optionalText(4000)
@@ -68,15 +74,24 @@ export const RequestAttributionSchema = z.object({
   landingPage: optionalText(1000)
 }).strict();
 
-export const PublicRequestSubmissionSchema = z.object({
+export const RequestSourceSchema = z.enum(["CONFIGURATOR", "ASSISTANT", "CONTACT", "ADMIN_IMPORT"]);
+
+const PublicRequestSubmissionObjectSchema = z.object({
   clientSubmissionId: z.string().uuid(),
   contact: RequestContactSchema,
   details: RequestDetailsSchema,
   items: z.array(RequestItemInputSchema).min(1).max(50),
   attachmentNames: z.array(shortText(240)).max(8).default([]),
   attribution: RequestAttributionSchema.optional(),
-  source: z.enum(["CONFIGURATOR", "CONTACT", "ADMIN_IMPORT"]).default("CONFIGURATOR")
+  source: RequestSourceSchema.default("CONFIGURATOR")
 }).strict();
+
+export const PublicRequestSubmissionSchema = PublicRequestSubmissionObjectSchema.superRefine((value, context) => {
+  const digits = value.contact.documentNumber?.replace(/\D/g, "") ?? "";
+  if (value.contact.documentType === "DNI" && digits.length !== 8) context.addIssue({ code: "custom", path: ["contact", "documentNumber"], message: "El DNI debe tener 8 dígitos" });
+  if (value.contact.documentType === "RUC" && digits.length !== 11) context.addIssue({ code: "custom", path: ["contact", "documentNumber"], message: "El RUC debe tener 11 dígitos" });
+  if (value.contact.documentType === "RUC" && !value.contact.businessName?.trim()) context.addIssue({ code: "custom", path: ["contact", "businessName"], message: "Ingresa la razón social" });
+});
 export type PublicRequestSubmission = z.infer<typeof PublicRequestSubmissionSchema>;
 
 export const StoredRequestItemSchema = RequestItemInputSchema.extend({
@@ -95,8 +110,9 @@ export const QuoteRequestSchema = z.object({
   details: RequestDetailsSchema,
   items: z.array(StoredRequestItemSchema).min(1).max(50),
   attachmentNames: z.array(z.string().max(240)).max(8),
-  source: PublicRequestSubmissionSchema.shape.source,
+  source: RequestSourceSchema,
   originalPayload: PublicRequestSubmissionSchema,
+  pricingSnapshot: ProjectPricingSchema.optional(),
   assignedTo: z.string().email().nullable(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime()
@@ -114,6 +130,17 @@ export const ActivityLogSchema = z.object({
   createdAt: z.string().datetime()
 }).strict();
 export type ActivityLog = z.infer<typeof ActivityLogSchema>;
+
+export const RequestOperationInputSchema = z.object({
+  status: RequestStatusSchema.optional(),
+  assignedTo: z.union([z.string().trim().email().max(254), z.literal(""), z.null()]).optional(),
+  internalNote: z.string().trim().max(2000).optional()
+}).strict().superRefine((value, context) => {
+  if (value.status === undefined && value.assignedTo === undefined && !value.internalNote) {
+    context.addIssue({ code: "custom", message: "Indica al menos un cambio" });
+  }
+});
+export type RequestOperationInput = z.infer<typeof RequestOperationInputSchema>;
 
 export const RepositoryStateSchema = z.object({
   schemaVersion: z.literal(1),
@@ -153,6 +180,7 @@ export const PublicRequestCreatedSchema = z.object({
   code: z.string(),
   createdAt: z.string().datetime(),
   accessToken: z.string().min(32).nullable(),
+  pricing: ProjectPricingSchema,
   replayed: z.boolean()
 }).strict();
 export type PublicRequestCreated = z.infer<typeof PublicRequestCreatedSchema>;

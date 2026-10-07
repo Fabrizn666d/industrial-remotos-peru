@@ -1,6 +1,6 @@
 import type { ProductGroup } from "@/types/catalog";
 
-export type ConfiguratorFamily = "puertas" | "puertas-principales" | "automatizacion" | "techos" | "mamparas" | "acero" | "estructuras" | "cerco" | "drywall";
+export type ConfiguratorFamily = "puertas" | "puertas-medida" | "puertas-principales" | "automatizacion" | "techos" | "mamparas" | "acero" | "estructuras" | "cerco" | "drywall";
 
 export type ConfiguratorIcon =
   | "solution"
@@ -12,7 +12,7 @@ export type ConfiguratorIcon =
   | "installation"
   | "notes";
 
-export type ConfiguratorChoiceKey = "subtype" | "design" | "panel" | "automation" | "installation";
+export type ConfiguratorChoiceKey = "subtype" | "design" | "panel" | "automation" | "installation" | "model" | "variant" | "openingSystem" | "material";
 
 export type ConfiguratorOption = {
   value: string;

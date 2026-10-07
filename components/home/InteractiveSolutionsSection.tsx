@@ -7,9 +7,9 @@ import {
   Fence,
   Layers3,
   PanelsTopLeft,
+  PencilRuler,
   SunMedium,
   Warehouse,
-  Zap
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -17,6 +17,7 @@ import { useId, useState, type PointerEvent } from "react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { createFadeUpVariants, createLineRevealVariants, createStaggerContainer, motionDuration, motionEase, scrollViewport } from "@/lib/motion";
 import styles from "./InteractiveSolutionsSection.module.css";
+import { usePublicPricingCatalog } from "@/lib/pricing/use-public-catalog";
 
 const SCENE_ASSETS = {
   desktop: "/NUEVO/D/ChatGPT Image 22 sept 2026%2C 10_00_28.png",
@@ -69,12 +70,12 @@ const services = [
     cardPosition: "roof"
   },
   {
-    id: "cerco",
-    shortTitle: "Cerco",
-    title: "Cerco Eléctrico",
-    description: "Protección perimetral adaptada a la configuración de cada proyecto.",
-    href: "/soluciones/cerco-electrico",
-    icon: Zap,
+    id: "puertas-medida",
+    shortTitle: "A medida",
+    title: "Puertas a medida",
+    description: "Puertas diseñadas y fabricadas según tu espacio y estilo.",
+    href: "/soluciones/puertas-a-medida",
+    icon: PencilRuler,
     desktop: { x: 85, y: 25 },
     mobile: { x: 89, y: 39 },
     cardPosition: "fence"
@@ -95,16 +96,19 @@ const services = [
 type ServiceId = (typeof services)[number]["id"];
 
 export function InteractiveSolutionsSection() {
+  const publicCatalog = usePublicPricingCatalog();
+  const serviceItems = services.map((service) => service.id === "puertas-medida" ? { ...service, shortTitle: publicCatalog.homeCard.title, title: publicCatalog.homeCard.title, description: publicCatalog.homeCard.description, href: publicCatalog.homeCard.destination } : service).filter((service) => service.id !== "puertas-medida" || publicCatalog.homeCard.visible);
   const [selectedId, setSelectedId] = useState<ServiceId>("puertas");
   const [previewId, setPreviewId] = useState<ServiceId | null>(null);
   const reduceMotion = usePrefersReducedMotion();
   const panelId = useId();
+  const scenePanelId = `${panelId}-scene`;
   const sceneX = useMotionValue(0);
   const sceneY = useMotionValue(0);
   const smoothX = useSpring(sceneX, { stiffness: 90, damping: 22, mass: 0.5 });
   const smoothY = useSpring(sceneY, { stiffness: 90, damping: 22, mass: 0.5 });
   const activeId = previewId ?? selectedId;
-  const active = services.find((service) => service.id === activeId) ?? services[0];
+  const active = serviceItems.find((service) => service.id === activeId) ?? serviceItems[0] ?? services[0];
   const ActiveIcon = active.icon;
   const reveal = createFadeUpVariants(reduceMotion);
   const lineReveal = createLineRevealVariants(reduceMotion, .12);
@@ -153,7 +157,7 @@ export function InteractiveSolutionsSection() {
           </Link>
 
           <motion.div className={styles.desktopSelector} variants={list} role="tablist" aria-label="Soluciones disponibles">
-            {services.map(({ id, title, icon: Icon }) => {
+            {serviceItems.map(({ id, title, icon: Icon }) => {
               const isActive = id === activeId;
               return (
                 <motion.button
@@ -161,7 +165,7 @@ export function InteractiveSolutionsSection() {
                   type="button"
                   role="tab"
                   aria-selected={selectedId === id}
-                  aria-controls={panelId}
+                  aria-controls={scenePanelId}
                   className={isActive ? styles.activeOption : undefined}
                   variants={row}
                   onClick={() => setSelectedId(id)}
@@ -192,7 +196,7 @@ export function InteractiveSolutionsSection() {
             <Image className={styles.desktopScene} src={SCENE_ASSETS.desktop} alt="Casa moderna con soluciones de acceso, protección y acondicionamiento" fill sizes="(min-width: 1101px) 62vw, 100vw" />
             <Image className={styles.mobileScene} src={SCENE_ASSETS.mobile} alt="Casa moderna con soluciones integradas" fill sizes="100vw" />
 
-            {services.map((service, index) => {
+            {serviceItems.map((service, index) => {
               const isActive = service.id === activeId;
               return (
                 <motion.button
@@ -234,6 +238,9 @@ export function InteractiveSolutionsSection() {
             <AnimatePresence mode="wait">
               <motion.article
                 key={active.id}
+                id={scenePanelId}
+                role="tabpanel"
+                aria-live="polite"
                 className={styles.floatingCard}
                 data-position={active.cardPosition}
                 initial={reduceMotion ? false : { opacity: 0, scale: 0.96, y: 7 }}
@@ -255,20 +262,31 @@ export function InteractiveSolutionsSection() {
 
         <div className={styles.mobileControls}>
           <div className={styles.mobileSelector} role="tablist" aria-label="Soluciones disponibles">
-            {services.map(({ id, shortTitle, icon: Icon }) => (
-              <button
-                key={id}
-                type="button"
-                role="tab"
-                aria-selected={selectedId === id}
-                aria-controls={panelId}
-                className={selectedId === id ? styles.activeMobileOption : undefined}
-                onClick={() => setSelectedId(id)}
-              >
-                <Icon aria-hidden="true" />
-                {shortTitle}
-              </button>
-            ))}
+            <div className={styles.mobileSelectorTrack}>
+              {([0, 1] as const).map((copyIndex) => (
+                <div
+                  key={copyIndex}
+                  className={styles.mobileSelectorGroup}
+                  aria-hidden={copyIndex === 1 ? true : undefined}
+                >
+                  {serviceItems.map(({ id, shortTitle, icon: Icon }) => (
+                    <button
+                      key={`${copyIndex}-${id}`}
+                      type="button"
+                      role={copyIndex === 0 ? "tab" : undefined}
+                      tabIndex={copyIndex === 1 ? -1 : undefined}
+                      aria-selected={copyIndex === 0 ? selectedId === id : undefined}
+                      aria-controls={copyIndex === 0 ? scenePanelId : undefined}
+                      className={selectedId === id ? styles.activeMobileOption : undefined}
+                      onClick={() => setSelectedId(id)}
+                    >
+                      <Icon aria-hidden="true" />
+                      {shortTitle}
+                    </button>
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
 
           <AnimatePresence mode="wait">

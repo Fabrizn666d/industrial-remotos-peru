@@ -10,6 +10,9 @@ import { products } from "@/data/products";
 import { LAST_REQUEST_KEY, type QuoteContact, type QuoteDetails, type SubmittedRequest } from "@/types/quote";
 import type { QuoteItem, QuoteItemConfiguration } from "@/types/catalog";
 import { readSessionAttribution } from "@/lib/attribution";
+import { calculateProjectPrice, formatPublicPrice, PROPOSAL_DISCLAIMER } from "@/lib/pricing/engine";
+import type { ProjectPricing } from "@/lib/pricing/contracts";
+import { usePublicPricingCatalog } from "@/lib/pricing/use-public-catalog";
 
 const steps = [
   { label: "Mi proyecto", icon: ShoppingBag },
@@ -19,8 +22,8 @@ const steps = [
   { label: "Enviar", icon: Send }
 ];
 
-const initialContact: QuoteContact = { name: "", email: "", phone: "" };
-const initialDetails: QuoteDetails = { projectType: "", location: "", stage: "En evaluación", estimatedDate: "", notes: "" };
+const initialContact: QuoteContact = { name: "", email: "", phone: "", documentType: "DNI", documentNumber: "", businessName: "" };
+const initialDetails: QuoteDetails = { projectType: "", location: "", region: "Lima", province: "Lima", district: "", address: "", stage: "En evaluación", estimatedDate: "", notes: "" };
 
 type CreatedResponse = {
   id: string;
@@ -28,6 +31,7 @@ type CreatedResponse = {
   createdAt: string;
   accessToken: string | null;
   replayed: boolean;
+  pricing: ProjectPricing;
 };
 
 function isCreatedResponse(value: unknown): value is CreatedResponse {
@@ -37,6 +41,7 @@ function isCreatedResponse(value: unknown): value is CreatedResponse {
     && typeof candidate.code === "string"
     && typeof candidate.createdAt === "string"
     && (candidate.accessToken === null || typeof candidate.accessToken === "string")
+    && Boolean(candidate.pricing)
     && typeof candidate.replayed === "boolean";
 }
 
@@ -50,6 +55,10 @@ function compactConfiguration(configuration: QuoteItemConfiguration) {
   if (configuration.panel) values.panel = configuration.panel;
   if (configuration.finish) values.finish = configuration.finish;
   if (configuration.automation) values.automation = configuration.automation;
+  if (configuration.model) values.model = configuration.model;
+  if (configuration.variant) values.variant = configuration.variant;
+  if (configuration.openingSystem) values.openingSystem = configuration.openingSystem;
+  if (configuration.material) values.material = configuration.material;
   if (configuration.accessories.length) values.accessories = configuration.accessories;
   if (configuration.installation) values.installation = configuration.installation;
   if (configuration.notes) values.notes = configuration.notes;
@@ -70,6 +79,7 @@ function itemSummary(item: QuoteItem) {
 }
 
 export function CheckoutExperience() {
+  const publicCatalog = usePublicPricingCatalog();
   const router = useRouter();
   const { items, count, clearProject } = useProject();
   const [active, setActive] = useState(0);
@@ -79,11 +89,12 @@ export function CheckoutExperience() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const submissionId = useRef<string | null>(null);
+  const pricing = calculateProjectPrice(items.map((item) => ({ productId: item.productId, quantity: item.quantity, configuration: { width: item.configuration.dimensions?.width, height: item.configuration.dimensions?.height, subtype: item.configuration.subtype, model: item.configuration.model, variant: item.configuration.variant, openingSystem: item.configuration.openingSystem, design: item.configuration.design, material: item.configuration.material, finish: item.configuration.finish, automation: item.configuration.automation, accessories: item.configuration.accessories, installation: item.configuration.installation } })), details.location, publicCatalog.definitions, `v${publicCatalog.version}`, publicCatalog.proposalSettings);
 
   const valid = [
     items.length > 0,
-    contact.name.trim().length >= 2 && /^\S+@\S+\.\S+$/.test(contact.email) && contact.phone.replace(/\D/g, "").length >= 7,
-    details.projectType !== "" && details.location.trim().length >= 3,
+    contact.name.trim().length >= 2 && /^\S+@\S+\.\S+$/.test(contact.email) && contact.phone.replace(/\D/g, "").length >= 7 && (contact.documentType === "DNI" ? /^\d{8}$/.test(contact.documentNumber) : /^\d{11}$/.test(contact.documentNumber) && contact.businessName.trim().length >= 2),
+    details.projectType !== "" && details.region.trim().length >= 2 && details.province.trim().length >= 2 && details.district.trim().length >= 2 && details.address.trim().length >= 3,
     true,
     true
   ][active];
@@ -109,10 +120,14 @@ export function CheckoutExperience() {
         name: contact.name.trim(),
         email: contact.email.trim(),
         phone: contact.phone.trim()
+        ,documentType: contact.documentType,
+        documentNumber: contact.documentNumber.trim(),
+        ...(contact.documentType === "RUC" ? { businessName: contact.businessName.trim() } : {})
       },
       details: {
         projectType: details.projectType,
         location: details.location.trim(),
+        region: details.region.trim(), province: details.province.trim(), district: details.district.trim(), address: details.address.trim(),
         ...(details.stage ? { stage: details.stage } : {}),
         ...(details.estimatedDate ? { estimatedDate: details.estimatedDate } : {}),
         ...(details.notes.trim() ? { notes: details.notes.trim() } : {})
@@ -126,7 +141,7 @@ export function CheckoutExperience() {
       })),
       attachmentNames: [],
       ...(attribution ? { attribution } : {}),
-      source: "CONFIGURATOR" as const
+      source: items.some((item) => item.configuration.customFields?.source === "ASSISTANT") ? "ASSISTANT" as const : "CONFIGURATOR" as const
     };
 
     try {
@@ -152,12 +167,12 @@ export function CheckoutExperience() {
         details,
         files: [],
         items,
-        pricing: { status: "pending" }
+        pricing: body.pricing
       };
       sessionStorage.setItem(LAST_REQUEST_KEY, JSON.stringify(request));
       window.dispatchEvent(new CustomEvent("irp:analytics", { detail: { name: "quote_submit" } }));
       clearProject();
-      router.push(`/cotizar/confirmacion/${encodeURIComponent(body.code)}`);
+      router.push(`/cotizar/confirmacion/${encodeURIComponent(body.code)}${body.accessToken ? `?token=${encodeURIComponent(body.accessToken)}` : ""}`);
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "No pudimos registrar la solicitud.");
     } finally {
@@ -178,11 +193,11 @@ export function CheckoutExperience() {
       <div className="checkout-layout-v2">
         <div className="checkout-flow-column">
           <section className="checkout-card">
-            {active === 0 && <CheckoutCartReview items={items} />}
-            {active === 1 && <div className="checkout-panel"><div className="checkout-panel__heading"><span className="eyebrow">Datos de contacto</span><h1>¿Cómo nos comunicamos contigo?</h1><p>Usaremos estos datos únicamente para atender esta solicitud.</p></div><div className="checkout-form-grid"><label>Nombres y apellidos<input value={contact.name} onChange={(event) => setContact({ ...contact, name: event.target.value })} placeholder="Nombre completo" autoComplete="name" />{touched && contact.name.trim().length < 2 && <small>Ingresa tu nombre.</small>}</label><label>Correo electrónico<input value={contact.email} onChange={(event) => setContact({ ...contact, email: event.target.value })} placeholder="nombre@correo.com" type="email" autoComplete="email" />{touched && !/^\S+@\S+\.\S+$/.test(contact.email) && <small>Ingresa un correo válido.</small>}</label><label>WhatsApp / teléfono<input value={contact.phone} onChange={(event) => setContact({ ...contact, phone: event.target.value })} placeholder="Número de contacto" type="tel" autoComplete="tel" />{touched && contact.phone.replace(/\D/g, "").length < 7 && <small>Ingresa un teléfono válido.</small>}</label></div></div>}
-            {active === 2 && <div className="checkout-panel"><div className="checkout-panel__heading"><span className="eyebrow">Detalles del proyecto</span><h1>Cuéntanos dónde y cuándo.</h1><p>Las medidas y especificaciones finales se validarán durante la asesoría.</p></div><div className="checkout-details-grid"><div className="checkout-form-grid"><label>Tipo de proyecto<select value={details.projectType} onChange={(event) => setDetails({ ...details, projectType: event.target.value })}><option value="">Selecciona una opción</option>{products.map((product) => <option value={product.name} key={product.id}>{product.name}</option>)}</select>{touched && !details.projectType && <small>Selecciona el tipo de proyecto.</small>}</label><label>Distrito o ubicación<input value={details.location} onChange={(event) => setDetails({ ...details, location: event.target.value })} placeholder="Distrito, provincia o referencia" />{touched && details.location.trim().length < 3 && <small>Indica la ubicación.</small>}</label><label>Etapa del proyecto<select value={details.stage} onChange={(event) => setDetails({ ...details, stage: event.target.value })}><option>En evaluación</option><option>En construcción</option><option>Remodelación</option><option>Listo para instalar</option></select></label><label>Fecha estimada<input value={details.estimatedDate} onChange={(event) => setDetails({ ...details, estimatedDate: event.target.value })} type="month" /></label><label className="is-wide">Observaciones<textarea value={details.notes} onChange={(event) => setDetails({ ...details, notes: event.target.value })} rows={4} placeholder="Uso del espacio, preferencias o restricciones." /></label></div><div className="checkout-dropzone" role="note"><Info size={25} /><b>Fotos y planos</b><span>El envío de archivos se habilitará con el almacenamiento privado. Por ahora podrás compartirlos con el asesor usando tu código de solicitud.</span></div></div></div>}
-            {active === 3 && <CheckoutSummary contact={contact} details={details} items={items} />}
-            {active === 4 && <div className="checkout-send"><span><Send size={30} /></span><small className="eyebrow">Todo listo</small><h1>Registra tu solicitud.</h1><p>El servidor generará un código único y conservará el expediente para que el equipo pueda revisarlo.</p><div><b>{contact.name}</b><span>{contact.email} · {contact.phone}</span><strong>{count} {count === 1 ? "elemento" : "elementos"} · Precio por confirmar</strong></div><button className="button button--primary" type="button" onClick={submit} disabled={submitting}>{submitting ? "Registrando…" : "Enviar solicitud"} <ArrowRight size={17} /></button>{submitError && <small role="alert">{submitError}</small>}<small>No borraremos tu borrador hasta recibir confirmación del servidor.</small></div>}
+            {active === 0 && <CheckoutCartReview items={items} pricing={pricing} />}
+            {active === 1 && <div className="checkout-panel"><div className="checkout-panel__heading"><span className="eyebrow">Datos de contacto</span><h1>¿Cómo nos comunicamos contigo?</h1><p>Usaremos estos datos únicamente para atender esta solicitud.</p></div><div className="checkout-form-grid"><label>Nombres y apellidos<input value={contact.name} onChange={(event) => setContact({ ...contact, name: event.target.value })} placeholder="Nombre completo" autoComplete="name" />{touched && contact.name.trim().length < 2 && <small>Ingresa tu nombre.</small>}</label><label>Correo electrónico<input value={contact.email} onChange={(event) => setContact({ ...contact, email: event.target.value })} placeholder="nombre@correo.com" type="email" autoComplete="email" />{touched && !/^\S+@\S+\.\S+$/.test(contact.email) && <small>Ingresa un correo válido.</small>}</label><label>WhatsApp / teléfono<input value={contact.phone} onChange={(event) => setContact({ ...contact, phone: event.target.value })} placeholder="Número de contacto" type="tel" autoComplete="tel" />{touched && contact.phone.replace(/\D/g, "").length < 7 && <small>Ingresa un teléfono válido.</small>}</label><label>Tipo de documento<select value={contact.documentType} onChange={(event) => setContact({ ...contact, documentType: event.target.value as "DNI" | "RUC", documentNumber: "", businessName: "" })}><option value="DNI">DNI</option><option value="RUC">RUC</option></select></label><label>{contact.documentType}<input value={contact.documentNumber} onChange={(event) => setContact({ ...contact, documentNumber: event.target.value.replace(/\D/g, "").slice(0, contact.documentType === "DNI" ? 8 : 11) })} inputMode="numeric" autoComplete="off" placeholder={contact.documentType === "DNI" ? "8 dígitos" : "11 dígitos"} />{touched && !new RegExp(`^\\d{${contact.documentType === "DNI" ? 8 : 11}}$`).test(contact.documentNumber) && <small>Revisa el número de documento.</small>}</label>{contact.documentType === "RUC" && <label>Razón social<input value={contact.businessName} onChange={(event) => setContact({ ...contact, businessName: event.target.value })} placeholder="Razón social" autoComplete="organization" />{touched && contact.businessName.trim().length < 2 && <small>Ingresa la razón social.</small>}</label>}</div></div>}
+            {active === 2 && <div className="checkout-panel"><div className="checkout-panel__heading"><span className="eyebrow">Detalles del proyecto</span><h1>Cuéntanos dónde y cuándo.</h1><p>Las medidas y especificaciones finales se validarán durante la asesoría.</p></div><div className="checkout-details-grid"><div className="checkout-form-grid"><label>Tipo de proyecto<select value={details.projectType} onChange={(event) => setDetails({ ...details, projectType: event.target.value })}><option value="">Selecciona una opción</option>{products.map((product) => <option value={product.name} key={product.id}>{product.name}</option>)}</select>{touched && !details.projectType && <small>Selecciona el tipo de proyecto.</small>}</label><label>Región<input value={details.region} onChange={(event) => setDetails({ ...details, region: event.target.value })} autoComplete="address-level1" /></label><label>Provincia<input value={details.province} onChange={(event) => setDetails({ ...details, province: event.target.value })} autoComplete="address-level2" /></label><label>Distrito<input value={details.district} onChange={(event) => { const district = event.target.value; setDetails({ ...details, district, location: [district, details.province, details.region].filter(Boolean).join(", ") }); }} autoComplete="address-level3" />{touched && details.district.trim().length < 2 && <small>Indica el distrito.</small>}</label><label className="is-wide">Dirección o referencia<input value={details.address} onChange={(event) => setDetails({ ...details, address: event.target.value })} autoComplete="street-address" placeholder="Dirección, urbanización o referencia" />{touched && details.address.trim().length < 3 && <small>Indica una referencia.</small>}</label><label>Etapa del proyecto<select value={details.stage} onChange={(event) => setDetails({ ...details, stage: event.target.value })}><option>En evaluación</option><option>En construcción</option><option>Remodelación</option><option>Listo para instalar</option></select></label><label>Fecha estimada<input value={details.estimatedDate} onChange={(event) => setDetails({ ...details, estimatedDate: event.target.value })} type="month" /></label><label className="is-wide">Observaciones<textarea value={details.notes} onChange={(event) => setDetails({ ...details, notes: event.target.value })} rows={4} placeholder="Uso del espacio, preferencias o restricciones." /></label></div><div className="checkout-dropzone" role="note"><Info size={25} /><b>Fotos y planos</b><span>El envío de archivos se habilitará con almacenamiento privado. No mostramos una carga ficticia.</span></div></div></div>}
+            {active === 3 && <CheckoutSummary contact={contact} details={details} items={items} pricing={pricing} />}
+            {active === 4 && <div className="checkout-send"><span><Send size={30} /></span><small className="eyebrow">Todo listo</small><h1>Registra tu propuesta.</h1><p>El servidor volverá a validar catálogo, compatibilidades y precios antes de guardar.</p><div><b>{contact.name}</b><span>{contact.email} · {contact.phone}</span><strong>{pricing.estimatedTotalMinor !== null ? formatPublicPrice(pricing.estimatedTotalMinor) : "Requiere evaluación"}</strong></div><button className="button button--primary" type="button" onClick={submit} disabled={submitting}>{submitting ? "Preparando tu propuesta…" : "Confirmar y enviar"} <ArrowRight size={17} /></button>{submitError && <small role="alert">{submitError}</small>}<small>{PROPOSAL_DISCLAIMER}</small></div>}
           </section>
 
           <footer className="checkout-footer">
@@ -194,18 +209,18 @@ export function CheckoutExperience() {
         <aside className="checkout-side-summary">
           <span className="eyebrow">Resumen del proyecto</span><h2>{count} {count === 1 ? "elemento" : "elementos"}</h2>
           <div className="checkout-side-summary__items">{items.slice(0, 4).map((item) => <article key={item.id}><span><Image src={item.image} alt="" fill sizes="58px" className="object-cover" /></span><div><b>{item.name}</b><small>{item.quantity} × {itemSummary(item)}</small></div></article>)}</div>
-          <div className="checkout-side-summary__total"><span>Importe</span><strong>Por confirmar</strong></div>
-          <p>Un asesor validará medidas, materiales, automatización e instalación antes de emitir un precio.</p>
+          <div className="checkout-side-summary__total"><span>Total estimado</span><strong>{pricing.estimatedTotalMinor !== null ? formatPublicPrice(pricing.estimatedTotalMinor) : "Requiere evaluación"}</strong></div>
+          <p>{PROPOSAL_DISCLAIMER}</p>
         </aside>
       </div>
     </div>
   );
 }
 
-function CheckoutCartReview({ items }: { items: QuoteItem[] }) {
-  return <div className="checkout-review"><div className="checkout-panel__heading"><span className="eyebrow">Mi proyecto</span><h1>Confirma tu selección.</h1><p>Puedes volver a Mi proyecto si necesitas editar, duplicar o cambiar cantidades.</p></div><div className="checkout-review__list">{items.map((item) => <article key={item.id}><span><Image src={item.image} alt="" fill sizes="90px" className="object-cover" /></span><div><h2>{item.name}</h2><p>{itemSummary(item)}</p></div><b>{item.quantity} × Por confirmar</b></article>)}</div><div className="checkout-review__total"><span>Importe del proyecto</span><strong>Por confirmar</strong></div></div>;
+function CheckoutCartReview({ items, pricing }: { items: QuoteItem[]; pricing: ProjectPricing }) {
+  return <div className="checkout-review"><div className="checkout-panel__heading"><span className="eyebrow">Mi proyecto</span><h1>Confirma tu selección.</h1><p>Puedes volver a Mi proyecto si necesitas editar, duplicar o cambiar cantidades.</p></div><div className="checkout-review__list">{items.map((item,index) => {const result=pricing.items[index]?.result;return <article key={item.id}><span><Image src={item.image} alt="" fill sizes="90px" className="object-cover" /></span><div><h2>{item.name}</h2><p>{itemSummary(item)}</p></div><b>{result?.status==="ESTIMATED"?formatPublicPrice(result.totalMinor):"Requiere evaluación"}</b></article>})}</div><div className="checkout-review__total"><span>Total estimado</span><strong>{pricing.estimatedTotalMinor!==null?formatPublicPrice(pricing.estimatedTotalMinor):"Requiere evaluación"}</strong></div><p>{PROPOSAL_DISCLAIMER}</p></div>;
 }
 
-function CheckoutSummary({ contact, details, items }: { contact: QuoteContact; details: QuoteDetails; items: QuoteItem[] }) {
-  return <div className="checkout-summary"><div className="checkout-panel__heading"><span className="eyebrow">Resumen</span><h1>Verifica los datos de tu solicitud.</h1></div><div className="checkout-summary__grid"><article><small>Contacto</small><h2>{contact.name}</h2><p>{contact.email}<br />{contact.phone}</p></article><article><small>Proyecto</small><h2>{details.projectType}</h2><p>{details.location}<br />{details.stage}{details.estimatedDate ? " · " + details.estimatedDate : ""}</p></article><article><small>Observaciones</small><h2>Información adicional</h2><p>{details.notes || "Sin observaciones adicionales."}</p></article></div><div className="checkout-summary__items">{items.map((item) => <span key={item.id}><b>{item.quantity} × {item.name}</b><strong>Por confirmar</strong></span>)}</div><div className="checkout-review__total"><span>Importe del proyecto</span><strong>Por confirmar</strong></div></div>;
+function CheckoutSummary({ contact, details, items, pricing }: { contact: QuoteContact; details: QuoteDetails; items: QuoteItem[]; pricing: ProjectPricing }) {
+  return <div className="checkout-summary"><div className="checkout-panel__heading"><span className="eyebrow">Resumen</span><h1>Verifica los datos de tu propuesta.</h1></div><div className="checkout-summary__grid"><article><small>Contacto</small><h2>{contact.name}</h2><p>{contact.documentType} {contact.documentNumber}<br/>{contact.businessName||""}<br />{contact.email}<br />{contact.phone}</p></article><article><small>Proyecto</small><h2>{details.projectType}</h2><p>{details.location}<br/>{details.address}<br />{details.stage}{details.estimatedDate ? " · " + details.estimatedDate : ""}</p></article><article><small>Observaciones</small><h2>Información adicional</h2><p>{details.notes || "Sin observaciones adicionales."}</p></article></div><div className="checkout-summary__items">{items.map((item,index) => {const result=pricing.items[index]?.result;return <span key={item.id}><b>{item.quantity} × {item.name}</b><strong>{result?.status==="ESTIMATED"?formatPublicPrice(result.totalMinor):"Evaluación"}</strong></span>})}</div><div className="checkout-review__total"><span>Total estimado</span><strong>{pricing.estimatedTotalMinor!==null?formatPublicPrice(pricing.estimatedTotalMinor):"Requiere evaluación"}</strong></div><p>{PROPOSAL_DISCLAIMER}</p></div>;
 }

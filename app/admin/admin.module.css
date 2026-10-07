@@ -205,6 +205,20 @@
 .operationList dt { color: #8592a0; font-size: 8px; font-weight: 720; letter-spacing: .07em; text-transform: uppercase; }
 .operationList dd { margin: 0; color: #25364a; font-size: 10px; font-weight: 620; overflow-wrap: anywhere; }
 .pendingNote { margin: 13px 0 0; border-radius: 8px; background: #fff7df; padding: 10px; color: #806523; font-size: 8px; line-height: 1.55; }
+.requestOperations { display:grid; gap:12px; }
+.requestOperations label { display:grid; gap:6px; color:#718094; font-size:9px; font-weight:700; }
+.requestOperations input,.requestOperations select,.requestOperations textarea { width:100%; border:1px solid #d8e2ec; border-radius:9px; background:#fff; padding:10px 11px; color:#24374c; font:inherit; }
+.requestOperations textarea { resize:vertical; }
+.requestOperations>button { display:flex; min-height:42px; align-items:center; justify-content:center; gap:7px; border:0; border-radius:9px; background:#087eff; color:#fff; font-size:10px; font-weight:720; cursor:pointer; }
+.requestOperations>button:disabled { opacity:.55; cursor:wait; }
+.requestOperations>small { color:#0870df; line-height:1.45; }
+.requestOperationLinks { display:grid; gap:7px; border-top:1px solid #e8edf2; padding-top:12px; }
+.requestOperationLinks a { display:flex; min-height:36px; align-items:center; gap:7px; border-radius:8px; background:#f3f8fd; padding:8px 10px; color:#1768b8; font-size:9px; font-weight:700; }
+.activityList { display:grid; gap:10px; margin:0; padding:0; list-style:none; }
+.activityList li { display:grid; gap:5px; border-left:2px solid #8fc5ff; padding:5px 0 5px 12px; }
+.activityList b { color:#21364c; font-size:10px; }
+.activityList span { color:#617489; font-size:9px; line-height:1.55; }
+.activityList small { color:#8a97a6; font-size:8px; }
 .attachmentList { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
 .attachmentList li { overflow-wrap: anywhere; border-radius: 7px; background: #f4f7fa; padding: 9px; color: #4d5e71; font-size: 9px; }
 .muted { color: #82909f; font-size: 10px; }

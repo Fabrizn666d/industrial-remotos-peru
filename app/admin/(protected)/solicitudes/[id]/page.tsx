@@ -3,9 +3,11 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
 import { StatusBadge } from "@/app/admin/StatusBadge";
-import { formatAdminDate } from "@/app/admin/status";
+import { RequestOperations } from "@/app/admin/RequestOperations";
+import { formatAdminDate, REQUEST_STATUS_LABELS } from "@/app/admin/status";
 import { getRequestRepository } from "@/lib/backend/repository";
 import { getAdminSession } from "@/lib/backend/auth";
+import { formatPublicPrice } from "@/lib/pricing/engine";
 import styles from "../../../admin.module.css";
 
 export const dynamic = "force-dynamic";
@@ -17,12 +19,22 @@ function formatConfiguration(value: string | number | boolean | string[] | null)
   return String(value);
 }
 
+function activityCopy(metadata: Record<string, string | number | boolean | string[] | null>) {
+  const parts: string[] = [];
+  if (metadata.previousStatus !== metadata.status && metadata.status) parts.push(`Estado: ${metadata.previousStatus} → ${metadata.status}`);
+  if (metadata.previousAssignee !== metadata.assignedTo) parts.push(`Responsable: ${metadata.assignedTo || "sin asignar"}`);
+  if (metadata.note) parts.push(String(metadata.note));
+  return parts.join(" · ") || "Solicitud registrada";
+}
+
 export default async function AdminRequestDetailPage({ params }: { params: Promise<{ id: string }> }) {
   if (!await getAdminSession()) redirect("/admin/login");
   const { id } = await params;
   if (!z.string().uuid().safeParse(id).success) notFound();
-  const request = await getRequestRepository().findById(id);
+  const repository = getRequestRepository();
+  const request = await repository.findById(id);
   if (!request) notFound();
+  const activity = await repository.activity(id);
 
   return (
     <>
@@ -56,15 +68,25 @@ export default async function AdminRequestDetailPage({ params }: { params: Promi
               </div>
             </article>)}</div>
           </section>
+
+          {request.pricingSnapshot && <section className={styles.panel}>
+            <header className={styles.sectionHeader}><div><FileText size={19} /><h2>Propuesta preliminar valorizada</h2></div><small>Reglas {request.pricingSnapshot.catalogVersion}</small></header>
+            <div className={styles.projectSummary}><small>Resultado calculado por el servidor</small><h2>{request.pricingSnapshot.estimatedTotalMinor === null ? "Requiere evaluación" : formatPublicPrice(request.pricingSnapshot.estimatedTotalMinor)}</h2><p>{request.pricingSnapshot.disclaimer}</p></div>
+          </section>}
+
+          <section className={styles.panel}>
+            <header className={styles.sectionHeader}><div><ClipboardCheck size={19} /><h2>Historial de acciones</h2></div><small>{activity.length} eventos</small></header>
+            <ul className={styles.activityList}>{activity.map((entry) => <li key={entry.id}><b>{entry.action === "QUOTE_REQUEST_CREATED" ? "Solicitud creada" : "Seguimiento actualizado"}</b><span>{activityCopy(entry.metadata)}</span><small>{formatAdminDate(entry.createdAt, true)} · {entry.actorIdentifier}</small></li>)}</ul>
+          </section>
         </div>
 
         <aside className={styles.detailAside}>
           <section className={styles.panel}><h2>Operación</h2><dl className={styles.operationList}>
             <div><dt>Estado</dt><dd><StatusBadge status={request.status} /></dd></div>
             <div><dt>Responsable</dt><dd>{request.assignedTo || "Sin asignar"}</dd></div>
-            <div><dt>Origen</dt><dd>{request.source === "CONFIGURATOR" ? "Configurador público" : request.source === "CONTACT" ? "Formulario de contacto" : "Importación administrativa"}</dd></div>
+            <div><dt>Origen</dt><dd>{request.source === "CONFIGURATOR" ? "Cotizador inteligente" : request.source === "ASSISTANT" ? "IRP Asistente" : request.source === "CONTACT" ? "Formulario de contacto" : "Importación administrativa"}</dd></div>
             <div><dt>Última actualización</dt><dd>{formatAdminDate(request.updatedAt, true)}</dd></div>
-          </dl><p className={styles.pendingNote}>Cambio de estado, asignación y notas se habilitan en el siguiente corte transaccional.</p></section>
+          </dl><RequestOperations requestId={request.id} code={request.code} customerName={request.contact.name} phone={request.contact.whatsapp || request.contact.phone} initialStatus={request.status} initialAssignee={request.assignedTo} statuses={Object.entries(REQUEST_STATUS_LABELS).map(([value, label]) => ({ value: value as keyof typeof REQUEST_STATUS_LABELS, label }))} /></section>
           <section className={styles.panel}><h2><Paperclip size={18} /> Adjuntos</h2>{request.attachmentNames.length ? <ul className={styles.attachmentList}>{request.attachmentNames.map((name) => <li key={name}>{name}</li>)}</ul> : <p className={styles.muted}>No se registraron nombres de adjuntos.</p>}<p className={styles.pendingNote}>Este contrato no acepta binarios todavía; la integración con Object Storage será independiente.</p></section>
           <section className={styles.evidenceCard}><ShieldCheck size={21} /><h2>Evidencia preservada</h2><p>El payload original, los items y el código fueron creados juntos. Los cambios operativos futuros se registrarán aparte.</p></section>
         </aside>

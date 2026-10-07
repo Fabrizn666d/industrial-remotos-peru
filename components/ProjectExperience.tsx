@@ -10,6 +10,8 @@ import { RobotAvatar } from "@/components/RobotAvatar";
 import { products } from "@/data/products";
 import { motionDuration, motionEase } from "@/lib/motion";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
+import { calculateItemPrice, calculateProjectPrice, formatPublicPrice, PROPOSAL_DISCLAIMER } from "@/lib/pricing/engine";
+import { usePublicPricingCatalog } from "@/lib/pricing/use-public-catalog";
 
 const quickReplies = [
   { label: "Puerta automática / garaje", product: "seccionales" },
@@ -18,7 +20,7 @@ const quickReplies = [
   { label: "Mampara o ventana", product: "ventanas-mamparas" },
   { label: "Baranda o acero", product: "acero-barandas" },
   { label: "Estructura metálica", product: "estructuras-especiales" },
-  { label: "Cerco eléctrico", product: "cerco-electrico" },
+  { label: "Puerta a medida", product: "puertas-a-medida" },
   { label: "Drywall o cielorraso", product: "drywall-cielorrasos" },
   { label: "No sé qué solución necesito", product: "estructuras-especiales" }
 ];
@@ -34,6 +36,7 @@ function projectItemSummary(item: ReturnType<typeof useProject>["items"][number]
 }
 
 export function ProjectExperience() {
+  const publicCatalog = usePublicPricingCatalog();
   const { items, count, drawerOpen, setDrawerOpen, removeItem, changeQuantity, clearProject } = useProject();
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [tip, setTip] = useState(false);
@@ -63,6 +66,7 @@ export function ProjectExperience() {
 
   const selectedProduct = quickReplies.find((reply) => reply.label === selected)?.product ?? "estructuras-especiales";
   const recommendation = products.find((product) => product.id === selectedProduct) || products[0];
+  const projectPricing = calculateProjectPrice(items.map((item) => ({ productId: item.productId, quantity: item.quantity, configuration: { width: item.configuration.dimensions?.width, height: item.configuration.dimensions?.height, subtype: item.configuration.subtype, model: item.configuration.model, variant: item.configuration.variant, openingSystem: item.configuration.openingSystem, design: item.configuration.design, material: item.configuration.material, finish: item.configuration.finish, automation: item.configuration.automation, accessories: item.configuration.accessories, installation: item.configuration.installation } })), "", publicCatalog.definitions, `v${publicCatalog.version}`, publicCatalog.proposalSettings);
 
   return (
     <>
@@ -102,7 +106,7 @@ export function ProjectExperience() {
               ))}
             </div> : <div className="assistant-panel__recommendation">
               <span><Image src={recommendation.image} alt="" fill sizes="92px" className="object-cover" /></span>
-              <div><small>Solución sugerida</small><h3>{recommendation.name}</h3><p>{recommendation.description}</p><strong>Precio por confirmar</strong></div>
+              <div><small>Solución sugerida</small><h3>{recommendation.name}</h3><p>{recommendation.description}</p><strong>Configura para estimar</strong></div>
             </div>}
             <div className="assistant-panel__actions">
               {selected && <button type="button" onClick={() => setSelected("")}><RotateCcw size={15} /> Cambiar respuesta</button>}
@@ -127,12 +131,15 @@ export function ProjectExperience() {
               {items.length ? (
                 <>
                   <div className="project-drawer__list">
-                    {items.map((item) => (
+                    {items.map((item) => {
+                      const priced = calculateItemPrice({ productId: item.productId, quantity: item.quantity, configuration: { width: item.configuration.dimensions?.width, height: item.configuration.dimensions?.height, subtype: item.configuration.subtype, model: item.configuration.model, variant: item.configuration.variant, openingSystem: item.configuration.openingSystem, design: item.configuration.design, material: item.configuration.material, finish: item.configuration.finish, automation: item.configuration.automation, accessories: item.configuration.accessories, installation: item.configuration.installation } }, publicCatalog.definitions, `v${publicCatalog.version}`);
+                      return (
                       <article key={item.id}>
                         <span className="project-drawer__image"><Image src={item.image} alt="" fill sizes="96px" className="object-cover" /></span>
                         <div className="project-drawer__info">
                           <h3>{item.name}</h3>
                           <p>{projectItemSummary(item)}</p>
+                          <strong>{priced.status === "ESTIMATED" ? formatPublicPrice(priced.totalMinor) : "Requiere evaluación"}</strong>
                           <div className="quantity-control">
                             <button type="button" onClick={() => changeQuantity(item.id, -1)} aria-label="Quitar una unidad"><Minus size={14} /></button>
                             <span>{item.quantity}</span>
@@ -141,10 +148,10 @@ export function ProjectExperience() {
                         </div>
                         <button className="delete-item" type="button" onClick={() => removeItem(item.id)} aria-label={"Eliminar " + item.name}><Trash2 size={17} /></button>
                       </article>
-                    ))}
+                    )})}
                   </div>
                   <div className="project-drawer__footer">
-                    <p>La selección no incluye precios: un asesor validará medidas, materiales e instalación.</p>
+                    <p><b>{projectPricing.estimatedTotalMinor !== null ? `Total estimado ${formatPublicPrice(projectPricing.estimatedTotalMinor)}` : "Partidas por evaluar"}</b><br />{PROPOSAL_DISCLAIMER}</p>
                     <Link className="button button--primary" href="/mi-proyecto" onClick={() => setDrawerOpen(false)}>Revisar mi proyecto <ArrowRight size={17} /></Link>
                     <button className="clear-project" type="button" onClick={clearProject}>Vaciar selección</button>
                   </div>

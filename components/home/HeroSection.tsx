@@ -1,333 +1,246 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { ArrowRight, Play } from "lucide-react";
+import { gsap } from "gsap";
+import { ArrowRight, Play, Settings, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useRef } from "react";
-import {
-  HOME_HERO_REVEAL_CUES,
-  HOME_INTRO_ASSETS,
-  HOME_INTRO_TIMING,
-  useHomeIntro
-} from "@/components/HomeIntroController";
-import { FadeInUp, SlideInRight } from "@/components/ui/motion-presets";
-import { useHeroScroll } from "@/hooks/useHeroScroll";
+import { useLayoutEffect, useRef } from "react";
+import { HOME_INTRO_ASSETS, HOME_INTRO_TIMING, useHomeIntro } from "@/components/HomeIntroController";
 
 const HERO_ADVISOR_ASSET = "/NUEVO/ChatGPT Image 22 sept 2026%2C 14_56_50.png";
-
-const cueStage = (key: (typeof HOME_HERO_REVEAL_CUES)[number]["key"]) =>
-  HOME_HERO_REVEAL_CUES.findIndex((cue) => cue.key === key) + 1;
+// One visual clock, in seconds from duration - 5. Adjust choreography here.
+export const HERO_TIMELINE = {
+  overlay: { at: 0, duration: .78 },
+  wave: { at: .18, duration: .86, y: 54 },
+  header: { at: .42, duration: .68, y: -16 },
+  copy: { at: .82, duration: .82, stagger: .2, y: 18 },
+  description: { at: 1.48, duration: .72, y: 16 },
+  actions: { at: 1.82, duration: .7, y: 16 },
+  proof: { at: 2.12, duration: .64, y: 12 },
+  advisor: { at: 1.52, mobileAt: 2.52, duration: 1.38, opacityDuration: .82, initialOpacity: 0, distance: 190, mobileDistance: 90, mobileDuration: 1.18 }
+} as const;
 
 export function HeroSection() {
+  const { status, logoRef, markPlaying, beginReveal, complete, fail } = useHomeIntro();
   const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const { mediaY, glowX, waveY } = useHeroScroll(sectionRef);
-  const {
-    status,
-    revealStage,
-    heroVisible,
-    markPlaying,
-    beginReveal,
-    advanceReveal,
-    hideLogo,
-    complete,
-    fail
-  } = useHomeIntro();
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const advisorRef = useRef<HTMLDivElement>(null);
+  const kickerRef = useRef<HTMLSpanElement>(null);
+  const line1Ref = useRef<HTMLSpanElement>(null);
+  const line2Ref = useRef<HTMLSpanElement>(null);
+  const line3Ref = useRef<HTMLSpanElement>(null);
+  const mobileLine1Ref = useRef<HTMLSpanElement>(null);
+  const mobileLine2Ref = useRef<HTMLSpanElement>(null);
+  const mobileLine3Ref = useRef<HTMLSpanElement>(null);
+  const mobileLine4Ref = useRef<HTMLSpanElement>(null);
+  const descriptionRef = useRef<HTMLParagraphElement>(null);
+  const actionsRef = useRef<HTMLDivElement>(null);
+  const proofRef = useRef<HTMLDivElement>(null);
+  const waveRef = useRef<HTMLDivElement>(null);
+  const timelineRef = useRef<gsap.core.Timeline | null>(null);
+  const stopVideoClockRef = useRef<() => void>(() => {});
+  const fallback = status === "failed" || status === "skipped";
 
-  const applyPlaybackRate = useCallback(() => {
+  useLayoutEffect(() => {
+    const section = sectionRef.current;
     const video = videoRef.current;
-    if (!video) return;
-    video.defaultPlaybackRate = HOME_INTRO_TIMING.playbackRate;
-    video.playbackRate = HOME_INTRO_TIMING.playbackRate;
-  }, []);
+    if (!section) return;
+    const header = document.querySelector<HTMLElement>(".site-header");
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const mobile = window.matchMedia("(max-width: 900px)").matches;
+    const desktopLines = [line1Ref.current!, line2Ref.current!, line3Ref.current!];
+    const mobileLines = [mobileLine1Ref.current!, mobileLine2Ref.current!, mobileLine3Ref.current!, mobileLine4Ref.current!];
+    const lines = mobile ? mobileLines : desktopLines;
+    const targets = [header, overlayRef.current, advisorRef.current, kickerRef.current, ...lines,
+      descriptionRef.current, actionsRef.current, proofRef.current, waveRef.current].filter(Boolean) as HTMLElement[];
+    let timeline: gsap.core.Timeline;
+    let logoTween: gsap.core.Tween | undefined;
+    let didReveal = false;
+    let didFadeLogo = false;
+    let didPlay = false;
+    let disposed = false;
+    let frameId = 0;
+    let networkFrameId = 0;
+    const videoFrames = Boolean(video && "requestVideoFrameCallback" in video);
+    const ctx = gsap.context(() => {
+      const reveal = (target: gsap.TweenTarget, at: number, duration: number, y = 0) => {
+        timeline.fromTo(target, { autoAlpha: 0, y: reduced ? 0 : y }, {
+          autoAlpha: 1, y: 0, duration: reduced ? Math.min(duration, .42) : duration,
+          onStart: () => { gsap.set(target, { willChange: !reduced && y ? "transform,opacity" : "opacity" }); },
+          onComplete: () => { gsap.set(target, { clearProps: "willChange" }); }
+        }, at);
+      };
+      timeline = gsap.timeline({ paused: true, defaults: { ease: "sine.inOut" },
+        onComplete: () => { gsap.set(targets, { clearProps: "willChange" }); section.dataset.heroSettled = "true"; }
+      });
+      timelineRef.current = timeline;
+      reveal(overlayRef.current, HERO_TIMELINE.overlay.at, HERO_TIMELINE.overlay.duration);
+      reveal(waveRef.current, HERO_TIMELINE.wave.at, HERO_TIMELINE.wave.duration, HERO_TIMELINE.wave.y);
+      if (header) reveal(header, HERO_TIMELINE.header.at, HERO_TIMELINE.header.duration, HERO_TIMELINE.header.y);
+      const advisor = HERO_TIMELINE.advisor;
+      const advisorAt = mobile ? advisor.mobileAt : advisor.at;
+      gsap.set(advisorRef.current, { autoAlpha: 0, x: reduced ? 34 : mobile ? advisor.mobileDistance : advisor.distance });
+      timeline.set(advisorRef.current, { visibility: "visible", opacity: reduced ? 0 : advisor.initialOpacity,
+        willChange: "transform,opacity" }, advisorAt);
+      timeline.to(advisorRef.current, { opacity: 1, duration: reduced ? .42 : advisor.opacityDuration,
+      }, advisorAt);
+      timeline.to(advisorRef.current, { x: 0, duration: reduced ? .65 : mobile ? advisor.mobileDuration : advisor.duration,
+        onComplete: () => { gsap.set(advisorRef.current, { clearProps: "willChange" }); }
+      }, advisorAt);
+      reveal(kickerRef.current, HERO_TIMELINE.copy.at, HERO_TIMELINE.copy.duration, HERO_TIMELINE.copy.y);
+      lines.forEach((line, index) => reveal(line, HERO_TIMELINE.copy.at + index * HERO_TIMELINE.copy.stagger, HERO_TIMELINE.copy.duration, HERO_TIMELINE.copy.y));
+      reveal(descriptionRef.current, HERO_TIMELINE.description.at, HERO_TIMELINE.description.duration, HERO_TIMELINE.description.y);
+      reveal(actionsRef.current, HERO_TIMELINE.actions.at, HERO_TIMELINE.actions.duration, HERO_TIMELINE.actions.y);
+      reveal(proofRef.current, HERO_TIMELINE.proof.at, HERO_TIMELINE.proof.duration, HERO_TIMELINE.proof.y);
+    }, section);
 
-  const videoDiagnostics = useCallback(() => {
-    const video = videoRef.current;
-    return video ? {
-      src: video.currentSrc,
-      duration: video.duration,
-      currentTime: video.currentTime,
-      readyState: video.readyState,
-      networkState: video.networkState,
-      paused: video.paused,
-      ended: video.ended,
-      error: video.error ? { code: video.error.code, message: video.error.message } : null,
-      videoWidth: video.videoWidth,
-      videoHeight: video.videoHeight
-    } : null;
-  }, []);
-
-  const syncVideoTimeline = useCallback(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    if (video.currentTime > 0.05) markPlaying();
-    if (video.currentTime >= HOME_INTRO_TIMING.logoFadeAtVideoSeconds) hideLogo();
-
-    if (Number.isFinite(video.duration) && video.duration > 0) {
-      const revealAt = Math.max(0, video.duration - HOME_INTRO_TIMING.revealBeforeEndSeconds);
-      if (video.currentTime >= revealAt && !video.ended) beginReveal();
-    }
-  }, [beginReveal, hideLogo, markPlaying]);
-
-  const attemptPlayback = useCallback(() => {
-    const video = videoRef.current;
-    if (!video || video.ended || (status !== "checking" && status !== "loading")) return;
-
-    applyPlaybackRate();
-    if (!video.paused) {
-      markPlaying();
-      return;
-    }
-
-    void video.play().catch((error) => {
-      if (process.env.NODE_ENV === "development") {
-        console.error("[HeroSection] Falló la reproducción del intro.", { error, video: videoDiagnostics() });
-      }
-      fail();
-    });
-  }, [applyPlaybackRate, fail, markPlaying, status, videoDiagnostics]);
-
-  useEffect(() => {
-    for (const src of [HOME_INTRO_ASSETS.logo, HOME_INTRO_ASSETS.exterior, HERO_ADVISOR_ASSET]) {
-      const image = new window.Image();
-      image.src = src;
-    }
-  }, []);
-
-  useEffect(() => () => videoRef.current?.pause(), []);
-
-  useEffect(() => {
-    if (status !== "loading") return;
-
-    const video = videoRef.current;
-    if (video && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) attemptPlayback();
-  }, [attemptPlayback, status]);
-
-  useEffect(() => {
-    if (status !== "playing" && status !== "revealing") return;
-
-    let animationFrame = 0;
-    const update = () => {
-      syncVideoTimeline();
-      animationFrame = window.requestAnimationFrame(update);
+    const stopClock = () => {
+      if (videoFrames) video?.cancelVideoFrameCallback(frameId);
+      else cancelAnimationFrame(frameId);
     };
-    animationFrame = window.requestAnimationFrame(update);
-    return () => window.cancelAnimationFrame(animationFrame);
-  }, [status, syncVideoTimeline]);
-
-  useEffect(() => {
-    if (status !== "revealing") return;
-
-    const cueTimers = HOME_HERO_REVEAL_CUES.map((cue, index) => window.setTimeout(
-      () => advanceReveal(index + 1),
-      cue.at * 1000
-    ));
-
-    return () => cueTimers.forEach((timer) => window.clearTimeout(timer));
-  }, [advanceReveal, status]);
-
-  const handleVideoEnded = () => {
-    advanceReveal(HOME_HERO_REVEAL_CUES.length);
-    complete();
-  };
-
-  const handleVideoError = useCallback(() => {
-    if (process.env.NODE_ENV === "development") {
-      console.error("[HeroSection] El MP4 del intro no pudo cargarse.", videoDiagnostics());
+    stopVideoClockRef.current = stopClock;
+    const sample = (_now: number, metadata?: VideoFrameCallbackMetadata) => {
+      if (disposed || !video) return;
+      const time = metadata?.mediaTime ?? video.currentTime;
+      if (!didPlay && time > 0) { didPlay = true; markPlaying(); }
+      if (!didFadeLogo && time >= HOME_INTRO_TIMING.logoFadeAtVideoSeconds) {
+        didFadeLogo = true;
+        if (logoRef.current) {
+          ctx.add(() => {
+            logoTween = gsap.to(logoRef.current, { opacity: 0, duration: HOME_INTRO_TIMING.logoFadeMs / 1000,
+              ease: "power1.inOut", onComplete: () => { gsap.set(logoRef.current, { clearProps: "willChange" }); } });
+          });
+        }
+      }
+      if (!didReveal && Number.isFinite(video.duration) && time >= video.duration - HOME_INTRO_TIMING.revealBeforeEndSeconds) {
+        didReveal = true;
+        section.dataset.revealVideoTime = String(time);
+        section.dataset.revealStartedAt = String(performance.now());
+        beginReveal();
+        timeline.play();
+      }
+      if (!video.ended && !didReveal) frameId = videoFrames ? video.requestVideoFrameCallback(sample) : requestAnimationFrame(sample);
+    };
+    const onError = () => {
+      stopClock();
+      if (process.env.NODE_ENV === "development") console.error("[IRP intro] MP4 load/playback failed", video?.error);
+      fail();
+    };
+    const onEnded = () => { stopClock(); complete(); };
+    const watchNetwork = () => {
+      if (!video || disposed || didPlay) return;
+      if (video.currentSrc && video.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
+        onError();
+        return;
+      }
+      networkFrameId = requestAnimationFrame(watchNetwork);
+    };
+    const start = () => {
+      if (!video || disposed || video.ended || didPlay) return;
+      video.playbackRate = video.defaultPlaybackRate = HOME_INTRO_TIMING.playbackRate;
+      void video.play().catch((error: unknown) => {
+        if (disposed || (error instanceof DOMException && error.name === "AbortError")) return;
+        onError();
+      });
+    };
+    if (video) {
+      const sources = Array.from(video.querySelectorAll("source"));
+      video.addEventListener("canplay", start);
+      video.addEventListener("error", onError);
+      video.addEventListener("ended", onEnded);
+      sources.forEach((source) => source.addEventListener("error", onError));
+      if (video.error) onError();
+      else {
+        if (video.readyState >= 2) start();
+        frameId = videoFrames ? video.requestVideoFrameCallback(sample) : requestAnimationFrame(sample);
+        networkFrameId = requestAnimationFrame(watchNetwork);
+      }
     }
-    fail();
-  }, [fail, videoDiagnostics]);
+    return () => {
+      disposed = true;
+      stopClock();
+      cancelAnimationFrame(networkFrameId);
+      video?.removeEventListener("canplay", start);
+      video?.removeEventListener("error", onError);
+      video?.removeEventListener("ended", onEnded);
+      video?.querySelectorAll("source").forEach((source) => source.removeEventListener("error", onError));
+      logoTween?.kill();
+      timeline.kill();
+      ctx.revert();
+      timelineRef.current = null;
+    };
+  }, [beginReveal, complete, fail, fallback, logoRef, markPlaying]);
 
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video || status === "failed" || status === "skipped") return;
-
-    // A native listener also covers an immediate network/decode failure that can
-    // happen before React finishes hydrating and attaches its synthetic handler.
-    video.addEventListener("error", handleVideoError);
-    if (video.error) handleVideoError();
-    return () => video.removeEventListener("error", handleVideoError);
-  }, [handleVideoError, status]);
-
-  const renderFallback = status === "failed" || status === "skipped";
-  const stageIsVisible = (key: (typeof HOME_HERO_REVEAL_CUES)[number]["key"]) => {
-    const stage = cueStage(key);
-    return heroVisible && (status !== "revealing" || revealStage >= stage);
-  };
+  useLayoutEffect(() => {
+    if (!fallback) return;
+    stopVideoClockRef.current();
+    timelineRef.current?.progress(1).pause();
+  }, [fallback]);
 
   return (
-    <section ref={sectionRef} className={`irp-hero bg-gradient-hero is-${status}`} id="inicio" data-intro-status={status}>
-      <motion.div className="irp-hero__media" style={{ y: mediaY }}>
-        <div className="irp-hero__media-frame">
-          {renderFallback ? (
-            <Image
-              className="irp-hero__fallback"
-              src={HOME_INTRO_ASSETS.exterior}
-              alt="Casa moderna con acceso automatizado abierto"
-              fill
-              priority
-              sizes="100vw"
-            />
-          ) : (
-            <video
-              ref={videoRef}
-              className="irp-hero__video"
-              data-intro-video="approved-source"
-              src={HOME_INTRO_ASSETS.video}
-              preload="auto"
-              autoPlay
-              muted
-              playsInline
-              disablePictureInPicture
-              tabIndex={-1}
-              aria-label="Acceso automatizado abriéndose hacia una casa moderna"
-              onLoadedMetadata={() => { applyPlaybackRate(); syncVideoTimeline(); }}
-              onCanPlay={attemptPlayback}
-              onPlaying={() => { applyPlaybackRate(); markPlaying(); }}
-              onTimeUpdate={syncVideoTimeline}
-              onEnded={handleVideoEnded}
-              onError={handleVideoError}
-            />
-          )}
-        </div>
-      </motion.div>
-
-      <FadeInUp
-        className="irp-hero__cinema"
-        visible={stageIsVisible("overlay")}
-        duration={0.75}
-        offset={0}
-        ariaHidden
-      />
-      <FadeInUp
-        className="irp-hero__ambient"
-        visible={stageIsVisible("overlay")}
-        duration={0.8}
-        offset={0}
-        style={{ x: glowX }}
-        ariaHidden
-      />
-
+    <section ref={sectionRef} className="irp-hero" id="inicio" data-intro-status={status}>
+      <link rel="preload" as="image" href={HOME_INTRO_ASSETS.firstFrame} media="(min-width: 768px)" fetchPriority="high" />
+      <link rel="preload" as="image" href={HOME_INTRO_ASSETS.mobileFirstFrame} media="(max-width: 767px)" fetchPriority="high" />
+      <div className="irp-hero__media">
+        <picture className="irp-hero__last-frame" aria-hidden="true">
+          <source media="(max-width: 767px)" srcSet={HOME_INTRO_ASSETS.mobileLastFrame} />
+          <img src={HOME_INTRO_ASSETS.lastFrame} alt="" width={1920} height={1080} />
+        </picture>
+        {fallback ? <picture className="irp-hero__fallback">
+          <source media="(max-width: 767px)" srcSet={HOME_INTRO_ASSETS.mobileLastFrame} />
+          <img src={HOME_INTRO_ASSETS.exterior} alt="Casa moderna con acceso automatizado abierto" width={1920} height={1080} />
+        </picture> :
+          <video ref={videoRef} className="irp-hero__video" preload="auto" autoPlay muted playsInline onError={fail}
+            disablePictureInPicture tabIndex={-1} aria-label="Acceso automatizado abriéndose hacia una casa moderna">
+            <source media="(max-width: 767px)" src={HOME_INTRO_ASSETS.mobileVideo} type="video/mp4" onError={fail} />
+            <source media="(min-width: 768px)" src={HOME_INTRO_ASSETS.video} type="video/mp4" onError={fail} />
+          </video>}
+      </div>
+      <div ref={overlayRef} className="irp-hero__cinema" aria-hidden="true" />
       <div className="irp-shell irp-hero__layout">
         <div className="irp-hero__content">
-          <FadeInUp
-            as="span"
-            className="irp-kicker irp-motion-preset"
-            visible={stageIsVisible("kicker")}
-          >
-            <i /> Diseño, fabricación e instalación a medida
-          </FadeInUp>
-
-          <h1 aria-label="Soluciones de acceso que combinan seguridad, diseño y automatización.">
-            <FadeInUp
-              as="span"
-              className="irp-hero__title-line irp-motion-preset"
-              visible={stageIsVisible("title-1")}
-            >
-              Soluciones de acceso
-            </FadeInUp>
-            <FadeInUp
-              as="span"
-              className="irp-hero__title-line irp-motion-preset"
-              visible={stageIsVisible("title-2")}
-            >
-              que combinan <em>seguridad,</em>
-            </FadeInUp>
-            <FadeInUp
-              as="span"
-              className="irp-hero__title-line irp-motion-preset"
-              visible={stageIsVisible("title-3")}
-            >
-              diseño y <em>automatización.</em>
-            </FadeInUp>
+          <span ref={kickerRef} className="irp-kicker"><i /> Diseño, fabricación e instalación a medida</span>
+          <h1 aria-label="Accesos que combinan seguridad, diseño y automatización.">
+            <span ref={line1Ref} className="irp-hero__title-line irp-hero__title-line--desktop">Soluciones de acceso</span>
+            <span ref={line2Ref} className="irp-hero__title-line irp-hero__title-line--desktop">que combinan <em>seguridad,</em></span>
+            <span ref={line3Ref} className="irp-hero__title-line irp-hero__title-line--desktop">diseño y <em>automatización.</em></span>
+            <span ref={mobileLine1Ref} className="irp-hero__title-line irp-hero__title-line--mobile">Accesos que</span>
+            <span ref={mobileLine2Ref} className="irp-hero__title-line irp-hero__title-line--mobile">combinan</span>
+            <span ref={mobileLine3Ref} className="irp-hero__title-line irp-hero__title-line--mobile"><em>seguridad,</em> diseño</span>
+            <span ref={mobileLine4Ref} className="irp-hero__title-line irp-hero__title-line--mobile">y <em>automatización.</em></span>
           </h1>
-
-          <FadeInUp
-            as="p"
-            className="irp-hero__description irp-motion-preset"
-            visible={stageIsVisible("description")}
-          >
-            Puertas automáticas, techos, ventanas, mamparas y estructuras metálicas a medida para tu hogar o negocio.
-          </FadeInUp>
-
-          <div className="irp-hero__actions">
-            <FadeInUp
-              as="span"
-              className="irp-hero__action-stage irp-hero__action-stage--primary irp-motion-preset"
-              visible={stageIsVisible("actions")}
-              duration={0.5}
-              offset={8}
-            >
-              <Link className="irp-button irp-button--primary" href="/cotizar" data-analytics="hero_cta_click">
-                Diseña y cotiza tu proyecto <ArrowRight size={18} />
-              </Link>
-            </FadeInUp>
-            <FadeInUp
-              as="span"
-              className="irp-hero__action-stage irp-hero__action-stage--secondary irp-motion-preset"
-              visible={stageIsVisible("actions")}
-              duration={0.5}
-              offset={8}
-            >
-              <Link className="irp-button irp-button--glass" href="/proyectos" data-analytics="project_open">
-                <Play size={15} fill="currentColor" /> Ver proyectos reales
-              </Link>
-            </FadeInUp>
+          <p ref={descriptionRef} className="irp-hero__description">
+            <span className="irp-hero__copy--desktop">Puertas automáticas, techos, ventanas, mamparas y estructuras metálicas a medida para tu hogar o negocio.</span>
+            <span className="irp-hero__copy--mobile">Puertas automáticas, techos, ventanas y estructuras metálicas a medida para tu hogar o negocio.</span>
+          </p>
+          <div ref={actionsRef} className="irp-hero__actions">
+            <Link className="irp-button irp-button--primary" href="/cotizar" data-analytics="hero_cta_click"><span className="irp-hero__copy--desktop">Diseña y cotiza tu proyecto</span><span className="irp-hero__copy--mobile">Cotiza tu proyecto</span> <ArrowRight size={18} /></Link>
+            <Link className="irp-button irp-button--glass" href="/proyectos" data-analytics="project_open"><Play size={15} fill="currentColor" /> <span className="irp-hero__copy--desktop">Ver proyectos reales</span><span className="irp-hero__copy--mobile">Ver proyectos</span></Link>
           </div>
-
-          <FadeInUp
-            className="irp-hero__proof irp-motion-preset"
-            visible={stageIsVisible("proof")}
-            duration={0.45}
-            offset={8}
-          >
-            <span><b>Diseño a medida</b> según tu espacio y forma de uso</span>
-            <i />
-            <span><b>Asesoría técnica</b> antes de fabricar e instalar</span>
-          </FadeInUp>
+          <div ref={proofRef} className="irp-hero__proof">
+            <div className="irp-hero__proof-desktop">
+              <span><b>Diseño a medida</b> según tu espacio y forma de uso</span><i />
+              <span><b>Asesoría técnica</b> antes de fabricar e instalar</span>
+            </div>
+            <div className="irp-hero__proof-mobile">
+              <span><i><ShieldCheck /></i><span><b>Mayor seguridad</b> para tu espacio</span></span>
+              <span><i><Settings /></i><span><b>Soluciones</b> a medida</span></span>
+            </div>
+          </div>
         </div>
-
         <div className="irp-hero__visual">
-          <SlideInRight
-            className="irp-hero__advisor-stage"
-            visible={stageIsVisible("advisor")}
-            duration={0.95}
-            distance={125}
-            mobileDistance={70}
-            mobileDuration={0.8}
-            opacityDuration={0.3}
-          >
+          <div ref={advisorRef} className="irp-hero__advisor-stage">
             <Link className="irp-hero__advisor" href="/asistente" data-analytics="irp_start" aria-label="Abrir IRP Asistente">
-              <span className="irp-hero__advisor-depth">
-                <span className="irp-hero__advisor-float">
-                  <Image
-                    src={HERO_ADVISOR_ASSET}
-                    alt="Asesor de Industrial Remotos Perú listo para orientar tu proyecto"
-                    width={1086}
-                    height={1448}
-                    loading="eager"
-                    sizes="(max-width: 767px) 200px, (max-width: 1080px) 390px, 590px"
-                  />
-                  <i className="irp-hero__advisor-progress" aria-hidden="true" />
-                </span>
-              </span>
+              <Image src={HERO_ADVISOR_ASSET} alt="Asesor de Industrial Remotos Perú listo para orientar tu proyecto"
+                width={1086} height={1448} priority sizes="(max-width: 767px) 184px, (max-width: 1080px) 390px, 555px" />
             </Link>
-          </SlideInRight>
+          </div>
         </div>
       </div>
-
-      <FadeInUp
-        className="irp-hero__wave irp-hero__wave--front"
-        visible={stageIsVisible("wave")}
-        duration={0.5}
-        offset={0}
-        style={{ y: waveY }}
-        ariaHidden
-      >
+      <div ref={waveRef} className="irp-hero__wave" aria-hidden="true">
         <svg viewBox="0 0 1600 200" preserveAspectRatio="none"><path d="M0 166C42 125 126 132 226 150c177 32 443 22 624-9 202-35 331-109 500-127C1450 1 1530 0 1600 0v200H0Z" /></svg>
-      </FadeInUp>
+      </div>
     </section>
   );
 }

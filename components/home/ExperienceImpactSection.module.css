@@ -1,0 +1,382 @@
+.section {
+  --impact-stage-width: clamp(110rem, 198vw, 236rem);
+  --impact-column-gap: clamp(.85rem, 1vw, 1.2rem);
+  position: relative;
+  min-height: clamp(78rem, 142svh, 96rem);
+  overflow: hidden;
+  scroll-margin-top: 92px;
+  background: #fff;
+  color: #10110f;
+  isolation: isolate;
+}
+
+.section::before {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: clamp(92px, 9vw, 150px);
+  background: linear-gradient(
+    180deg,
+    rgba(247, 250, 255, 1) 0%,
+    rgba(249, 252, 255, .82) 28%,
+    rgba(255, 255, 255, .38) 68%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  content: "";
+  pointer-events: none;
+}
+
+.ambient {
+  position: absolute;
+  z-index: 0;
+  top: -6rem;
+  right: -10%;
+  left: -10%;
+  height: clamp(36rem, 72svh, 52rem);
+  background:
+    radial-gradient(circle at 50% 100%, rgba(33, 165, 255, .15), rgba(7, 92, 255, .045) 36%, transparent 67%),
+    radial-gradient(circle at 14% 42%, rgba(115, 109, 87, .065), transparent 35%),
+    radial-gradient(circle at 88% 30%, rgba(255, 255, 255, .84), transparent 40%);
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: center bottom;
+  will-change: transform, opacity;
+}
+
+.tileViewport {
+  position: absolute;
+  z-index: 1;
+  top: clamp(30rem, 62svh, 37rem);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow: hidden;
+  background: #eeeff1;
+}
+
+.tileViewport::after {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    #fff 0,
+    rgba(251, 250, 246, .45) 8%,
+    transparent 18%,
+    transparent calc(100% - 7rem),
+    rgba(251, 250, 246, .78) calc(100% - 2.5rem),
+    #fff 100%
+  );
+  content: "";
+  pointer-events: none;
+}
+
+.tileScene {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  width: var(--impact-stage-width);
+  align-items: center;
+  justify-content: center;
+  gap: var(--impact-column-gap);
+  transform: translate(-50%, -50%) rotate(-35deg);
+  transform-origin: center;
+}
+
+.tileColumn {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.tileMover {
+  position: relative;
+  display: flex;
+  min-height: 165vh;
+  flex-direction: column;
+  gap: var(--impact-column-gap);
+  will-change: transform;
+}
+
+.tile {
+  position: relative;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 1px solid rgba(216, 217, 221, .88);
+  border-radius: .08rem;
+  background: #f4f4f2;
+  box-shadow: 0 .9375rem 2.1875rem rgba(0, 0, 0, .08);
+  transform-origin: center;
+}
+
+.tile img {
+  object-fit: cover;
+  filter: contrast(1.035);
+  transform: scale(1.025);
+}
+
+.small { height: clamp(15rem, 18vw, 20rem); }
+.medium { height: clamp(18rem, 22vw, 25rem); }
+.large { height: clamp(21rem, 25vw, 28rem); }
+
+.content {
+  position: relative;
+  z-index: 3;
+  width: min(calc(100% - 40px), 1440px);
+  margin-inline: auto;
+  padding-top: clamp(6.5rem, 10svh, 8.25rem);
+}
+
+.intro {
+  display: flex;
+  min-height: clamp(18rem, 34svh, 23rem);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.intro h2 {
+  max-width: 70rem;
+  margin: 0;
+  font-size: clamp(3.4rem, 5.8vw, 6.4rem);
+  font-weight: 700;
+  letter-spacing: -.045em;
+  line-height: .9;
+}
+
+.titleMask {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  padding: .08em .08em .1em;
+}
+
+.titleMask > [data-impact-line] {
+  display: block;
+  will-change: transform, filter, opacity;
+}
+
+.titleAccent { color: #1570ff; }
+
+.titleSweep {
+  position: absolute;
+  inset: .08em;
+  display: block;
+  background: linear-gradient(
+    100deg,
+    transparent 23%,
+    rgba(33, 165, 255, .72) 48%,
+    rgba(255, 255, 255, .88) 52%,
+    transparent 76%
+  );
+  background-clip: text;
+  color: transparent;
+  pointer-events: none;
+  -webkit-background-clip: text;
+  will-change: transform, opacity;
+}
+
+.intro p {
+  width: min(46rem, 100%);
+  margin: 1.5rem auto 0;
+  color: #5e5d56;
+  font-size: clamp(.98rem, 1.15vw, 1.15rem);
+  line-height: 1.65;
+}
+
+.gauges {
+  position: relative;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1.5rem, 3.5vw, 4.4rem);
+  max-width: 80rem;
+  margin: 0 auto -4.25rem;
+}
+
+.gaugeCard {
+  display: flex;
+  min-height: 13rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.35rem 1.5rem 1.5rem;
+  border: 1px solid rgba(13, 14, 12, .035);
+  border-radius: 1.15rem;
+  background: rgba(255, 255, 255, .97);
+  color: #10110f;
+  box-shadow: 0 1.1rem 2.8rem rgba(17, 24, 39, .12);
+  backdrop-filter: blur(5px);
+  transition: box-shadow 650ms ease, transform 650ms cubic-bezier(.16, 1, .3, 1);
+  will-change: opacity, transform, filter;
+}
+
+.gaugeCard:hover {
+  box-shadow: 0 1.55rem 3.5rem rgba(17, 24, 39, .17);
+  transform: translateY(-4px) !important;
+}
+
+.gauge {
+  position: relative;
+  width: 10rem;
+  height: 7.9rem;
+  margin-inline: auto;
+}
+
+.gauge svg {
+  display: block;
+  width: 10rem;
+  height: 7.9rem;
+  overflow: visible;
+}
+
+.gauge path {
+  fill: none;
+  stroke-width: 15;
+  stroke-linecap: round;
+}
+
+.gaugeTrack { stroke: rgba(0, 0, 0, .1); }
+
+.gaugeActive {
+  stroke-dasharray: 100;
+  filter: drop-shadow(0 0 .18rem rgba(33, 165, 255, .55));
+  animation: gaugeEnergy 2.8s ease-in-out infinite;
+}
+
+@keyframes gaugeEnergy {
+  0%, 100% { filter: drop-shadow(0 0 .14rem rgba(7, 92, 255, .42)); }
+  50% { filter: drop-shadow(0 0 .42rem rgba(33, 165, 255, .82)); }
+}
+
+.gaugeValue {
+  position: absolute;
+  right: -.4rem;
+  bottom: -.05rem;
+  left: -.4rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  color: #080429;
+  line-height: .8;
+}
+
+.gaugeValue strong {
+  font-size: clamp(2.6rem, 3.2vw, 3.25rem);
+  font-weight: 500;
+  letter-spacing: -.025em;
+  font-variant-numeric: tabular-nums;
+}
+
+.gaugeValue > span {
+  margin-top: .12rem;
+  font-size: .9rem;
+  font-weight: 600;
+}
+
+.gaugeValue strong > span {
+  margin: 0;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+}
+
+.gaugeCard > p {
+  max-width: 15rem;
+  margin: .8rem auto 0;
+  color: #080429;
+  font-size: .84rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+}
+
+@media (max-width: 1024px) {
+  .section {
+    --impact-stage-width: 170vw;
+    --impact-column-gap: .9rem;
+    min-height: clamp(80rem, 145svh, 98rem);
+  }
+
+  .tileViewport { top: 34rem; }
+  .tileColumn { flex-basis: 0; }
+  .tileColumn:nth-child(n + 5) { display: none; }
+  .tileMover { min-height: 160vh; }
+  .small { height: clamp(12rem, 21vw, 15rem); }
+  .medium { height: clamp(15rem, 27vw, 19rem); }
+  .large { height: clamp(19rem, 33vw, 24rem); }
+  .gauges { max-width: 72rem; }
+  .intro { min-height: 22rem; }
+  .intro h2 { font-size: clamp(3.25rem, 7.5vw, 5.25rem); }
+}
+
+@media (max-width: 768px) {
+  .section {
+    --impact-stage-width: 134vw;
+    --impact-column-gap: .7rem;
+    min-height: clamp(72rem, 145svh, 82rem);
+    padding-bottom: 2.5rem;
+  }
+
+  .section::before { height: 82px; }
+
+  .ambient {
+    top: -2rem;
+    right: -45%;
+    left: -45%;
+    height: 42rem;
+  }
+
+  .tileViewport { top: 24.5rem; }
+  .tileScene {
+    width: var(--impact-stage-width);
+    transform: translate(-50%, -50%) rotate(-30deg);
+  }
+
+  .tileColumn { flex: 1 1 0; }
+  .tileColumn:nth-child(n + 4) { display: none; }
+  .tileMover { min-height: 110svh; }
+  .tile { border-width: 1px; border-radius: .06rem; }
+  .small { height: 9.5rem; }
+  .medium { height: 12rem; }
+  .large { height: 15rem; }
+
+  .content {
+    width: min(calc(100% - 2.5rem), 1440px);
+    padding-top: 2.25rem;
+  }
+
+  .intro { min-height: 19rem; }
+  .intro h2 { font-size: clamp(2.75rem, 12vw, 4rem); line-height: .9; }
+  .intro p { max-width: 21rem; margin-top: 1.15rem; font-size: .95rem; line-height: 1.55; }
+  .gauges { grid-template-columns: 1fr; gap: .55rem; width: calc(100% - 1rem); max-width: 20rem; }
+  .gaugeCard { min-height: 8.3rem; padding: .45rem .9rem .7rem; border-radius: .95rem; }
+  .gauge { width: 6.6rem; height: 5.2rem; }
+  .gauge svg { width: 6.6rem; height: 5.2rem; }
+  .gauge path { stroke-width: 11; }
+  .gaugeValue strong { font-size: 2.15rem; }
+  .gaugeValue > span { font-size: .72rem; }
+  .gaugeCard > p { margin-top: .25rem; font-size: .75rem; }
+}
+
+@media (max-width: 430px) {
+  .section { min-height: clamp(72rem, 145svh, 78rem); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient,
+  .titleMask > [data-impact-line],
+  .titleSweep,
+  .gaugeCard,
+  .tileMover,
+  .tile {
+    will-change: auto;
+  }
+
+  .gaugeActive { animation: none; }
+}

@@ -13,7 +13,10 @@ export function getRequestRepository(): RequestRepository {
   const driver = configuredDriver || (process.env.NODE_ENV === "production" ? "" : "json");
 
   if (driver === "json") {
-    if (process.env.NODE_ENV === "production") {
+    if (
+      process.env.NODE_ENV === "production"
+      && process.env.IRP_ALLOW_JSON_IN_PRODUCTION !== "true"
+    ) {
       throw new Error("El adaptador JSON es exclusivamente de desarrollo");
     }
     const dataPath = process.env.IRP_JSON_DATA_PATH?.trim()

@@ -5,6 +5,7 @@ import { PublicRequestSubmissionSchema, RequestListQuerySchema } from "@/lib/bac
 import { hasAllowedOrigin, isJsonRequest } from "@/lib/backend/http";
 import { consumeRateLimit, requestClientKey } from "@/lib/backend/rate-limit";
 import { getRequestRepository } from "@/lib/backend/repository";
+import { PricingValidationError } from "@/lib/pricing/request-pricing";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -67,10 +68,12 @@ export async function POST(request: Request) {
       code: created.code,
       createdAt: created.createdAt,
       accessToken: created.accessToken,
+      pricing: created.pricing,
       replayed: created.replayed
     }, { status: created.replayed ? 200 : 201 }));
   } catch (error) {
     if (error instanceof RangeError) return noStore(NextResponse.json({ error: "Solicitud demasiado grande" }, { status: 413 }));
+    if (error instanceof PricingValidationError) return noStore(NextResponse.json({ error: error.message }, { status: 400 }));
     if (error instanceof z.ZodError) {
       return noStore(NextResponse.json({
         error: "Datos de solicitud inválidos",

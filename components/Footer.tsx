@@ -50,7 +50,7 @@ export function Footer() {
             <span className={styles.logo}>
               <Image
                 className={styles.logoAsset}
-                src="/NUEVO/ChatGPT Image 19 sept 2026%2C 19_13_22.png"
+                src="/NUEVO/LOGO.png"
                 alt="Industrial Remotos Perú — Garantía y confianza"
                 width={1254}
                 height={1254}

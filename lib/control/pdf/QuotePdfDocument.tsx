@@ -100,7 +100,7 @@ const widths = {
   amount: "12%"
 } as const;
 
-const logoDataUri = `data:image/png;base64,${readFileSync(path.join(process.cwd(), "public", "logo-original-transparent.png")).toString("base64")}`;
+const logoDataUri = `data:image/png;base64,${readFileSync(path.join(process.cwd(), "public", "NUEVO", "LOGO.png")).toString("base64")}`;
 
 function formatMoney(minor: number) {
   return `S/ ${(minor / 100).toLocaleString("es-PE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;

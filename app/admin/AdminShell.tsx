@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpenCheck, ClipboardList, FileText, LayoutDashboard, LogOut, Menu, Package, X } from "lucide-react";
+import { BookOpenCheck, ClipboardList, FileText, LayoutDashboard, LogOut, Menu, Package, Settings2, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -13,6 +13,7 @@ const navigation = [
   { href: "/admin/reclamos", label: "Reclamos", icon: BookOpenCheck, exact: false },
   { href: "/admin/cotizaciones", label: "Cotizaciones", icon: FileText, exact: false },
   { href: "/admin/configuracion/productos-cotizacion", label: "Productos de cotización", icon: Package, exact: false }
+  ,{ href: "/admin/configuracion/cotizador", label: "Cotizador y asistente", icon: Settings2, exact: false }
 ] as const;
 
 export function AdminShell({ session, children }: { session: AdminSession; children: React.ReactNode }) {
@@ -46,7 +47,7 @@ export function AdminShell({ session, children }: { session: AdminSession; child
         </div>
         <nav className={styles.navigation} aria-label="Navegación administrativa">
           <small>Operación</small>
-          {navigation.map(({ href, label, icon: Icon, exact }) => {
+          {navigation.filter((item) => session.role !== "COMMERCIAL" || !item.href.startsWith("/admin/configuracion")).map(({ href, label, icon: Icon, exact }) => {
             const active = exact ? pathname === href : pathname.startsWith(href);
             return <Link className={active ? styles.activeLink : ""} href={href} key={href} onClick={() => setDrawerOpen(false)}><Icon size={17} />{label}</Link>;
           })}

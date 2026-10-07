@@ -1,19 +1,42 @@
 "use client";
 
-import { AnimatePresence, motion, type Variants } from "framer-motion";
-import { BriefcaseBusiness, ChevronDown, Facebook, Instagram, Menu, MessageCircle, Music2, X } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  ArrowUpRight,
+  BookOpenText,
+  BriefcaseBusiness,
+  ChevronDown,
+  ChevronRight,
+  Facebook,
+  Instagram,
+  Mail,
+  Menu,
+  MessageCircle,
+  Music2,
+  PanelsTopLeft,
+  UsersRound,
+  Wrench,
+  X,
+  type LucideIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Logo } from "@/components/Logo";
 import { useProject } from "@/components/ProjectContext";
 import { navItems, serviceNavItems, siteConfig } from "@/data/site";
 import { cn } from "@/lib/utils";
 import { SiteSearch } from "@/components/SiteSearch";
-import { createFadeUpVariants, createStaggerContainer, motionDuration, motionEase } from "@/lib/motion";
+import { motionDuration, motionEase } from "@/lib/motion";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 
-const MotionLink = motion.create(Link);
+const mobileNavIcons: Record<string, LucideIcon> = {
+  "/soluciones": Wrench,
+  "/productos": BookOpenText,
+  "/proyectos": PanelsTopLeft,
+  "/nosotros": UsersRound,
+  "/contacto": Mail,
+};
 
 export function Header() {
   const pathname = usePathname();
@@ -22,20 +45,10 @@ export function Header() {
   const [scrolled, setScrolled] = useState(!home);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const mobileMenuRef = useRef<HTMLElement>(null);
   const { count, setDrawerOpen } = useProject();
   const reduceMotion = usePrefersReducedMotion();
-  const mobileList = useMemo(() => createStaggerContainer(reduceMotion, .08), [reduceMotion]);
-  const mobileItem = useMemo(() => createFadeUpVariants(reduceMotion, { distance: 22, duration: .62 }), [reduceMotion]);
-  const mobileExtras = useMemo<Variants>(() => ({
-    hidden: reduceMotion ? { opacity: 0 } : { opacity: 0, y: 14 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: reduceMotion ? motionDuration.reduced : .62, delay: reduceMotion ? 0 : .32, ease: motionEase.enter }
-    }
-  }), [reduceMotion]);
-
   useEffect(() => {
     const update = () => setScrolled(!home || window.scrollY > 82);
     update();
@@ -49,7 +62,7 @@ export function Header() {
 
   useEffect(() => {
     document.body.classList.toggle("overlay-open", menuOpen);
-    if (menuOpen) requestAnimationFrame(() => mobileMenuRef.current?.querySelector<HTMLElement>("a, button")?.focus());
+    if (menuOpen) requestAnimationFrame(() => closeButtonRef.current?.focus());
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") { setMenuOpen(false); menuButtonRef.current?.focus(); return; }
       if (event.key !== "Tab" || !menuOpen || !mobileMenuRef.current) return;
@@ -69,7 +82,7 @@ export function Header() {
 
   return (
     <>
-      <header className={cn("site-header", scrolled && "site-header--scrolled", light && "site-header--hero", darkRoute && "site-header--dark-route")}>
+      <header className={cn("site-header", "site-header--unified", scrolled && "site-header--scrolled", light && "site-header--hero", darkRoute && "site-header--dark-route")}>
         <nav className="site-header__inner" aria-label="Navegación principal">
           <Link className="site-header__logo" href="/" aria-label="Ir al inicio"><Logo compact inverse={light && (!home || !scrolled)} /></Link>
           <div className="site-header__links">
@@ -93,7 +106,7 @@ export function Header() {
             )}
           </div>
           <div className="site-header__actions">
-            <SiteSearch />
+            <span className="header-site-search"><SiteSearch /></span>
             <a className="header-whatsapp-cta" href={siteConfig.social.whatsapp} target="_blank" rel="noreferrer" aria-label="Hablar por WhatsApp" data-analytics="whatsapp_click">
               <MessageCircle size={17} /><span>WhatsApp</span>
             </a>
@@ -118,33 +131,91 @@ export function Header() {
         </nav>
       </header>
 
-      <AnimatePresence>
-        {menuOpen && (
-          <motion.nav ref={mobileMenuRef} className="mobile-nav" id="mobile-menu" aria-label="Navegación móvil" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: reduceMotion ? motionDuration.reduced : .32, ease: motionEase.enter }}>
-            <motion.div className="mobile-nav__sheet" initial={reduceMotion ? { opacity: 0 } : { y: -28, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={reduceMotion ? { opacity: 0 } : { y: -20, opacity: 0 }} transition={{ duration: reduceMotion ? motionDuration.reduced : .48, ease: motionEase.enter }}>
-              <span className="eyebrow">Explora Industrial Remotos</span>
-              <motion.div className="mobile-nav__links" variants={mobileList} initial="hidden" animate="visible">
-                {navItems.map((item, index) => (
-                  <MotionLink variants={mobileItem} href={item.href} key={item.href} onClick={() => setMenuOpen(false)}>
-                    <small>0{index + 1}</small><span>{item.label}</span><i>↗</i>
-                  </MotionLink>
-                ))}
-              </motion.div>
-              <motion.div className="mobile-nav__actions" variants={mobileExtras} initial="hidden" animate="visible">
-                <a href={siteConfig.social.whatsapp} target="_blank" rel="noreferrer" onClick={() => setMenuOpen(false)}><MessageCircle size={17} /> Hablar por WhatsApp</a>
-                <Link href="/cotizar" onClick={() => setMenuOpen(false)}>Cotizar mi proyecto</Link>
-                <button type="button" onClick={() => { setMenuOpen(false); setDrawerOpen(true); }}>
-                  <BriefcaseBusiness size={17} /> Mi proyecto <b>{count}</b>
-                </button>
-              </motion.div>
-              <motion.div className="mobile-nav__footer" variants={mobileExtras} initial="hidden" animate="visible">
-                {siteConfig.hours && <p>{siteConfig.hours}</p>}
-                <div className="mobile-nav__socials"><a href={siteConfig.social.facebook} aria-label="Facebook" target="_blank" rel="noreferrer"><Facebook size={17} /></a><a href={siteConfig.social.instagram} aria-label="Instagram" target="_blank" rel="noreferrer"><Instagram size={17} /></a><a href={siteConfig.social.tiktok} aria-label="TikTok" target="_blank" rel="noreferrer"><Music2 size={17} /></a><a href={siteConfig.social.whatsapp} aria-label="WhatsApp" target="_blank" rel="noreferrer"><MessageCircle size={17} /></a></div>
-              </motion.div>
-            </motion.div>
-          </motion.nav>
-        )}
-      </AnimatePresence>
+      <button
+        className={cn("irp-mobile-menu__overlay", menuOpen && "is-open")}
+        type="button"
+        aria-label="Cerrar menú"
+        tabIndex={-1}
+        onClick={() => {
+          setMenuOpen(false);
+          requestAnimationFrame(() => menuButtonRef.current?.focus());
+        }}
+      />
+
+      <aside
+        ref={mobileMenuRef}
+        id="mobile-menu"
+        className={cn("irp-mobile-menu", menuOpen && "is-open")}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menú de navegación"
+        aria-hidden={!menuOpen}
+        inert={menuOpen ? undefined : true}
+      >
+        <header className="irp-mobile-menu__header">
+          <Link className="irp-mobile-menu__brand" href="/" aria-label="Industrial Remotos Perú, inicio" onClick={() => setMenuOpen(false)}>
+            <Logo compact priority />
+          </Link>
+          <button
+            ref={closeButtonRef}
+            type="button"
+            aria-label="Cerrar menú"
+            onClick={() => {
+              setMenuOpen(false);
+              requestAnimationFrame(() => menuButtonRef.current?.focus());
+            }}
+          >
+            <X size={25} strokeWidth={1.55} />
+          </button>
+        </header>
+
+        <div className="irp-mobile-menu__body">
+          <nav className="irp-mobile-menu__links" aria-label="Navegación móvil">
+            {navItems.filter((item) => item.href !== "/").map((item, index) => {
+              const Icon = mobileNavIcons[item.href] ?? PanelsTopLeft;
+              return (
+                <Link
+                  className={pathname.startsWith(item.href) ? "is-active" : ""}
+                  style={{ "--mobile-menu-index": index } as CSSProperties}
+                  href={item.href}
+                  key={item.href}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <span className="irp-mobile-menu__link-icon"><Icon size={21} strokeWidth={1.55} /></span>
+                  <strong>{item.label}</strong>
+                  <ChevronRight className="irp-mobile-menu__chevron" size={20} strokeWidth={1.6} />
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="irp-mobile-menu__footer">
+            <Link className="irp-mobile-menu__quote" href="/cotizar" onClick={() => setMenuOpen(false)}>
+              <span><ArrowUpRight size={22} strokeWidth={1.6} /></span>
+              <strong>Cotizar mi proyecto<small>Te respondemos a la brevedad</small></strong>
+              <ChevronRight size={19} strokeWidth={1.6} />
+            </Link>
+
+            <a
+              className="irp-mobile-menu__whatsapp"
+              href={siteConfig.social.whatsapp}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => setMenuOpen(false)}
+            >
+              <span aria-hidden="true"><MessageCircle size={21} strokeWidth={1.7} /></span>
+              <strong>Escríbenos por WhatsApp</strong>
+              <ChevronRight size={19} strokeWidth={1.6} />
+            </a>
+
+            <div className="irp-mobile-menu__socials" aria-label="Redes sociales">
+              <a href={siteConfig.social.instagram} aria-label="Instagram" target="_blank" rel="noreferrer"><Instagram size={17} /></a>
+              <a href={siteConfig.social.facebook} aria-label="Facebook" target="_blank" rel="noreferrer"><Facebook size={17} /></a>
+              <a href={siteConfig.social.tiktok} aria-label="TikTok" target="_blank" rel="noreferrer"><Music2 size={17} /></a>
+            </div>
+          </div>
+        </div>
+      </aside>
     </>
   );
 }

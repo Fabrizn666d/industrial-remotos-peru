@@ -38,8 +38,8 @@ try {
   check((introState.readyState ?? 0) >= 2 && introState.videoWidth === 1920 && introState.videoHeight === 1080, "Metadatos/readyState del MP4 inválidos");
   check(introState.logoVisible, "El logo inicial no está superpuesto al video");
   check(Number(introState.headerOpacity) < .1, "La navbar aparece antes de la fase de reveal");
-  await introPage.locator(".irp-entry-loader").waitFor({ state: "detached", timeout: 15000 });
-  await introPage.waitForFunction(() => document.body.classList.contains("intro-revealing"));
+  await introPage.waitForFunction(() => document.body.classList.contains("intro-revealing"), undefined, { timeout: 15000 });
+  check(await introPage.locator(".irp-entry-loader__brand-stage").evaluate(el => +getComputedStyle(el).opacity) < .01, "El logo no terminó su fade antes del reveal");
   const revealState = await introPage.evaluate(() => {
     const video = document.querySelector(".irp-hero__video");
     const advisor = document.querySelector(".irp-hero__advisor-stage");
@@ -71,8 +71,7 @@ try {
     workerOpacity: Number(getComputedStyle(document.querySelector(".irp-hero__advisor-stage")).opacity),
     kickerOpacity: Number(getComputedStyle(document.querySelector(".irp-kicker")).opacity),
     titleOpacity: Number(getComputedStyle(document.querySelector(".irp-hero__title-line")).opacity),
-    actionsOpacity: Number(getComputedStyle(document.querySelector(".irp-hero__action-stage--primary")).opacity),
-    secondaryActionOpacity: Number(getComputedStyle(document.querySelector(".irp-hero__action-stage--secondary")).opacity)
+    actionsOpacity: Number(getComputedStyle(document.querySelector(".irp-hero__actions")).opacity)
   }));
   check(stagedReveal.ended === false && stagedReveal.session !== "seen", "El reveal no ocurrió mientras el MP4 seguía activo");
   check(stagedReveal.headerOpacity > .7, "La navbar no apareció progresivamente antes del final");

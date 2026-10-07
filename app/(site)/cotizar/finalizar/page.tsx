@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { CheckoutExperience } from "@/components/CheckoutExperience";
+import { ToolHeader } from "@/components/ToolHeader";
 
 export const metadata: Metadata = {
   title: "Finalizar solicitud",
@@ -8,5 +9,5 @@ export const metadata: Metadata = {
 };
 
 export default function FinalizeQuotePage() {
-  return <main id="contenido" className="checkout-route"><div className="page-shell"><CheckoutExperience /></div></main>;
+  return <main id="contenido" className="checkout-route"><div className="page-shell"><ToolHeader /><CheckoutExperience /></div></main>;
 }

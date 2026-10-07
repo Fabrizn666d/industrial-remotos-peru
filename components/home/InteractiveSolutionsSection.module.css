@@ -3,11 +3,30 @@
   z-index: 7;
   width: 100%;
   aspect-ratio: 1672 / 941;
+  margin-top: clamp(18px, 1.6vw, 30px);
   overflow: hidden;
   background: #f7faff;
   color: #0a1733;
   isolation: isolate;
   scroll-margin-top: 92px;
+}
+
+.section::before {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: clamp(82px, 8vw, 132px);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, .98) 0%,
+    rgba(247, 251, 255, .78) 30%,
+    rgba(237, 247, 255, .35) 65%,
+    rgba(237, 247, 255, 0) 100%
+  );
+  content: "";
+  pointer-events: none;
 }
 
 .shell {
@@ -353,15 +372,28 @@
   .mobileControls { display: block; margin-top: 24px; }
 
   .mobileSelector {
-    display: flex;
-    gap: 9px;
-    overflow-x: auto;
+    overflow: hidden;
     padding: 2px 2px 10px;
     scrollbar-width: none;
-    scroll-snap-type: x mandatory;
   }
 
   .mobileSelector::-webkit-scrollbar { display: none; }
+
+  .mobileSelectorTrack {
+    display: flex;
+    width: max-content;
+    animation: mobile-services-marquee 34s linear infinite;
+    will-change: transform;
+  }
+
+  .mobileSelectorGroup {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 9px;
+    padding-right: 9px;
+  }
+
+  .mobileSelector:focus-within .mobileSelectorTrack { animation-play-state: paused; }
 
   .mobileSelector button {
     display: inline-flex;
@@ -376,7 +408,6 @@
     color: #5e6f88;
     font-size: 11px;
     font-weight: 730;
-    scroll-snap-align: start;
   }
 
   .mobileSelector button svg { width: 17px; height: 17px; }
@@ -401,7 +432,8 @@
 }
 
 @media (max-width: 767px) {
-  .section { padding: 88px 0 78px; scroll-margin-top: 78px; }
+  .section { margin-top: 16px; padding: 88px 0 78px; scroll-margin-top: 78px; }
+  .section::before { height: 76px; }
   .shell { width: min(calc(100% - 28px), 470px); }
   .intro { max-width: 420px; }
   .kicker { font-size: 10px; letter-spacing: .22em; }
@@ -428,16 +460,38 @@
     height: 28px;
   }
 
+  .scene .floatingCard[data-position] {
+    top: 9.5%;
+    right: 18px;
+    left: 18px;
+    display: grid;
+    width: auto;
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 12px;
+    border-radius: 20px;
+    padding: 16px;
+  }
+
+  .scene .floatingCard > svg { width: 38px; height: 38px; }
+  .scene .floatingCard h3 { font-size: 16px; }
+  .scene .floatingCard p { margin-top: 6px; font-size: 11px; }
+  .scene .floatingCard a { margin-top: 9px; }
+
   .secondaryDoor { top: 68%; left: 60%; width: 22px; height: 22px; opacity: .48; }
   .secondaryDoor svg { width: 12px; height: 12px; }
-  .mobileControls { margin-top: 20px; }
-  .mobileSelector { margin-inline: -14px; padding-inline: 14px; }
+  .mobileControls { position: relative; z-index: 9; margin-top: -70px; }
+  .mobileSelector { margin-inline: -14px; padding: 8px 14px 12px; }
   .mobileSelector button { min-height: 44px; padding-inline: 14px; }
-  .mobileCard { min-height: 0; grid-template-columns: 42px minmax(0, 1fr); gap: 13px; padding: 19px; border-radius: 20px; }
+  .mobileCard { display: none; }
   .mobileCard > svg { width: 39px; height: 39px; }
   .mobileCard h3 { font-size: 17px; }
   .mobileCard p { font-size: 11.5px; }
   .mobileCard a { margin-top: 10px; }
+}
+
+@keyframes mobile-services-marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
 }
 
 @media (hover: none) {
@@ -454,4 +508,6 @@
   .hotspot,
   .floatingCard a svg,
   .mobileCard a svg { transition-duration: .01ms !important; }
+  .mobileSelectorTrack { animation: none; }
+  .mobileSelectorGroup[aria-hidden="true"] { display: none; }
 }

@@ -1,20 +1,28 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Blocks, Cog, DoorOpen, PencilRuler, UserRoundCheck, Wrench } from "lucide-react";
+import { ArrowRight, Cog, PencilRuler, UserRoundCheck, Wrench } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { createFadeUpVariants, createLineRevealVariants, createStaggerContainer, scrollViewport } from "@/lib/motion";
 import styles from "./NeedsSection.module.css";
+import { usePublicPricingCatalog } from "@/lib/pricing/use-public-catalog";
 
 const services = [
   {
-    name: "Puertas automáticas / garaje",
+    name: "Puertas automáticas / Principales",
     description: "Comodidad, seguridad y control en cada acceso.",
     image: "/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_52 (1).png",
     href: "/soluciones/puertas-automatizacion",
     icon: "garage"
+  },
+  {
+    name: "Puertas a medida",
+    description: "Puertas diseñadas y fabricadas según tu espacio y estilo.",
+    image: "/images/reales/puerta-22.jpg",
+    href: "/soluciones/puertas-a-medida",
+    icon: "customDoor"
   },
   {
     name: "Baranda / acero inoxidable",
@@ -31,18 +39,11 @@ const services = [
     icon: "window"
   },
   {
-    name: "Techo solisombra",
+    name: "Techo solisombra / estructuras",
     description: "Protección y confort para cada espacio.",
     image: "/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_53 (4).png",
     href: "/soluciones/techos-coberturas",
     icon: "pergola"
-  },
-  {
-    name: "Cerco Eléctrico",
-    description: "Protección perimetral para tu tranquilidad.",
-    image: "/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_53 (5).png",
-    href: "/soluciones/cerco-electrico",
-    icon: "fence"
   },
   {
     name: "Drywall",
@@ -76,22 +77,9 @@ const processSteps = [
   }
 ] as const;
 
-const secondaryServices = [
-  {
-    title: "Puertas principales",
-    description: "Accesos peatonales diseñados para integrarse a la fachada.",
-    href: "/soluciones/puertas-principales",
-    icon: DoorOpen
-  },
-  {
-    title: "Estructuras metálicas",
-    description: "Fabricación especial según medidas, uso y condiciones del proyecto.",
-    href: "/soluciones/estructuras-metalicas",
-    icon: Blocks
-  }
-] as const;
-
 export function NeedsSection() {
+  const publicCatalog = usePublicPricingCatalog();
+  const serviceItems = services.map((service, index) => service.icon === "customDoor" ? { ...service, name: publicCatalog.homeCard.title, description: publicCatalog.homeCard.description, image: publicCatalog.homeCard.image, href: publicCatalog.homeCard.destination, order: publicCatalog.homeCard.order } : { ...service, order: index + 1 }).filter((service) => service.icon !== "customDoor" || publicCatalog.homeCard.visible).sort((left, right) => left.order - right.order);
   const reduceMotion = usePrefersReducedMotion();
 
   const fadeUp = createFadeUpVariants(reduceMotion, { delay: .18 });
@@ -147,8 +135,8 @@ export function NeedsSection() {
         </header>
 
         <motion.div className={styles.grid} variants={stagger}>
-          {services.map((service) => (
-            <motion.div key={service.name} className={styles.item} variants={serviceReveal}>
+          {serviceItems.map((service) => (
+            <motion.div key={service.icon} className={styles.item} variants={serviceReveal}>
               <Link href={service.href} className={styles.service} aria-label={`Conocer más sobre ${service.name}`}>
                 <span className={styles.visual}>
                   <span className={styles.ring} aria-hidden="true" />
@@ -170,16 +158,6 @@ export function NeedsSection() {
             </motion.div>
           ))}
         </motion.div>
-
-        <motion.nav className={styles.secondaryLinks} variants={fadeUp} aria-label="Más soluciones">
-          {secondaryServices.map(({ title, description, href, icon: Icon }) => (
-            <Link href={href} className={styles.secondaryLink} key={href}>
-              <Icon aria-hidden="true" />
-              <span><strong>{title}</strong><small>{description}</small></span>
-              <ArrowRight aria-hidden="true" />
-            </Link>
-          ))}
-        </motion.nav>
 
         <motion.div className={styles.ctaWrap} variants={fadeUp}>
           <Link href="/soluciones" className={styles.cta}>
@@ -205,8 +183,8 @@ function ServiceIcon({ type }: { type: (typeof services)[number]["icon"] }) {
   if (type === "pergola") {
     return <svg viewBox="0 0 32 32"><path d="M4 12l12-7 12 7M6 13h20M8 13v14M24 13v14M11 10l4 3M16 7l7 6M5 27h22" /></svg>;
   }
-  if (type === "fence") {
-    return <svg viewBox="0 0 32 32"><path d="M6 6v21M14 4v23M22 6v21M27 9v18M4 12h24M4 18h24M4 24h24" /><path d="M17 5l-3 5h4l-3 6" /></svg>;
+  if (type === "customDoor") {
+    return <svg viewBox="0 0 32 32"><path d="M6 27V6h20v21M10 27V10h12v17M18 18h1M4 27h24" /><path d="M7 4h18M7 2v4M25 2v4" /></svg>;
   }
   return <svg viewBox="0 0 32 32"><path d="M5 27V7h22v20M12 7v20M20 7v20M5 22h22" /></svg>;
 }

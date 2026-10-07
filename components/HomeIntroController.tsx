@@ -1,11 +1,17 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import { HOME_INTRO_SEEN_CLASS, HOME_INTRO_SESSION_KEY } from "@/lib/home-intro-session";
 
 export const HOME_INTRO_ASSETS = {
-  logo: "/NUEVO/ChatGPT Image 19 sept 2026%2C 19_13_22.png",
+  logo: "/NUEVO/LOGO.png",
   video: "/NUEVO/Garage_door_opening_transition_1080p_20260921110657.mp4",
+  mobileVideo: "/NUEVO/HERO%20MOPVIL.mp4",
+  firstFrame: "/NUEVO/garage-intro-first-frame.webp",
+  lastFrame: "/NUEVO/garage-intro-last-frame.webp",
+  mobileFirstFrame: "/NUEVO/mobile-intro-first-frame.webp",
+  mobileLastFrame: "/NUEVO/mobile-intro-last-frame.webp",
   exterior: "/NUEVO/ChatGPT Image 21 sept 2026%2C 11_01_15.png"
 } as const;
 
@@ -15,165 +21,62 @@ export const HOME_INTRO_TIMING = {
   logoFadeAtVideoSeconds: 2.6,
   logoFadeMs: 850
 } as const;
-
-// Una sola línea de tiempo, relativa al instante en que comienza el reveal.
-// El MP4 sigue reproduciéndose por debajo durante toda esta coreografía.
-export const HOME_HERO_REVEAL_CUES = [
-  { key: "overlay", at: 0 },
-  { key: "header", at: .14 },
-  { key: "advisor", at: .32 },
-  { key: "kicker", at: .48 },
-  { key: "title-1", at: .66 },
-  { key: "title-2", at: .82 },
-  { key: "title-3", at: .98 },
-  { key: "description", at: 1.2 },
-  { key: "actions", at: 1.45 },
-  { key: "proof", at: 1.72 },
-  { key: "wave", at: 1.86 },
-  { key: "assistant", at: 1.96 }
-] as const;
-
-export const HOME_INTRO_SESSION_KEY = "irp-intro-v4";
-
 export type HomeIntroStatus = "checking" | "loading" | "playing" | "revealing" | "completed" | "failed" | "skipped";
 
-type HomeIntroContextValue = {
+type IntroContext = {
   status: HomeIntroStatus;
-  revealStage: number;
-  logoHidden: boolean;
-  forceIntro: boolean;
-  introActive: boolean;
-  heroVisible: boolean;
+  logoRef: RefObject<HTMLDivElement | null>;
   markPlaying: () => void;
   beginReveal: () => void;
-  advanceReveal: (stage: number) => void;
-  hideLogo: () => void;
   complete: () => void;
   fail: () => void;
-  skipIntro: () => void;
 };
-
-const HomeIntroContext = createContext<HomeIntroContextValue | null>(null);
+const HomeIntroContext = createContext<IntroContext | null>(null);
 
 export function HomeIntroProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const forceInitialDevelopmentIntroRef = useRef(process.env.NODE_ENV === "development" && pathname === "/");
   const [status, setStatus] = useState<HomeIntroStatus>(pathname === "/" ? "checking" : "skipped");
-  const [revealStage, setRevealStage] = useState(0);
-  const [logoHidden, setLogoHidden] = useState(false);
-  const [forceIntro, setForceIntro] = useState(false);
+  const logoRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (pathname !== "/") {
-      forceInitialDevelopmentIntroRef.current = false;
-      setRevealStage(HOME_HERO_REVEAL_CUES.length);
-      setStatus("skipped");
-      setLogoHidden(true);
-      setForceIntro(false);
-      return;
-    }
-
-    const queryForcesIntro = new URLSearchParams(window.location.search).get("intro") === "1";
-    const environmentForcesIntro = process.env.NEXT_PUBLIC_FORCE_HOME_INTRO === "true";
-    // En desarrollo se reproduce en cada recarga para poder revisar la coreografía
-    // completa. En producción se mantiene una sola reproducción por sesión.
-    const developmentForcesIntro = forceInitialDevelopmentIntroRef.current;
-    const force = queryForcesIntro || environmentForcesIntro || developmentForcesIntro;
-    setForceIntro(force);
-
-    if (!force && sessionStorage.getItem(HOME_INTRO_SESSION_KEY) === "seen") {
-      setLogoHidden(true);
-      setRevealStage(HOME_HERO_REVEAL_CUES.length);
+      document.documentElement.classList.remove(HOME_INTRO_SEEN_CLASS);
       setStatus("skipped");
       return;
     }
-
-    setLogoHidden(false);
-    setRevealStage(0);
-    setStatus((current) => (
-      current === "playing" || current === "revealing" || current === "completed" || current === "failed"
-        ? current
-        : "loading"
-    ));
+    const force = new URLSearchParams(window.location.search).get("intro") === "1" ||
+      process.env.NEXT_PUBLIC_FORCE_HOME_INTRO === "true";
+    let seen = false;
+    try { seen = sessionStorage.getItem(HOME_INTRO_SESSION_KEY) === "seen"; } catch { /* Storage can be disabled. */ }
+    if (!force && seen) {
+      document.documentElement.classList.add(HOME_INTRO_SEEN_CLASS);
+      setStatus("skipped");
+      return;
+    }
+    document.documentElement.classList.remove(HOME_INTRO_SEEN_CLASS);
+    setStatus((current) => current === "checking" || current === "skipped" ? "loading" : current);
   }, [pathname]);
 
   const markPlaying = useCallback(() => setStatus((current) =>
-    current === "checking" || current === "loading" ? "playing" : current
-  ), []);
-  const beginReveal = useCallback(() => {
-    setRevealStage((current) => Math.max(current, 1));
-    setStatus((current) => (
-      current === "checking" || current === "loading" || current === "playing"
-        ? "revealing"
-        : current
-    ));
-  }, []);
-  const advanceReveal = useCallback((stage: number) => {
-    const safeStage = Math.max(0, Math.min(HOME_HERO_REVEAL_CUES.length, stage));
-    setRevealStage((current) => Math.max(current, safeStage));
-  }, []);
-  const hideLogo = useCallback(() => setLogoHidden(true), []);
+    current === "checking" || current === "loading" ? "playing" : current), []);
+  const beginReveal = useCallback(() => setStatus((current) =>
+    current === "playing" || current === "loading" || current === "checking" ? "revealing" : current), []);
   const complete = useCallback(() => {
-    sessionStorage.setItem(HOME_INTRO_SESSION_KEY, "seen");
-    setLogoHidden(true);
-    setRevealStage(HOME_HERO_REVEAL_CUES.length);
+    try { sessionStorage.setItem(HOME_INTRO_SESSION_KEY, "seen"); } catch { /* Playback still completes. */ }
     setStatus("completed");
-    window.dispatchEvent(new Event("irp:intro-complete"));
   }, []);
-  const fail = useCallback(() => {
-    // Un fallo de red/autoplay no consume la única reproducción de la sesión.
-    setLogoHidden(true);
-    setRevealStage(HOME_HERO_REVEAL_CUES.length);
-    setStatus("failed");
-  }, []);
-  const skipIntro = useCallback(() => {
-    setLogoHidden(true);
-    setRevealStage(HOME_HERO_REVEAL_CUES.length);
-    setStatus("skipped");
-    window.dispatchEvent(new Event("irp:intro-complete"));
-  }, []);
+  const fail = useCallback(() => setStatus("failed"), []);
 
-  const introActive = pathname === "/" && ["checking", "loading", "playing"].includes(status);
-  const heroVisible = pathname !== "/" || ["revealing", "completed", "failed", "skipped"].includes(status);
-
+  // Lifecycle only: no cue classes, timers, width compensation or visual state.
   useEffect(() => {
     if (pathname !== "/") return;
-    const introClasses = ["intro-loading", "intro-playing", "intro-revealing", "intro-skipped", "intro-failed", "intro-complete"];
-    const cueClasses = HOME_HERO_REVEAL_CUES.map((cue) => `intro-cue-${cue.key}`);
-    document.body.classList.remove(...introClasses, ...cueClasses);
+    const className = `intro-${status === "completed" ? "complete" : status === "checking" ? "loading" : status}`;
+    document.body.classList.add(className);
+    return () => document.body.classList.remove(className);
+  }, [pathname, status]);
 
-    if (status === "checking" || status === "loading") document.body.classList.add("intro-loading");
-    else if (status === "playing") document.body.classList.add("intro-playing");
-    else if (status === "revealing") document.body.classList.add("intro-revealing");
-    else if (status === "skipped") document.body.classList.add("intro-skipped");
-    else if (status === "failed") document.body.classList.add("intro-failed");
-    else document.body.classList.add("intro-complete");
-
-    if (status === "revealing") {
-      document.body.classList.add(...cueClasses.slice(0, revealStage));
-    }
-
-    return () => {
-      document.body.classList.remove(...introClasses, ...cueClasses);
-    };
-  }, [pathname, revealStage, status]);
-
-  const value = useMemo<HomeIntroContextValue>(() => ({
-    status,
-    revealStage,
-    logoHidden,
-    forceIntro,
-    introActive,
-    heroVisible,
-    markPlaying,
-    beginReveal,
-    advanceReveal,
-    hideLogo,
-    complete,
-    fail,
-    skipIntro
-  }), [advanceReveal, beginReveal, complete, fail, forceIntro, heroVisible, hideLogo, introActive, logoHidden, markPlaying, revealStage, skipIntro, status]);
-
+  const value = useMemo(() => ({ status, logoRef, markPlaying, beginReveal, complete, fail }),
+    [status, markPlaying, beginReveal, complete, fail]);
   return <HomeIntroContext.Provider value={value}>{children}</HomeIntroContext.Provider>;
 }
 

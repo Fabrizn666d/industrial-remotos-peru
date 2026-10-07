@@ -13,6 +13,24 @@
   scroll-margin-top: 96px;
 }
 
+.section::after {
+  position: absolute;
+  z-index: 1;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: clamp(86px, 8vw, 132px);
+  background: linear-gradient(
+    180deg,
+    rgba(237, 247, 255, 0) 0%,
+    rgba(237, 247, 255, .42) 38%,
+    rgba(237, 247, 255, .88) 76%,
+    #edf7ff 100%
+  );
+  content: "";
+  pointer-events: none;
+}
+
 .shell {
   position: relative;
   z-index: 2;
@@ -303,45 +321,6 @@
   margin-top: clamp(22px, 2vw, 32px);
 }
 
-.secondaryLinks {
-  display: grid;
-  width: min(760px, 100%);
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin: 28px auto 0;
-}
-
-.secondaryLink {
-  display: grid;
-  min-width: 0;
-  min-height: 72px;
-  grid-template-columns: 38px minmax(0, 1fr) 18px;
-  align-items: center;
-  gap: 13px;
-  border-top: 1px solid rgba(42, 105, 196, .28);
-  border-bottom: 1px solid rgba(42, 105, 196, .14);
-  padding: 12px 14px;
-  color: #07164b;
-  transition: border-color 300ms ease, background-color 300ms ease, transform 350ms cubic-bezier(.16,1,.3,1);
-}
-
-.secondaryLink > svg:first-child {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  background: rgba(7, 92, 255, .07);
-  padding: 9px;
-  color: #075cff;
-}
-
-.secondaryLink > span { display: grid; gap: 3px; min-width: 0; }
-.secondaryLink strong { font-size: 14px; font-weight: 760; }
-.secondaryLink small { color: #526a90; font-size: 11px; line-height: 1.35; }
-.secondaryLink > svg:last-child { width: 17px; color: #075cff; transition: transform 300ms ease; }
-.secondaryLink:hover { border-color: rgba(7,92,255,.45); background: rgba(255,255,255,.5); transform: translateY(-1px); }
-.secondaryLink:hover > svg:last-child { transform: translateX(3px); }
-.secondaryLink:focus-visible { outline: 3px solid rgba(7,92,255,.3); outline-offset: 3px; }
-
 .cta {
   display: flex;
   width: min(410px, 100%);
@@ -377,6 +356,12 @@
 .cta:hover svg { transform: translateX(3px); }
 .cta:focus-visible { outline: 3px solid rgba(7,92,255,.35); outline-offset: 4px; }
 
+@media (min-width: 1100px) {
+  .shell { padding-bottom: clamp(350px, 23vw, 440px); }
+  .grid { margin-top: 12px; }
+  .ctaWrap { margin-top: 32px; }
+}
+
 @media (max-width: 1399px) {
   .sideNote { display: none; }
 }
@@ -397,19 +382,21 @@
   .section {
     background-image: url("/NUEVO/A/ChatGPT%20Image%2021%20sept%202026%2C%2020_01_54.png");
     background-position: center bottom;
-    background-size: cover;
+    background-size: 100% auto;
   }
+
+  .section::after { height: 82px; }
 
   .shell {
     width: min(calc(100% - 36px), 520px);
-    padding: 0 0 250px;
+    padding: 0 0 300px;
   }
 
   .processBand {
     width: 100%;
     min-height: 174px;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    margin: -34px auto 50px;
+    margin: 12px auto 50px;
     border-radius: 27px;
     padding: 7px;
   }
@@ -456,20 +443,6 @@
   }
   .copy small { display: none; }
 
-  .secondaryLinks {
-    grid-template-columns: 1fr;
-    gap: 4px;
-    margin-top: 26px;
-    border: 1px solid rgba(112, 157, 211, .22);
-    border-radius: 20px;
-    background: rgba(248, 252, 255, .88);
-    padding: 6px;
-    box-shadow: 0 12px 30px rgba(24, 70, 126, .08);
-    backdrop-filter: blur(9px);
-  }
-  .secondaryLink { min-height: 66px; padding-inline: 10px; }
-  .secondaryLink small { font-size: 10px; }
-
   .ctaWrap { margin-top: 36px; }
   .cta { width: min(94%, 420px); min-height: 66px; gap: 13px; padding-right: 17px; }
   .cta > span { width: 52px; height: 52px; flex-basis: 52px; }
@@ -477,7 +450,7 @@
 }
 
 @media (max-width: 374px) {
-  .shell { width: calc(100% - 32px); padding-bottom: 220px; }
+  .shell { width: calc(100% - 32px); padding-bottom: 280px; }
   .grid { gap: 27px 14px; }
   .visual { width: min(38vw, 145px); }
   .copy strong { font-size: 13px; }

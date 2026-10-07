@@ -3,7 +3,7 @@ const developmentEval = process.env.NODE_ENV === "development" ? " 'unsafe-eval'
 
 const nextConfig = {
   agentRules: false,
-  allowedDevOrigins: ["127.0.0.1", "localhost"],
+  allowedDevOrigins: ["127.0.0.1", "localhost", "*.trycloudflare.com"],
   output: "standalone",
   outputFileTracingRoot: process.cwd(),
   images: {

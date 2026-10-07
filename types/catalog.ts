@@ -1,5 +1,5 @@
 export type ProductAudience = "residencial" | "comercial" | "industrial";
-export type ProductGroup = "puertas" | "puertas-principales" | "techos" | "ventanas" | "acero" | "estructuras" | "cerco" | "drywall" | "automatizacion";
+export type ProductGroup = "puertas" | "puertas-medida" | "puertas-principales" | "techos" | "ventanas" | "acero" | "estructuras" | "cerco" | "drywall" | "automatizacion";
 
 export type Finish = {
   name: string;
@@ -46,6 +46,10 @@ export type QuoteItemConfiguration = {
   panel?: string;
   finish?: string;
   automation?: string;
+  model?: string;
+  variant?: string;
+  openingSystem?: string;
+  material?: string;
   accessories: string[];
   installation?: string;
   notes?: string;

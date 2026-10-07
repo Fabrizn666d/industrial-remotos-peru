@@ -2,23 +2,29 @@
 
 import { useInView } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 
-export function AnimatedCounter({ value, prefix = "", suffix = "" }: { value: number; prefix?: string; suffix?: string }) {
+export function AnimatedCounter({
+  value,
+  prefix = "",
+  suffix = "",
+  start
+}: {
+  value: number;
+  prefix?: string;
+  suffix?: string;
+  start?: boolean;
+}) {
   const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, amount: 0.8 });
-  const reduceMotion = usePrefersReducedMotion();
-  // Keep the real value in the server-rendered HTML. Animation must never be a
-  // prerequisite for displaying business information.
-  const [display, setDisplay] = useState(value);
+  const startedRef = useRef(false);
+  const inView = useInView(ref, { once: true, amount: 0.5 });
+  const [display, setDisplay] = useState(0);
+  const shouldStart = start ?? inView;
 
   useEffect(() => {
-    if (!inView && !reduceMotion) return;
-    if (reduceMotion) {
-      setDisplay(value);
-      return;
-    }
-    setDisplay(0);
+    if (!shouldStart) return;
+    if (startedRef.current) return;
+    startedRef.current = true;
+
     const duration = 1700;
     const start = performance.now();
     let frame = 0;
@@ -30,7 +36,7 @@ export function AnimatedCounter({ value, prefix = "", suffix = "" }: { value: nu
     };
     frame = requestAnimationFrame(update);
     return () => cancelAnimationFrame(frame);
-  }, [inView, reduceMotion, value]);
+  }, [shouldStart, value]);
 
-  return <span ref={ref}>{prefix}{display}{suffix}</span>;
+  return <span ref={ref} aria-label={`${prefix}${value}${suffix}`}>{prefix}{display}{suffix}</span>;
 }

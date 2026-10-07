@@ -3,19 +3,24 @@ import { mkdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { businessYear } from "@/lib/backend/business-time";
 import {
+  ActivityLogSchema,
   PublicRequestCreatedSchema,
   QuoteRequestSchema,
   RepositoryStateSchema,
+  RequestOperationInputSchema,
   RequestListQuerySchema,
   RequestListResultSchema,
   type DashboardStats,
+  type ActivityLog,
   type PublicRequestSubmission,
   type QuoteRequest,
+  type RequestOperationInput,
   type RepositoryState,
   type RequestListQuery,
   type RequestListResult
 } from "@/lib/backend/contracts";
 import type { CreatedRequest, RequestRepository } from "@/lib/backend/request-repository";
+import { calculateSubmissionPrice } from "@/lib/pricing/request-pricing";
 
 const EMPTY_STATE: RepositoryState = {
   schemaVersion: 1,
@@ -60,6 +65,7 @@ export class JsonRequestRepository implements RequestRepository {
             code: existing.code,
             createdAt: existing.createdAt,
             accessToken: null,
+            pricing: existing.pricingSnapshot ?? await calculateSubmissionPrice(existing.originalPayload),
             replayed: true
           }),
           request: existing
@@ -86,6 +92,7 @@ export class JsonRequestRepository implements RequestRepository {
         attachmentNames: input.attachmentNames,
         source: input.source,
         originalPayload: input,
+        pricingSnapshot: await calculateSubmissionPrice(input),
         assignedTo: null,
         createdAt,
         updatedAt: createdAt
@@ -111,6 +118,7 @@ export class JsonRequestRepository implements RequestRepository {
           code: request.code,
           createdAt,
           accessToken,
+          pricing: request.pricingSnapshot!,
           replayed: false
         }),
         request
@@ -121,6 +129,58 @@ export class JsonRequestRepository implements RequestRepository {
   async findById(id: string): Promise<QuoteRequest | null> {
     const state = await this.readState();
     return state.requests.find((request) => request.id === id) ?? null;
+  }
+
+  async findByPublicAccess(code: string, token: string): Promise<QuoteRequest | null> {
+    const state = await this.readState();
+    const expected = hashToken(token);
+    return state.requests.find((request) => request.code === code && request.publicTokenHash === expected) ?? null;
+  }
+
+  async updateOperations(id: string, input: RequestOperationInput, actor: string): Promise<QuoteRequest | null> {
+    const operation = RequestOperationInputSchema.parse(input);
+    return this.withWriteLock(async () => {
+      const state = await this.readState();
+      const index = state.requests.findIndex((request) => request.id === id);
+      if (index < 0) return null;
+      const previous = state.requests[index];
+      const updatedAt = new Date().toISOString();
+      const assignedTo = operation.assignedTo === undefined
+        ? previous.assignedTo
+        : operation.assignedTo?.trim() || null;
+      const updated = QuoteRequestSchema.parse({
+        ...previous,
+        status: operation.status ?? previous.status,
+        assignedTo,
+        updatedAt
+      });
+      state.requests[index] = updated;
+      state.activityLogs.push(ActivityLogSchema.parse({
+        id: randomUUID(),
+        actorType: "ADMIN",
+        actorIdentifier: actor,
+        action: "QUOTE_REQUEST_OPERATION_UPDATED",
+        entityType: "QUOTE_REQUEST",
+        entityId: id,
+        metadata: {
+          previousStatus: previous.status,
+          status: updated.status,
+          previousAssignee: previous.assignedTo,
+          assignedTo: updated.assignedTo,
+          note: operation.internalNote?.trim() || null
+        },
+        createdAt: updatedAt
+      }));
+      await this.writeState(state);
+      return updated;
+    });
+  }
+
+  async activity(id: string): Promise<ActivityLog[]> {
+    const state = await this.readState();
+    return state.activityLogs
+      .filter((entry) => entry.entityId === id)
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
   }
 
   async list(input: RequestListQuery): Promise<RequestListResult> {

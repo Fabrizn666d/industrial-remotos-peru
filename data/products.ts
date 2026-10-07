@@ -17,16 +17,31 @@ const doorFinishes = finishes;
 
 export const products: Product[] = [
   {
+    id: "puertas-a-medida",
+    name: "Puertas a medida",
+    shortName: "A medida",
+    group: "puertas-medida",
+    description: "Puertas diseñadas y fabricadas según tu espacio y estilo.",
+    longDescription: "Configuramos dimensiones, apertura, diseño, material, acabado, automatización y accesorios como una fabricación independiente de los modelos importados.",
+    audiences: ["residencial", "comercial", "industrial"],
+    image: "/images/reales/puerta-22.jpg",
+    gallery: ["/images/reales/puerta-22.jpg", "/images/reales/puerta-17.jpg", "/images/reales/puerta-23.jpg"],
+    benefits: ["Fabricación desde cero", "Dimensiones dentro de rango", "Diseño y material configurables", "Automatización compatible", "Instalación evaluada"],
+    finishes: doorFinishes,
+    tiktokUrl,
+    evidence: "real"
+  },
+  {
     id: "seccionales",
     name: "Puertas seccionales",
     shortName: "Seccionales",
     group: "puertas",
     description: "Aislamiento, operación silenciosa y diseño contemporáneo.",
-    longDescription: "Puertas de paneles seccionales importados con recorrido vertical, cierre preciso y acabados que se integran a la arquitectura del ingreso.",
+    longDescription: "Puertas seccionales configuradas según la clasificación publicada para cada modelo. La semilla demo actual corresponde a fabricación a medida con recorrido vertical.",
     audiences: ["residencial", "comercial", "industrial"],
     image: "/images/reales/portada-puerta-seccional.jpg",
     gallery: ["/images/reales/portada-puerta-seccional.jpg", "/images/reales/puerta-02.jpg", "/images/reales/puerta-38.jpg", "/images/reales/puerta-39.jpg"],
-    benefits: ["Paneles importados", "Funcionamiento silencioso", "Fabricación a medida", "Automatización disponible", "Instalación profesional"],
+    benefits: ["Clasificación administrable", "Funcionamiento silencioso", "Fabricación a medida en la semilla demo", "Automatización disponible", "Instalación profesional"],
     finishes: doorFinishes,
     tiktokUrl,
     evidence: "real"

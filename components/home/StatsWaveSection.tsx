@@ -17,11 +17,6 @@ import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { createFadeUpVariants, createLineRevealVariants, createStaggerContainer, motionDuration, motionEase, scrollViewport } from "@/lib/motion";
 import styles from "./StatsWaveSection.module.css";
 
-const PROCESS_ASSETS = {
-  desktopBackground: "/NUEVO/C/ChatGPT Image 22 sept 2026%2C 09_11_53.png",
-  mobileBackground: "/NUEVO/C/ChatGPT Image 22 sept 2026%2C 09_24_15.png"
-} as const;
-
 const steps = [
   {
     number: "01",
@@ -67,7 +62,7 @@ export function StatsWaveSection() {
   const reduceMotion = usePrefersReducedMotion();
   const fadeUp = createFadeUpVariants(reduceMotion);
   const lineReveal = createLineRevealVariants(reduceMotion, .12);
-  const stepList = createStaggerContainer(reduceMotion, .16);
+  const stepList = createStaggerContainer(reduceMotion, .1);
   const stepReveal = createFadeUpVariants(reduceMotion);
 
   return (
@@ -79,17 +74,7 @@ export function StatsWaveSection() {
       whileInView="visible"
       viewport={scrollViewport}
     >
-      <div className={styles.background} aria-hidden="true">
-        <Image className={styles.backgroundDesktop} src={PROCESS_ASSETS.desktopBackground} alt="" fill sizes="100vw" />
-        <Image className={styles.backgroundMobile} src={PROCESS_ASSETS.mobileBackground} alt="" fill sizes="100vw" />
-      </div>
-
-      <span className={styles.leftNote} aria-hidden="true">
-        Tecnología<br />Seguridad<br />Confianza
-      </span>
-      <span className={styles.rightNote} aria-hidden="true">
-        Soluciones<br />que se hacen realidad
-      </span>
+      <div className={styles.background} aria-hidden="true" />
 
       <div className={styles.content}>
         <header className={styles.header}>

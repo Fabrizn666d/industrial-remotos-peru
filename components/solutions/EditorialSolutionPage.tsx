@@ -1,4 +1,4 @@
-import { ArrowRight, ChevronDown, ChevronRight, MessageCircle } from "lucide-react";
+import { ArrowRight, Check, ChevronDown, ChevronRight, MessageCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense, type CSSProperties } from "react";
@@ -18,6 +18,12 @@ export function EditorialSolutionPage({ solution, profile }: Props) {
   const finishPresentation = solutionFinishPresentations[solution.slug];
   const contactHref = `${siteConfig.social.whatsapp}${siteConfig.social.whatsapp.includes("?") ? "&" : "?"}text=${encodeURIComponent(`Hola IRP, quisiera asesoría sobre ${solution.title}.`)}`;
   const quoteProducts = solution.options.map((option) => option.quoteProduct);
+  const processImages = [
+    profile.alternatives[0]?.image,
+    profile.gallery[0],
+    profile.alternatives[1]?.image ?? profile.gallery[1],
+    solution.detailGallery[0] ?? profile.gallery[2]
+  ].filter((image): image is string => Boolean(image));
 
   return (
     <main id="contenido" className={`${styles.page} ${styles[profile.variant] ?? ""}`} data-solution={solution.slug}>
@@ -25,7 +31,8 @@ export function EditorialSolutionPage({ solution, profile }: Props) {
         className={styles.hero}
         style={{
           "--hero-position": profile.visuals.hero.objectPosition,
-          "--hero-mobile-position": profile.visuals.hero.mobileObjectPosition
+          "--hero-mobile-position": profile.visuals.hero.mobileObjectPosition,
+          "--hero-copy-x": profile.visuals.characters.hero.side === "right" ? "24%" : "76%"
         } as CSSProperties}
       >
         <Image className={styles.heroImage} src={profile.visuals.hero.src} alt={`Imagen ilustrativa de ${solution.title}`} fill priority sizes="100vw" />
@@ -34,7 +41,7 @@ export function EditorialSolutionPage({ solution, profile }: Props) {
         <nav className={`${styles.shell} ${styles.breadcrumbs}`} aria-label="Migas de pan">
           <Link href="/">Inicio</Link><ChevronRight aria-hidden="true" /><Link href="/soluciones">Soluciones</Link><ChevronRight aria-hidden="true" /><span>{solution.shortTitle}</span>
         </nav>
-        <div className={`${styles.shell} ${styles.heroContent}`}>
+        <div className={`${styles.shell} ${styles.heroContent} ${profile.visuals.characters.hero.side === "right" ? styles.heroCopyLeft : styles.heroCopyRight}`}>
           <h1>{profile.heroHeading}{profile.heroAccent && <><span aria-hidden="true"> </span><br /><strong>{profile.heroAccent}</strong></>}</h1>
           <p>{profile.heroDescription}</p>
         </div>
@@ -49,6 +56,7 @@ export function EditorialSolutionPage({ solution, profile }: Props) {
 
       <nav className={styles.sectionNav} aria-label={`Secciones de ${solution.title}`}>
         <a href="#modelos">Alternativas</a>
+        <a href="#detalles">Detalles</a>
         <a href="#acabados">{solution.slug === "cerco-electrico" ? "Componentes" : "Acabados"}</a>
         <a href="#galeria">Inspiración</a>
         <a href="#cotizar">Cotizar</a>
@@ -67,15 +75,28 @@ export function EditorialSolutionPage({ solution, profile }: Props) {
         </div>
       </section>
 
+      <section id="detalles" className={styles.detailBand} aria-labelledby="detail-title">
+        <div className={`${styles.shell} ${styles.detailInner} ${profile.visuals.characters.middle.side === "left" ? styles.detailCompanionLeft : styles.detailCompanionRight}`}>
+          <header className={styles.detailHeading}>
+            <span className={styles.kicker}>Detalles que importan</span>
+            <h2 id="detail-title">{profile.detailTitle}</h2>
+            <p>{profile.detailDescription}</p>
+          </header>
+          <div className={styles.detailVisualGrid}>
+            <figure><Image src={profile.detailImage} alt={`Detalle ilustrativo de ${solution.title}`} fill sizes="(min-width: 1100px) 28vw, (min-width: 700px) 45vw, 100vw" /><figcaption>Detalle referencial</figcaption></figure>
+            <figure><Image src={solution.detailGallery[0] ?? profile.alternatives[0].image} alt={`Componente ilustrativo de ${solution.title}`} fill sizes="(min-width: 1100px) 28vw, (min-width: 700px) 45vw, 100vw" /><figcaption>Componente referencial</figcaption></figure>
+          </div>
+          <ServiceCharacter asset={profile.visuals.characters.middle} placement="middle" />
+          <ul>{profile.details.slice(0, 3).map((detail) => <li key={detail}><Check aria-hidden="true" /><span>{detail}</span></li>)}</ul>
+        </div>
+      </section>
+
       <section id="acabados" className={`${styles.section} ${styles.finishes}`} aria-labelledby="finishes-title">
         <div className={styles.shell}>
           <header className={styles.splitHeader}>
             <div><span className={styles.kicker}>{finishPresentation.eyebrow}</span><h2 id="finishes-title">{finishPresentation.title}</h2></div>
           </header>
-          <div className={`${styles.finishCompanion} ${profile.visuals.characters.middle.side === "left" ? styles.companionLeft : styles.companionRight}`}>
-            <SolutionFinishExplorer {...finishPresentation} previewImage={profile.detailImage} serviceTitle={solution.title} />
-            <ServiceCharacter asset={profile.visuals.characters.middle} placement="middle" />
-          </div>
+          <SolutionFinishExplorer {...finishPresentation} previewImage={profile.detailImage} serviceTitle={solution.title} />
         </div>
       </section>
 
@@ -86,7 +107,15 @@ export function EditorialSolutionPage({ solution, profile }: Props) {
             <p>El alcance de fabricación, suministro, traslado, instalación y complementos se detalla en cada propuesta.</p>
           </header>
           <ol className={styles.processGrid}>
-            {profile.process.map((step, index) => <li key={step.title}><span>{String(index + 1).padStart(2, "0")}</span><h3>{step.title}</h3><p>{step.description}</p></li>)}
+            {profile.process.map((step, index) => (
+              <li key={step.title}>
+                <figure>
+                  <Image src={processImages[index % processImages.length]} alt={`Referencia visual del paso ${step.title} para ${solution.title}`} fill sizes="(min-width: 900px) 24vw, (min-width: 620px) 48vw, 100vw" />
+                  <small>Referencia visual</small>
+                </figure>
+                <div><span>{String(index + 1).padStart(2, "0")}</span><h3>{step.title}</h3><p>{step.description}</p></div>
+              </li>
+            ))}
           </ol>
         </div>
       </section>

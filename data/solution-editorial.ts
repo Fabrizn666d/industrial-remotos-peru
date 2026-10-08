@@ -299,7 +299,7 @@ export const solutionEditorialProfiles: Record<string, SolutionEditorialProfile>
       { title: "Oficinas", description: "Sistemas para ambientes de trabajo y divisiones interiores.", image: img.windows }
     ],
     alternativesTitle: "Sistemas y alternativas.",
-    alternativesIntro: "El tipo de vidrio y la perfilería se definen después de revisar dimensiones, ubicación y uso; no se publican prestaciones sin respaldo técnico.",
+    alternativesIntro: "Revisamos dimensiones, ubicación y uso para recomendar la combinación adecuada de vidrio, perfilería y sistema de apertura.",
     alternatives: [
       { title: "Corredizos", description: "Desplazamiento lateral para mamparas y ventanas compatibles.", image: img.glass },
       { title: "Practicables", description: "Apertura por hojas donde el espacio lo permite.", image: img.windows },
@@ -338,7 +338,7 @@ export const solutionEditorialProfiles: Record<string, SolutionEditorialProfile>
       { title: "Pasadizos y rampas", description: "Apoyos continuos y delimitaciones según el espacio.", image: img.steelRail }
     ],
     alternativesTitle: "Alternativas de barandas y pasamanos.",
-    alternativesIntro: "No se publican grados de acero, certificaciones ni prestaciones estructurales sin una especificación confirmada.",
+    alternativesIntro: "Revisamos el recorrido, los anclajes y el entorno para definir una solución proporcionada y coherente con cada proyecto.",
     alternatives: [
       { title: "Con vidrio", description: "Combinación disponible cuando anclajes y configuración lo permiten.", image: img.glassRail },
       { title: "Con tubos de acero", description: "Composición metálica adaptada al recorrido evaluado.", image: img.steelRail },
@@ -448,7 +448,7 @@ export const solutionEditorialProfiles: Record<string, SolutionEditorialProfile>
       }
     },
     applicationsTitle: "Espacios que se adaptan a ti.",
-    applicationsIntro: "Cada intervención se especifica por ambiente; no se asumen prestaciones acústicas, ignífugas o frente a humedad sin un sistema confirmado.",
+    applicationsIntro: "Revisamos cada ambiente para definir el sistema de placas, estructura, acabado e integraciones que corresponden al proyecto.",
     applications: [
       { title: "Viviendas", description: "Divisiones y cielorrasos para reorganizar o renovar ambientes.", image: img.drywall },
       { title: "Oficinas", description: "Distribuciones interiores y cielorrasos sujetos al alcance acordado.", image: img.drywallRoom },

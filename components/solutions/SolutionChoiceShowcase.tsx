@@ -55,6 +55,21 @@ export function SolutionChoiceShowcase({ items, quoteProducts, solutionSlug }: P
           <button type="button" onClick={() => select(active + 1)} aria-label="Alternativa siguiente"><ArrowRight /></button>
         </div>
       </div>
+
+      <div className={styles.choiceThumbs} aria-label="Vistas de alternativas">
+        {items.map((option, index) => (
+          <button
+            key={option.title}
+            type="button"
+            className={active === index ? styles.choiceThumbActive : undefined}
+            onClick={() => select(index)}
+            aria-pressed={active === index}
+          >
+            <span><Image src={option.image} alt="" fill sizes="(min-width: 900px) 18vw, 30vw" /></span>
+            <b>{option.title}</b>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

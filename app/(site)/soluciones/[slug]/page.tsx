@@ -15,14 +15,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const profile = findSolutionEditorialProfile(slug);
   if (!solution || !profile) return {};
 
-  const title = `${solution.title} | Industrial Remotos Perú`;
+  const title = solution.title;
+  const socialTitle = `${solution.title} | Industrial Remotos Perú`;
   const url = `/soluciones/${solution.slug}`;
   return {
     title,
     description: profile.heroDescription,
     alternates: { canonical: url },
-    openGraph: { title, description: profile.heroDescription, url, images: [{ url: profile.visuals.hero.src }] },
-    twitter: { card: "summary_large_image", title, description: profile.heroDescription, images: [profile.visuals.hero.src] }
+    openGraph: { title: socialTitle, description: profile.heroDescription, url, images: [{ url: profile.visuals.hero.src }] },
+    twitter: { card: "summary_large_image", title: socialTitle, description: profile.heroDescription, images: [profile.visuals.hero.src] }
   };
 }
 

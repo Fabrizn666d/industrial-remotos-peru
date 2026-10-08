@@ -15,12 +15,33 @@ export type EditorialItem = {
   image: string;
 };
 
+export type ServiceCharacterSide = "left" | "right";
+
+export type ServiceCharacterAsset = {
+  src: string;
+  message: string;
+  side: ServiceCharacterSide;
+};
+
+export type ServiceVisualAssets = {
+  hero: {
+    src: string;
+    objectPosition: string;
+    mobileObjectPosition: string;
+  };
+  characters: {
+    hero: ServiceCharacterAsset;
+    middle: ServiceCharacterAsset;
+    quote: ServiceCharacterAsset;
+  };
+};
+
 export type SolutionEditorialProfile = {
   variant: EditorialVariant;
   heroHeading: string;
   heroAccent?: string;
-  heroImage: string;
   heroDescription: string;
+  visuals: ServiceVisualAssets;
   applicationsTitle: string;
   applicationsIntro: string;
   applications: EditorialItem[];
@@ -38,6 +59,20 @@ export type SolutionEditorialProfile = {
   ctaTitle: string;
   ctaDescription: string;
   ctaImage: string;
+};
+
+export type SolutionFinishOption = {
+  name: string;
+  color: string;
+  description: string;
+  image?: string;
+};
+
+export type SolutionFinishPresentation = {
+  eyebrow: string;
+  title: string;
+  description: string;
+  options: SolutionFinishOption[];
 };
 
 const img = {
@@ -66,6 +101,14 @@ const img = {
   drywallRoom: "/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_53 (6).png"
 } as const;
 
+const serviceMedia = "/NUEVO/servicios-personajes";
+
+const character = (file: string, message: string, side: ServiceCharacterSide): ServiceCharacterAsset => ({
+  src: `${serviceMedia}/${file}`,
+  message,
+  side
+});
+
 const standardProcess = [
   { title: "Asesoría", description: "Revisamos el espacio, el uso y las referencias del proyecto." },
   { title: "Propuesta", description: "Definimos la alternativa y el alcance que corresponde." },
@@ -78,8 +121,15 @@ export const solutionEditorialProfiles: Record<string, SolutionEditorialProfile>
     variant: "custom",
     heroHeading: "Tu acceso.",
     heroAccent: "Diseñado a tu medida.",
-    heroImage: img.customDoor,
     heroDescription: "Diseñamos y fabricamos desde cero puertas para garaje e ingreso principal, adaptadas al espacio, al sistema de apertura y al estilo del proyecto.",
+    visuals: {
+      hero: { src: `${serviceMedia}/hero-puertas-a-medida.webp`, objectPosition: "50% 52%", mobileObjectPosition: "55% 52%" },
+      characters: {
+        hero: character("puertas-a-medida-hero.webp", "Diseñamos tu puerta desde cero.", "left"),
+        middle: character("puertas-a-medida-medio.webp", "Elige el diseño y acabado para tu espacio.", "right"),
+        quote: character("puertas-a-medida-cotizador.webp", "Configura tu proyecto y solicita tu propuesta.", "left")
+      }
+    },
     applicationsTitle: "Dos accesos. Una identidad.",
     applicationsIntro: "El garaje y el ingreso principal pueden resolverse como una composición coherente, sin perder la función propia de cada acceso.",
     applications: [
@@ -114,8 +164,15 @@ export const solutionEditorialProfiles: Record<string, SolutionEditorialProfile>
     variant: "technical",
     heroHeading: "Puertas automáticas",
     heroAccent: "y de garaje",
-    heroImage: img.garage,
     heroDescription: "Modelos para accesos vehiculares configurados únicamente con las variantes, medidas, acabados y opciones de automatización disponibles para cada referencia.",
+    visuals: {
+      hero: { src: `${serviceMedia}/hero-puertas-automaticas.webp`, objectPosition: "50% 54%", mobileObjectPosition: "54% 54%" },
+      characters: {
+        hero: character("puertas-automaticas-hero.webp", "Dale comodidad al acceso a tu espacio.", "right"),
+        middle: character("puertas-automaticas-medio.webp", "Conoce los modelos y su automatización.", "left"),
+        quote: character("puertas-automaticas-cotizador.webp", "Selecciona las opciones de tu puerta.", "right")
+      }
+    },
     applicationsTitle: "Una solución para cada acceso.",
     applicationsIntro: "La disponibilidad final depende del modelo publicado y de la evaluación de las condiciones de instalación.",
     applications: [
@@ -146,8 +203,15 @@ export const solutionEditorialProfiles: Record<string, SolutionEditorialProfile>
     variant: "catalog",
     heroHeading: "Puertas",
     heroAccent: "principales",
-    heroImage: img.entry,
     heroDescription: "Accesos peatonales exteriores disponibles por modelo, con medidas predefinidas, colores, acabados y herrajes compatibles según cada referencia.",
+    visuals: {
+      hero: { src: `${serviceMedia}/hero-puertas-principales.webp`, objectPosition: "57% 52%", mobileObjectPosition: "62% 52%" },
+      characters: {
+        hero: character("puertas-principales-hero.webp", "Explora modelos, medidas y colores.", "right"),
+        middle: character("puertas-principales-medio.webp", "Encuentra una entrada para tu espacio.", "left"),
+        quote: character("puertas-principales-cotizador.webp", "Configura tu puerta y solicita tu propuesta.", "left")
+      }
+    },
     applicationsTitle: "Presencia y funcionalidad para cada ingreso.",
     applicationsIntro: "La puerta se elige desde el catálogo disponible y se integra visualmente con la fachada mediante una instalación coordinada.",
     applications: [
@@ -178,8 +242,15 @@ export const solutionEditorialProfiles: Record<string, SolutionEditorialProfile>
     variant: "panorama",
     heroHeading: "Techos y",
     heroAccent: "coberturas",
-    heroImage: img.roof,
     heroDescription: "Soluciones para terrazas, patios y cocheras, definidas según el uso, los apoyos existentes y el nivel de sombra o cobertura requerido.",
+    visuals: {
+      hero: { src: `${serviceMedia}/hero-techos-coberturas.webp`, objectPosition: "50% 50%", mobileObjectPosition: "48% 50%" },
+      characters: {
+        hero: character("techos-coberturas-hero.webp", "Una cobertura pensada para tu espacio.", "right"),
+        middle: character("techos-coberturas-medio.webp", "Conoce los materiales y acabados.", "left"),
+        quote: character("techos-coberturas-cotizador.webp", "Cuéntanos las medidas de tu proyecto.", "right")
+      }
+    },
     applicationsTitle: "Espacios que se viven mejor.",
     applicationsIntro: "Cada aplicación exige revisar estructura, orientación, evacuación de agua y condiciones del lugar.",
     applications: [
@@ -210,8 +281,15 @@ export const solutionEditorialProfiles: Record<string, SolutionEditorialProfile>
     variant: "glass",
     heroHeading: "Mamparas y",
     heroAccent: "ventanas",
-    heroImage: img.glass,
     heroDescription: "Sistemas de aluminio y vidrio que conectan ambientes, maximizan la entrada de luz y se configuran según cada vano.",
+    visuals: {
+      hero: { src: `${serviceMedia}/hero-ventanas-mamparas.webp`, objectPosition: "52% 50%", mobileObjectPosition: "58% 50%" },
+      characters: {
+        hero: character("ventanas-mamparas-hero.webp", "Más posibilidades para tus ambientes.", "left"),
+        middle: character("ventanas-mamparas-medio.webp", "Explora aperturas, perfiles y acabados.", "right"),
+        quote: character("ventanas-mamparas-cotizador.webp", "Configura tu ventana o mampara.", "left")
+      }
+    },
     applicationsTitle: "Aplicaciones principales.",
     applicationsIntro: "Mamparas y ventanas se resuelven como sistemas diferentes, con apertura, perfilería, vidrio y herrajes por confirmar.",
     applications: [
@@ -243,8 +321,15 @@ export const solutionEditorialProfiles: Record<string, SolutionEditorialProfile>
     variant: "rail",
     heroHeading: "Acero inoxidable",
     heroAccent: "y barandas",
-    heroImage: img.rail,
     heroDescription: "Barandas, pasamanos y combinaciones con vidrio para escaleras, balcones y terrazas, definidos según recorrido, anclajes y ubicación.",
+    visuals: {
+      hero: { src: `${serviceMedia}/hero-acero-barandas.webp`, objectPosition: "64% 50%", mobileObjectPosition: "72% 50%" },
+      characters: {
+        hero: character("acero-barandas-hero.webp", "Veamos qué encaja en tu espacio.", "right"),
+        middle: character("acero-barandas-medio.webp", "Cuéntanos cómo será tu baranda.", "right"),
+        quote: character("acero-barandas-cotizador.webp", "El detalle también está en el acabado.", "left")
+      }
+    },
     applicationsTitle: "Aplicaciones principales.",
     applicationsIntro: "Cada recorrido se mide y evalúa antes de definir soportes, modulación y acabado.",
     applications: [
@@ -275,8 +360,15 @@ export const solutionEditorialProfiles: Record<string, SolutionEditorialProfile>
     variant: "industrial",
     heroHeading: "Estructuras",
     heroAccent: "metálicas",
-    heroImage: img.structure,
     heroDescription: "Estructuras, soportes, coberturas y cerramientos desarrollados para una necesidad concreta y dentro del alcance confirmado por IRP.",
+    visuals: {
+      hero: { src: `${serviceMedia}/hero-estructuras-metalicas.webp`, objectPosition: "50% 50%", mobileObjectPosition: "50% 50%" },
+      characters: {
+        hero: character("estructuras-metalicas-hero.webp", "Cada estructura responde a una necesidad.", "right"),
+        middle: character("estructuras-metalicas-medio.webp", "Demos forma a tu próximo proyecto.", "left"),
+        quote: character("estructuras-metalicas-cotizador.webp", "Describe tu proyecto y solicita tu propuesta.", "left")
+      }
+    },
     applicationsTitle: "Aplicaciones confirmadas.",
     applicationsIntro: "El dimensionamiento se realiza después de revisar uso, medidas, apoyos y condiciones del lugar.",
     applications: [
@@ -307,8 +399,15 @@ export const solutionEditorialProfiles: Record<string, SolutionEditorialProfile>
     variant: "security",
     heroHeading: "Cerco",
     heroAccent: "eléctrico",
-    heroImage: img.fence,
     heroDescription: "Sistema disuasivo de protección perimetral cuya configuración se define según el inmueble, el recorrido y la evaluación técnica.",
+    visuals: {
+      hero: { src: `${serviceMedia}/hero-cerco-electrico.webp`, objectPosition: "47% 47%", mobileObjectPosition: "43% 47%" },
+      characters: {
+        hero: character("cerco-electrico-hero.webp", "Conoce las opciones para tu perímetro.", "right"),
+        middle: character("cerco-electrico-medio.webp", "Cuéntanos qué espacio necesitas proteger.", "right"),
+        quote: character("cerco-electrico-cotizador.webp", "Revisemos los componentes del sistema.", "left")
+      }
+    },
     applicationsTitle: "Seguridad perimetral en distintos entornos.",
     applicationsIntro: "El sistema complementa otras medidas de seguridad; no se presenta como protección absoluta.",
     applications: [
@@ -339,8 +438,15 @@ export const solutionEditorialProfiles: Record<string, SolutionEditorialProfile>
     variant: "interior",
     heroHeading: "Drywall y",
     heroAccent: "cielorrasos",
-    heroImage: img.drywall,
     heroDescription: "Soluciones para divisiones, cielorrasos y detalles interiores, definidas según el ambiente, el acabado y las condiciones verificadas.",
+    visuals: {
+      hero: { src: `${serviceMedia}/hero-drywall-cielorrasos.webp`, objectPosition: "52% 50%", mobileObjectPosition: "57% 50%" },
+      characters: {
+        hero: character("drywall-cielorrasos-hero.webp", "Transformemos tus ambientes.", "left"),
+        middle: character("drywall-cielorrasos-medio.webp", "Conoce las opciones y acabados.", "right"),
+        quote: character("drywall-cielorrasos-cotizador.webp", "Indica el área y configura tu proyecto.", "left")
+      }
+    },
     applicationsTitle: "Espacios que se adaptan a ti.",
     applicationsIntro: "Cada intervención se especifica por ambiente; no se asumen prestaciones acústicas, ignífugas o frente a humedad sin un sistema confirmado.",
     applications: [
@@ -366,6 +472,102 @@ export const solutionEditorialProfiles: Record<string, SolutionEditorialProfile>
     ctaTitle: "Hablemos de tu espacio.",
     ctaDescription: "Comparte el ambiente y el tipo de intervención para preparar el siguiente paso.",
     ctaImage: img.drywall
+  }
+};
+
+export const solutionFinishPresentations: Record<string, SolutionFinishPresentation> = {
+  "puertas-a-medida": {
+    eyebrow: "Materiales y acabados",
+    title: "El diseño también vive en la superficie.",
+    description: "Explora referencias de material y terminación. La combinación constructiva se define después de revisar el diseño y las dimensiones.",
+    options: [
+      { name: "Acero", color: "#303841", description: "Base metálica para soluciones fabricadas según el proyecto." },
+      { name: "Panel", color: "#d8d9d7", description: "Alternativa sujeta al tipo de puerta y al sistema de apertura." },
+      { name: "Aluminio", color: "#a8adb2", description: "Opción que se evalúa de acuerdo con el diseño y el uso previsto." },
+      { name: "Tipo madera", color: "#8b5232", description: "Referencia visual de acabado; tono y sistema se confirman en la propuesta." }
+    ]
+  },
+  "puertas-automatizacion": {
+    eyebrow: "Acabados",
+    title: "El acabado también define tu acceso.",
+    description: "Las medidas, colores y complementos disponibles dependen de la clasificación y la variante publicada para cada modelo.",
+    options: [
+      { name: "Grafito", color: "#353c43", description: "Acabado oscuro disponible únicamente en variantes compatibles." },
+      { name: "Blanco", color: "#e8e8e3", description: "Referencia clara sujeta al catálogo vigente del modelo." },
+      { name: "Negro", color: "#15191e", description: "Terminación sobria cuya disponibilidad se valida por referencia." },
+      { name: "Tipo madera", color: "#8c5534", description: "Acabado decorativo disponible solo cuando el modelo lo permita." }
+    ]
+  },
+  "puertas-principales": {
+    eyebrow: "Colores y terminaciones",
+    title: "Opciones compatibles con cada referencia.",
+    description: "En modelos importados se muestran únicamente las combinaciones publicadas; una fabricación libre se deriva a Puertas a medida.",
+    options: [
+      { name: "Blanco texturado", color: "#e7e7e2", description: "Disponible en las variantes habilitadas de la línea publicada." },
+      { name: "Negro mate", color: "#16191d", description: "Acabado compatible con referencias específicas del catálogo." },
+      { name: "Nogal oscuro", color: "#4b2d23", description: "Tono decorativo sujeto al modelo y medida seleccionados." }
+    ]
+  },
+  "techos-coberturas": {
+    eyebrow: "Coberturas y estructura",
+    title: "Materiales que responden al uso del espacio.",
+    description: "La cobertura, la estructura y el acabado se definen después de revisar área, apoyos, orientación y protección buscada.",
+    options: [
+      { name: "Grafito", color: "#343b42", description: "Referencia para estructura metálica con acabado oscuro." },
+      { name: "Blanco", color: "#e7e7e2", description: "Alternativa clara sujeta al sistema y exposición del proyecto." },
+      { name: "Negro", color: "#16191d", description: "Acabado de referencia para estructuras contemporáneas." }
+    ]
+  },
+  "ventanas-mamparas": {
+    eyebrow: "Perfiles y vidrio",
+    title: "Cada vano necesita una combinación adecuada.",
+    description: "El tipo de apertura, la perfilería y el vidrio se seleccionan según dimensiones, ubicación y relación con el ambiente.",
+    options: [
+      { name: "Perfil negro", color: "#171b20", description: "Referencia de perfilería oscura para composiciones contemporáneas." },
+      { name: "Aluminio", color: "#aeb4ba", description: "Terminación metálica sujeta a la línea de perfil seleccionada." },
+      { name: "Perfil blanco", color: "#ecece7", description: "Alternativa clara cuya disponibilidad se confirma con el sistema." },
+      { name: "Vidrio", color: "#b9d8e6", description: "El tipo de vidrio se especifica según vano, uso y condiciones del lugar." }
+    ]
+  },
+  "acero-barandas": {
+    eyebrow: "Materiales y encuentros",
+    title: "Detalles que ordenan y protegen el recorrido.",
+    description: "El diseño se define junto con el recorrido, los puntos de fijación y la exposición interior o exterior.",
+    options: [
+      { name: "Acero", color: "#aeb5bb", description: "Referencia de acero inoxidable para barandas y pasamanos." },
+      { name: "Acero y vidrio", color: "#b9d8e6", description: "Combinación sujeta a compatibilidad con anclajes y dimensiones." },
+      { name: "Negro", color: "#20252a", description: "Acabado oscuro para alternativas metálicas cuando corresponda." }
+    ]
+  },
+  "estructuras-metalicas": {
+    eyebrow: "Protección y acabado",
+    title: "La terminación se define con el uso y la exposición.",
+    description: "Perfiles, uniones y protección superficial se especifican después de la evaluación técnica del proyecto.",
+    options: [
+      { name: "Grafito", color: "#343b42", description: "Referencia oscura para estructuras arquitectónicas." },
+      { name: "Negro", color: "#16191d", description: "Alternativa de acabado sujeta al sistema de protección definido." },
+      { name: "Blanco", color: "#e7e7e2", description: "Referencia clara para proyectos donde resulte compatible." }
+    ]
+  },
+  "cerco-electrico": {
+    eyebrow: "Componentes del sistema",
+    title: "Una configuración que parte del perímetro real.",
+    description: "El energizador, los aisladores, los postes y el tendido se determinan según el inmueble y el recorrido evaluado.",
+    options: [
+      { name: "Postes", color: "#20252a", description: "Soportes cuya disposición se define durante la evaluación." },
+      { name: "Aisladores", color: "#e7e7e2", description: "Componentes seleccionados para la configuración especificada." },
+      { name: "Tendido", color: "#aeb5bb", description: "Recorrido y cantidad de líneas por confirmar técnicamente." }
+    ]
+  },
+  "drywall-cielorrasos": {
+    eyebrow: "Sistemas y terminaciones",
+    title: "El acabado se coordina con cada ambiente.",
+    description: "Placas, estructura, encuentros e integraciones se definen según el tipo de intervención y las condiciones existentes.",
+    options: [
+      { name: "Blanco", color: "#ecece8", description: "Referencia de terminación clara para divisiones y cielorrasos." },
+      { name: "Gris", color: "#b8bab9", description: "Referencia cromática cuya especificación se confirma en la propuesta." },
+      { name: "Por definir", color: "#d9e6ef", description: "Permite iniciar la solicitud cuando el acabado todavía requiere asesoría." }
+    ]
   }
 };
 

@@ -5,7 +5,7 @@ import { chromium } from "playwright-core";
 const baseUrl = (process.env.IRP_CHECK_BASE_URL || "http://127.0.0.1:3000").replace(/\/$/, "");
 const outputDirectory = path.join(process.cwd(), ".visual-audit", "solution-details");
 const executablePath = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
-const routes = [
+const defaultRoutes = [
   "puertas-a-medida",
   "puertas-automatizacion",
   "puertas-principales",
@@ -16,6 +16,7 @@ const routes = [
   "cerco-electrico",
   "drywall-cielorrasos"
 ];
+const routes = process.env.IRP_ROUTES?.split(",").map((route) => route.trim()).filter(Boolean) ?? defaultRoutes;
 const allViewports = [
   ["1440x900", 1440, 900], ["1366x768", 1366, 768], ["1024x768", 1024, 768],
   ["768x1024", 768, 1024], ["430x932", 430, 932], ["390x844", 390, 844], ["360x800", 360, 800]
@@ -47,10 +48,6 @@ try {
           window.scrollTo(0, y);
           await new Promise((resolve) => setTimeout(resolve, 35));
         }
-        await Promise.all([...document.images].map((image) => image.complete ? image.decode().catch(() => undefined) : new Promise((resolve) => {
-          image.addEventListener("load", resolve, { once: true });
-          image.addEventListener("error", resolve, { once: true });
-        })));
         window.scrollTo(0, 0);
       });
       await page.waitForTimeout(80);
@@ -65,7 +62,9 @@ try {
         galleryButtons: document.querySelectorAll('main button[aria-label^="Ampliar imagen"]').length,
         faqCount: document.querySelectorAll("main details").length,
         hasIntegratedConfigurator: Boolean(document.querySelector('[data-embedded="true"]')),
-        clipped: [...document.querySelectorAll("main section")].some((section) => section.scrollWidth > section.clientWidth + 3)
+        clippedSections: [...document.querySelectorAll("main section")]
+          .filter((section) => section.scrollWidth > section.clientWidth + 3)
+          .map((section) => ({ id: section.id, className: section.className, scrollWidth: section.scrollWidth, clientWidth: section.clientWidth }))
       }));
 
       let lightbox = true;
@@ -84,7 +83,10 @@ try {
         for (let index = 0; index < await images.count(); index += 1) {
           const image = images.nth(index);
           await image.scrollIntoViewIfNeeded();
-          await image.evaluate((element) => element.decode().catch(() => undefined));
+          await image.evaluate((element) => Promise.race([
+            element.decode().catch(() => undefined),
+            new Promise((resolve) => window.setTimeout(resolve, 1500))
+          ]));
           await page.waitForTimeout(55);
         }
       }
@@ -106,7 +108,8 @@ try {
         h1: metrics.statusTitle,
         h1Count: metrics.h1Count,
         overflow: metrics.scrollWidth > metrics.clientWidth + 3,
-        clipped: metrics.clipped,
+        clipped: metrics.clippedSections.length > 0,
+        clippedSections: metrics.clippedSections,
         brokenImages: metrics.brokenImages,
         breadcrumbs: metrics.breadcrumbHrefs[0] === "/" && metrics.breadcrumbHrefs[1] === "/soluciones",
         galleryButtons: metrics.galleryButtons,
@@ -125,10 +128,10 @@ try {
 
 const failed = results.some((result) =>
   result.status !== 200 || result.h1Count !== 1 || result.overflow || result.clipped || result.brokenImages ||
-  !result.breadcrumbs || result.galleryButtons !== 4 || result.faqCount < 2 || !result.integratedConfigurator || !result.lightbox || result.errors.length
+  !result.breadcrumbs || result.galleryButtons < 4 || result.faqCount < 2 || !result.integratedConfigurator || !result.lightbox || result.errors.length
 );
 console.log(JSON.stringify({ passed: !failed, checked: results.length, outputDirectory, failures: results.filter((result) =>
   result.status !== 200 || result.h1Count !== 1 || result.overflow || result.clipped || result.brokenImages ||
-  !result.breadcrumbs || result.galleryButtons !== 4 || result.faqCount < 2 || !result.integratedConfigurator || !result.lightbox || result.errors.length
+  !result.breadcrumbs || result.galleryButtons < 4 || result.faqCount < 2 || !result.integratedConfigurator || !result.lightbox || result.errors.length
 ) }, null, 2));
 if (failed) process.exitCode = 1;

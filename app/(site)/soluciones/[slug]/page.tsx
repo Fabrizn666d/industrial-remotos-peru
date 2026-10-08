@@ -21,8 +21,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title,
     description: profile.heroDescription,
     alternates: { canonical: url },
-    openGraph: { title, description: profile.heroDescription, url, images: [{ url: profile.heroImage }] },
-    twitter: { card: "summary_large_image", title, description: profile.heroDescription, images: [profile.heroImage] }
+    openGraph: { title, description: profile.heroDescription, url, images: [{ url: profile.visuals.hero.src }] },
+    twitter: { card: "summary_large_image", title, description: profile.heroDescription, images: [profile.visuals.hero.src] }
   };
 }
 

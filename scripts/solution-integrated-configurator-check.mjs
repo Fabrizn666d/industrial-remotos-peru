@@ -33,8 +33,17 @@ try {
     const caption = (await embedded.locator("figcaption b").textContent())?.trim();
     const questionId = await embedded.locator('[data-question-id]').getAttribute("data-question-id");
     const anchors = await page.locator('nav[aria-label^="Secciones de"] a').evaluateAll((links) => links.map((link) => link.getAttribute("href")));
-    if (response?.status() !== 200 || caption !== productName || questionId === "solution" || !anchors.includes("#cotizar") || errors.length) {
-      failures.push({ slug, status: response?.status(), caption, expectedCaption: productName, questionId, anchors, errors });
+    const choiceTabs = page.locator('[role="tablist"][aria-label="Alternativas disponibles"] [role="tab"]');
+    await choiceTabs.nth(1).click();
+    const choiceChanged = await choiceTabs.nth(1).getAttribute("aria-selected") === "true";
+    const finishButtons = page.locator('#acabados button[aria-pressed]');
+    await finishButtons.nth(1).click();
+    const finishChanged = await finishButtons.nth(1).getAttribute("aria-pressed") === "true";
+    const gallerySlides = await page.locator('#galeria [class*="gallerySlide"]').count();
+    const galleryControls = await page.locator('#galeria [class*="galleryPause"]').count();
+    const galleryIsContinuous = gallerySlides >= 3 && galleryControls === 0;
+    if (response?.status() !== 200 || caption !== productName || questionId === "solution" || !anchors.includes("#cotizar") || !choiceChanged || !finishChanged || !galleryIsContinuous || errors.length) {
+      failures.push({ slug, status: response?.status(), caption, expectedCaption: productName, questionId, anchors, choiceChanged, finishChanged, gallerySlides, galleryControls, galleryIsContinuous, errors });
     }
     await page.close();
   }

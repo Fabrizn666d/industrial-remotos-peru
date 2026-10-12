@@ -21,7 +21,14 @@
     "proposal-visual-check": "node scripts/preliminary-proposal-visual-check.mjs",
     "admin-password-hash": "node scripts/admin-password-hash.mjs",
     "quote-pagination-check": "node scripts/quote-pagination-check.mjs",
-    "quote-status-check": "node scripts/quote-status-check.mjs"
+    "quote-status-check": "node scripts/quote-status-check.mjs",
+    "cms-platform-check": "node scripts/cms-platform-check.mjs",
+    "home-cms-check": "node scripts/home-cms-check.mjs",
+    "complaint-check": "node scripts/complaint-check.mjs",
+    "contact-dialog-check": "node scripts/contact-dialog-check.mjs",
+    "about-presentation-check": "node scripts/about-presentation-check.mjs",
+    "three-designs-check": "node scripts/three-designs-check.mjs",
+    "three-designs-admin-check": "node scripts/three-designs-admin-check.mjs"
   },
   "dependencies": {
     "@fontsource-variable/archivo": "^5.2.5",

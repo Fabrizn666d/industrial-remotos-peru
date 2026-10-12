@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
-import { ProjectsExperience } from "@/components/ProjectsExperience";
+import { ProjectsGallery } from "@/components/ProjectsGallery";
+import { getCmsDocument } from "@/lib/cms/content-repository";
 
-export const metadata: Metadata = { title: "Proyectos realizados", description: "Trabajos registrados de Industrial Remotos Perú.", alternates: { canonical: "/proyectos" } };
+export const metadata: Metadata = { title: "Proyectos", description: "Galería visual de soluciones de acceso, estructuras y acabados.", alternates: { canonical: "/proyectos" } };
 
-export default function ProjectsPage() {
-  return (
-    <main id="contenido" className="projects-route-v2 dark-stage">
-      <section className="projects-intro"><div className="page-shell"><span className="eyebrow eyebrow--light">Proyectos realizados</span><h1>Ingeniería que se demuestra <em>en cada obra.</em></h1><p>Explora puertas, automatizaciones y estructuras fabricadas e instaladas por nuestro equipo.</p></div></section>
-      <section className="projects-page"><div className="page-shell"><div className="projects-page__head"><span>Galería de proyectos reales</span><p>Filtra por uso o tipo de solución.</p></div><ProjectsExperience /></div></section>
-    </main>
-  );
+export default async function ProjectsPage() {
+  const { content } = await getCmsDocument("projects");
+  return <main id="contenido"><ProjectsGallery title={content.title} items={content.items.filter((item) => item.published)} /></main>;
 }

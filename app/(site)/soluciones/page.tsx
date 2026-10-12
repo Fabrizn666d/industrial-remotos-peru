@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { siteConfig } from "@/data/site";
 import styles from "./SolutionsPage.module.css";
 
 export const metadata: Metadata = {
@@ -33,24 +32,24 @@ const editorialSolutions: readonly EditorialSolution[] = [
   {
     number: "01",
     id: "puertas-a-medida",
-    title: "Puertas a medida",
+    title: "Puertas principales a medida",
     description: "Diseño y fabricación de puertas personalizadas según el espacio, el sistema de apertura y el estilo del proyecto.",
     image: "/NUEVO/I/Garaje y entrada principal en nogal-2.png",
     categoryId: "accesos",
-    layout: "featured"
+    layout: "stacked"
   },
   {
     number: "02",
     id: "puertas-automatizacion",
-    title: "Puertas automáticas y de garaje",
+    title: "Puertas de garaje a medida",
     description: "Modelos, medidas y acabados disponibles, con automatización definida para cada alternativa.",
     image: "/NUEVO/I/Puerta de garaje seccional grafito-3.png",
-    layout: "stacked"
+    layout: "featured"
   },
   {
     number: "03",
     id: "puertas-principales",
-    title: "Puertas principales",
+    title: "Puertas principales importadas",
     description: "Accesos peatonales exteriores configurados según el vano, el material y las opciones disponibles.",
     image: "/NUEVO/I/Puerta pivotante de nogal contemporánea-5.png",
     layout: "stacked"
@@ -76,7 +75,7 @@ const editorialSolutions: readonly EditorialSolution[] = [
   {
     number: "06",
     id: "acero-barandas",
-    title: "Acero inoxidable y barandas",
+    title: "Barandas y pasamanos",
     description: "Barandas y pasamanos de presencia limpia, moderna y durable para cada recorrido.",
     image: "/NUEVO/I/Escalera contemporánea de acero y vidrio-7.png",
     layout: "half"
@@ -118,16 +117,16 @@ const categories = [
 export default function SolutionsPage() {
   return (
     <main id="contenido" className={styles.page}>
-      <section className={styles.hero} aria-labelledby="solutions-title">
-        <div className={styles.heroCopy}>
+      <section className={styles.hero} aria-labelledby="solutions-title" data-motion-hero>
+        <div className={styles.heroCopy} data-motion-hero-item data-motion-direction="left">
           <p className={styles.eyebrow}>Ingeniería · Diseño · Instalación</p>
           <h1 id="solutions-title">Cada espacio.<br /><span>Una solución propia.</span></h1>
           <p className={styles.heroDescription}>Soluciones en accesos, cerramientos y estructuras que integran diseño, funcionalidad y durabilidad para proyectos residenciales, comerciales e industriales.</p>
           <a className={styles.textLink} href="#galeria">Explorar soluciones <ArrowRight aria-hidden="true" /></a>
         </div>
-        <div className={styles.heroMedia}>
+        <div className={styles.heroMedia} data-motion-hero-item data-motion-direction="right" data-motion-mask>
           <span className={styles.heroAccent} aria-hidden="true" />
-          <Image src={heroImage} alt="Referencia arquitectónica de una vivienda con acceso de garaje" fill priority sizes="(min-width: 900px) 64vw, 100vw" />
+          <Image src={heroImage} alt="Referencia arquitectónica de una vivienda con acceso de garaje" fill priority data-transition-essential sizes="(min-width: 900px) 64vw, 100vw" />
           <span className={styles.heroFade} aria-hidden="true" />
         </div>
       </section>
@@ -144,9 +143,9 @@ export default function SolutionsPage() {
         </div>
       </nav>
 
-      <section id="galeria" className={styles.gallery} aria-label="Galería de soluciones">
+      <section id="galeria" className={styles.gallery} aria-label="Galería de soluciones" data-motion-section>
         {editorialSolutions.map((solution) => (
-          <article id={solution.categoryId} className={`${styles.card} ${styles[solution.layout]}`} key={solution.id}>
+          <article id={solution.categoryId} className={`${styles.card} ${styles[solution.layout]}`} key={solution.id} data-motion-item data-motion-direction="up" data-motion-observe-self>
             <Link href={`/soluciones/${solution.id}`} aria-label={`Explorar ${solution.title}`} data-analytics="service_open">
               <div className={styles.cardMedia}>
                 <Image src={solution.image} alt={`Referencia visual de ${solution.title}`} fill sizes={solution.layout === "panorama" ? "76vw" : solution.layout === "featured" ? "62vw" : "(min-width: 900px) 42vw, 100vw"} />
@@ -162,14 +161,14 @@ export default function SolutionsPage() {
         ))}
       </section>
 
-      <section className={styles.closing} aria-labelledby="closing-title">
-        <div className={styles.closingCopy}>
+      <section className={styles.closing} aria-labelledby="closing-title" data-motion-section>
+        <div className={styles.closingCopy} data-motion-item data-motion-direction="left">
           <h2 id="closing-title">Hagamos espacio<br /><span>para tu proyecto.</span></h2>
           <i aria-hidden="true" />
           <p>Cuéntanos tu idea y te ayudamos a encontrar la mejor solución para hacerla realidad.</p>
-          <a href={siteConfig.social.whatsapp} target="_blank" rel="noreferrer" data-analytics="whatsapp_click">Conversemos <ArrowRight aria-hidden="true" /></a>
+          <Link href="/contacto">Conversemos <ArrowRight aria-hidden="true" /></Link>
         </div>
-        <div className={styles.closingMedia} aria-hidden="true">
+        <div className={styles.closingMedia} aria-hidden="true" data-motion-item data-motion-direction="right" data-motion-mask>
           <Image src={closingImage} alt="" fill sizes="(min-width: 900px) 44vw, 100vw" />
           <span />
         </div>

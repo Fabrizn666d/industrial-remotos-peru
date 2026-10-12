@@ -7,8 +7,9 @@ const pricedOption = z.object({ id: z.string().min(1), label: z.string().min(1),
 const importedModel = z.object({ id: z.string().min(1), name: z.string().min(1), image: z.string().min(1), variants: z.array(importedVariant).min(1), automation: z.array(pricedOption).min(1), accessories: z.array(pricedOption) }).strict();
 const customRule = z.object({ minWidthM: z.number().positive(), maxWidthM: z.number().positive(), minHeightM: z.number().positive(), maxHeightM: z.number().positive(), minimumAreaM2: z.number().positive(), areaRates: z.array(z.object({ upToM2: z.number().positive().nullable(), unitPriceMinor: money }).strict()).min(1), finishPercentBps: z.record(z.string(), z.number().int().min(0).max(100_000)), automationPrices: z.record(z.string(), money), accessoryPrices: z.record(z.string(), money), installationMinor: money }).strict();
 const simpleArea = z.object({ minimumAreaM2: z.number().positive(), unitPriceMinor: money, installationMinor: money }).strict();
+const formula = z.object({ kind: z.enum(["FIXED", "AREA", "LINEAR", "PERIMETER", "TECHNICAL_REVIEW"]), label: z.string().min(1).max(160), minPrimary: z.number().positive(), maxPrimary: z.number().positive(), minSecondary: z.number().positive(), maxSecondary: z.number().positive(), minimumBillable: z.number().positive(), unitPriceMinor: money, unitPriceMinorBySubtype: z.record(z.string(), money), fixedPriceMinorByOption: z.record(z.string(), money), finishPercentBps: z.record(z.string(), z.number().int().min(0).max(100_000)), baseMinor: money, installationMinor: money }).strict();
 
-export const PublishedPricingDefinitionSchema = z.object({ productId: z.string().min(1), classification: DoorClassificationSchema, demo: z.boolean(), importedModels: z.array(importedModel).optional(), custom: customRule.optional(), simpleArea: simpleArea.optional() }).strict().superRefine((value, context) => {
+export const PublishedPricingDefinitionSchema = z.object({ productId: z.string().min(1), classification: DoorClassificationSchema, demo: z.boolean(), importedModels: z.array(importedModel).optional(), custom: customRule.optional(), simpleArea: simpleArea.optional(), formula: formula.optional() }).strict().superRefine((value, context) => {
   if (value.classification === "IMPORTED" && !value.importedModels?.length) context.addIssue({ code: "custom", path: ["importedModels"], message: "Una puerta importada requiere modelos" });
   value.importedModels?.forEach((model, modelIndex) => {
     model.variants.forEach((variant, variantIndex) => {
@@ -30,6 +31,7 @@ export const PublishedPricingDefinitionSchema = z.object({ productId: z.string()
     const finite = value.custom.areaRates.map((rate) => rate.upToM2).filter((limit): limit is number => limit !== null);
     if (finite.some((limit, index) => index > 0 && limit <= finite[index - 1])) context.addIssue({ code: "custom", path: ["custom", "areaRates"], message: "Los rangos se superponen o no están ordenados" });
   }
+  if (value.formula && (value.formula.minPrimary >= value.formula.maxPrimary || value.formula.minSecondary >= value.formula.maxSecondary)) context.addIssue({ code: "custom", path: ["formula"], message: "Los límites de la regla comercial no son válidos" });
 });
 
 export const PricingCatalogDocumentSchema = z.object({

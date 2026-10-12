@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { ComplaintForm } from "@/components/ComplaintForm";
 import { PageHero } from "@/components/PublicComponents";
-import { companyLegalData, siteConfig } from "@/data/site";
+import { siteConfig } from "@/data/site";
+import { getCmsDocument } from "@/lib/cms/content-repository";
 
 const description = "Registra un reclamo o queja dirigido a Industrial Remotos Perú y recibe un código de constancia.";
 
@@ -11,9 +12,10 @@ export const metadata: Metadata = {
   openGraph: { title: "Libro de Reclamaciones | Industrial Remotos Perú", description, url: "/libro-reclamaciones", locale: "es_PE", type: "website", siteName: siteConfig.name }
 };
 
-export default function ComplaintsPage() {
+export default async function ComplaintsPage() {
+  const { content: company } = await getCmsDocument("company");
   return (
-    <main id="contenido">
+    <main id="contenido" data-motion-auto>
       <PageHero eyebrow="Atención al consumidor" title={<>Libro de <em>Reclamaciones.</em></>} copy="Registra aquí tu reclamo o queja. Al enviarlo recibirás un código para identificar la constancia." />
       <section className="section-space bg-slate-50">
         <div className="page-shell grid items-start gap-8 lg:grid-cols-[.72fr_1.28fr]">
@@ -21,11 +23,12 @@ export default function ComplaintsPage() {
             <Image src="/images/libro-reclamaciones.png" alt="Libro de Reclamaciones" width={652} height={436} className="mx-auto h-auto w-full max-w-[300px]" />
             <h2 className="mt-5 text-2xl font-bold">Datos del proveedor</h2>
             <dl className="mt-6 grid gap-5 text-sm">
-              <div><dt className="text-xs font-bold uppercase tracking-wider text-blue-200">Razón social</dt><dd className="mt-1 font-semibold">{companyLegalData.legalName}</dd></div>
-              <div><dt className="text-xs font-bold uppercase tracking-wider text-blue-200">RUC</dt><dd className="mt-1 font-semibold">{companyLegalData.ruc}</dd></div>
-              <div><dt className="text-xs font-bold uppercase tracking-wider text-blue-200">Dirección</dt><dd className="mt-1 font-semibold">{companyLegalData.address}</dd></div>
+              <div><dt className="text-xs font-bold uppercase tracking-wider text-blue-200">Razón social</dt><dd className="mt-1 font-semibold">{company.legalName}</dd></div>
+              <div><dt className="text-xs font-bold uppercase tracking-wider text-blue-200">RUC</dt><dd className="mt-1 font-semibold">{company.ruc}</dd></div>
+              <div><dt className="text-xs font-bold uppercase tracking-wider text-blue-200">Dirección</dt><dd className="mt-1 font-semibold">{company.address}</dd></div>
             </dl>
             <p className="mt-7 text-sm leading-6 text-blue-100">La presentación de un reclamo no impide acudir a otras vías de solución de controversias ni constituye requisito previo para ello.</p>
+            <p className="mt-4 text-sm leading-6 text-blue-100">Los reclamos y quejas se atienden dentro del plazo legal de 15 días hábiles no prorrogables.</p>
           </aside>
           <ComplaintForm />
         </div>

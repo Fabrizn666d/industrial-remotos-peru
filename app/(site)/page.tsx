@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { HomeExperience } from "@/components/HomeExperience";
 import { companyLegalData, siteConfig } from "@/data/site";
+import { getCmsDocument } from "@/lib/cms/content-repository";
 
 const schema = [
   { "@context": "https://schema.org", "@type": "WebSite", name: siteConfig.name, url: siteConfig.url, inLanguage: "es-PE" },
@@ -9,10 +10,11 @@ const schema = [
 
 export const metadata: Metadata = { alternates: { canonical: "/" } };
 
-export default function HomePage() {
+export default async function HomePage() {
+  const home = await getCmsDocument("home");
   return (
     <>
-      <HomeExperience />
+      <HomeExperience content={home.content} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
     </>
   );

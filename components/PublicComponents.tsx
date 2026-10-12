@@ -20,16 +20,16 @@ export function SectionIntro({ eyebrow, title, copy, light = false, center = fal
 
 export function PageHero({ eyebrow, title, copy, image, children }: { eyebrow: string; title: React.ReactNode; copy: string; image?: string; children?: React.ReactNode }) {
   return (
-    <section className={"page-hero " + (image ? "page-hero--media" : "page-hero--plain")}>
+    <section className={"page-hero " + (image ? "page-hero--media" : "page-hero--plain")} data-motion-hero>
       <div className="page-hero__wash" />
-      {image && <div className="page-hero__media"><Image src={image} alt="" fill priority sizes="(min-width: 900px) 52vw, 100vw" className="object-cover" /><i /></div>}
+      {image && <div className="page-hero__media" data-motion-hero-item data-motion-direction="right" data-motion-mask><Image src={image} alt="" fill priority data-transition-essential sizes="(min-width: 900px) 52vw, 100vw" className="object-cover" /><i /></div>}
       <div className="page-shell page-hero__content">
-        <Reveal>
+        <div data-motion-hero-item data-motion-direction="up">
           <span className="eyebrow">{eyebrow}</span>
           <h1>{title}</h1>
           <p>{copy}</p>
           {children}
-        </Reveal>
+        </div>
       </div>
       <div className="page-hero__curve" />
     </section>

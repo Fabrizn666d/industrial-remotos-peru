@@ -2,6 +2,7 @@ import type { PublicRequestSubmission } from "@/lib/backend/contracts";
 import { calculateProjectPrice } from "@/lib/pricing/engine";
 import type { PricingConfiguration } from "@/lib/pricing/contracts";
 import { getPricingCatalogRepository } from "@/lib/pricing/catalog-repository";
+import { getCmsDocument } from "@/lib/cms/content-repository";
 
 export class PricingValidationError extends Error {
   constructor(message: string) { super(message); this.name = "PricingValidationError"; }
@@ -25,12 +26,14 @@ export function pricingConfigurationFromRequest(configuration: PublicRequestSubm
 }
 
 export async function calculateSubmissionPrice(input: PublicRequestSubmission) {
-  const catalog = await getPricingCatalogRepository().getPublished();
+  const [catalog, companyDocument] = await Promise.all([getPricingCatalogRepository().getPublished(), getCmsDocument("company")]);
+  const company = companyDocument.content;
+  const proposalTerms = { ...catalog.proposalSettings, companyName: company.commercialName, legalName: company.legalName, ruc: company.ruc, whatsappNumber: company.whatsappNumber };
   const result = calculateProjectPrice(input.items.map((item) => ({
     productId: item.productId || "unpublished",
     quantity: item.quantity,
     configuration: pricingConfigurationFromRequest(item.configuration)
-  })), input.details.location, catalog.definitions, `v${catalog.version}`, catalog.proposalSettings);
+  })), input.details.location, catalog.definitions, `v${catalog.version}`, proposalTerms);
   if (input.source === "CONFIGURATOR" || input.source === "ASSISTANT") {
     const invalidDoor = result.items.find((item) => item.result.status === "REQUIRES_EVALUATION" && item.result.classification !== "NOT_APPLICABLE");
     if (invalidDoor?.result.status === "REQUIRES_EVALUATION") throw new PricingValidationError(invalidDoor.result.reason);

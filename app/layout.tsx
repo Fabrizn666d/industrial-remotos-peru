@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { NavigationTransition } from "@/components/NavigationTransition";
 import { siteConfig } from "@/data/site";
+import { defaultCmsContent } from "@/lib/cms/content-defaults";
 
 const plusJakartaSans = localFont({
   src: "../Plus_Jakarta_Sans/PlusJakartaSans-VariableFont_wght.ttf",
@@ -48,6 +50,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="es-PE" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body className={plusJakartaSans.variable}>
         <a className="skip-link" href="#contenido">Saltar al contenido</a>
+        <NavigationTransition config={defaultCmsContent.company.routeTransition} />
         {children}
       </body>
     </html>

@@ -4,8 +4,9 @@ import { gsap } from "gsap";
 import { ArrowRight, Play, Settings, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { HOME_INTRO_ASSETS, HOME_INTRO_TIMING, useHomeIntro } from "@/components/HomeIntroController";
+import type { HomeContent } from "@/lib/cms/content-contracts";
 
 const HERO_ADVISOR_ASSET = "/NUEVO/ChatGPT Image 22 sept 2026%2C 14_56_50.png";
 // One visual clock, in seconds from duration - 5. Adjust choreography here.
@@ -20,7 +21,31 @@ export const HERO_TIMELINE = {
   advisor: { at: 1.52, mobileAt: 2.52, duration: 1.38, opacityDuration: .82, initialOpacity: 0, distance: 190, mobileDistance: 90, mobileDuration: 1.18 }
 } as const;
 
-export function HeroSection() {
+type HeroContent = HomeContent["hero"];
+
+export function HeroSection({ content }: { content: HeroContent }) {
+  return content.mode === "composition" ? <CompositionHero content={content.composition} /> : <MediaOnlyHero content={content} />;
+}
+
+function MediaOnlyHero({ content }: { content: HeroContent }) {
+  const { complete } = useHomeIntro();
+  const [mobile, setMobile] = useState<boolean | null>(null);
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    complete();
+    const query = matchMedia("(max-width: 767px)");
+    const motion = matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => { setMobile(query.matches); setReduced(motion.matches); };
+    sync(); query.addEventListener("change", sync); motion.addEventListener("change", sync);
+    return () => { query.removeEventListener("change", sync); motion.removeEventListener("change", sync); };
+  }, [complete]);
+  if (content.mode === "image") return <section className="irp-hero irp-hero--media-only" id="inicio" data-hero-mode="image"><picture style={{ "--hero-position-desktop": content.imageOnly.desktop.position, "--hero-position-mobile": content.imageOnly.mobile.position } as CSSProperties}><source media="(max-width: 767px)" srcSet={content.imageOnly.mobile.src}/><img src={content.imageOnly.desktop.src} alt={content.imageOnly.desktop.alt}/></picture></section>;
+  const video = mobile ? content.videoOnly.mobile : content.videoOnly.desktop;
+  const poster = mobile ? content.videoOnly.mobilePoster : content.videoOnly.desktopPoster;
+  return <section className="irp-hero irp-hero--media-only" id="inicio" data-hero-mode="video">{reduced || mobile === null ? <picture><source media="(max-width: 767px)" srcSet={content.videoOnly.mobilePoster.src}/><img src={content.videoOnly.desktopPoster.src} alt={poster.alt}/></picture> : <video key={video.src} src={video.src} poster={poster.src} aria-label={video.alt} style={{ objectPosition: video.position }} autoPlay muted loop playsInline preload="metadata" disablePictureInPicture />}</section>;
+}
+
+function CompositionHero({ content }: { content: HeroContent["composition"] }) {
   const { status, logoRef, markPlaying, beginReveal, complete, fail } = useHomeIntro();
   const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -175,7 +200,14 @@ export function HeroSection() {
   useLayoutEffect(() => {
     if (!fallback) return;
     stopVideoClockRef.current();
-    timelineRef.current?.progress(1).pause();
+    const reveal = () => timelineRef.current?.timeScale(1.6).restart();
+    timelineRef.current?.progress(0).pause();
+    if (document.documentElement.hasAttribute("data-irp-route-transition")) {
+      window.addEventListener("irp:route-transition-complete", reveal, { once: true });
+      return () => window.removeEventListener("irp:route-transition-complete", reveal);
+    }
+    const frame = requestAnimationFrame(reveal);
+    return () => cancelAnimationFrame(frame);
   }, [fallback]);
 
   return (
@@ -184,44 +216,44 @@ export function HeroSection() {
       <link rel="preload" as="image" href={HOME_INTRO_ASSETS.mobileFirstFrame} media="(max-width: 767px)" fetchPriority="high" />
       <div className="irp-hero__media">
         <picture className="irp-hero__last-frame" aria-hidden="true">
-          <source media="(max-width: 767px)" srcSet={HOME_INTRO_ASSETS.mobileLastFrame} />
-          <img src={HOME_INTRO_ASSETS.lastFrame} alt="" width={1920} height={1080} />
+          <source media="(max-width: 767px)" srcSet={content.mobilePoster.src} />
+          <img src={content.desktopPoster.src} alt="" width={1920} height={1080} />
         </picture>
         {fallback ? <picture className="irp-hero__fallback">
-          <source media="(max-width: 767px)" srcSet={HOME_INTRO_ASSETS.mobileLastFrame} />
-          <img src={HOME_INTRO_ASSETS.exterior} alt="Casa moderna con acceso automatizado abierto" width={1920} height={1080} />
+          <source media="(max-width: 767px)" srcSet={content.mobilePoster.src} />
+          <img src={content.fallbackImage.src} alt={content.fallbackImage.alt} width={1920} height={1080} />
         </picture> :
           <video ref={videoRef} className="irp-hero__video" preload="auto" autoPlay muted playsInline onError={fail}
             disablePictureInPicture tabIndex={-1} aria-label="Acceso automatizado abriéndose hacia una casa moderna">
-            <source media="(max-width: 767px)" src={HOME_INTRO_ASSETS.mobileVideo} type="video/mp4" onError={fail} />
-            <source media="(min-width: 768px)" src={HOME_INTRO_ASSETS.video} type="video/mp4" onError={fail} />
+            <source media="(max-width: 767px)" src={content.mobileVideo.src} type="video/mp4" onError={fail} />
+            <source media="(min-width: 768px)" src={content.desktopVideo.src} type="video/mp4" onError={fail} />
           </video>}
       </div>
       <div ref={overlayRef} className="irp-hero__cinema" aria-hidden="true" />
       <div className="irp-shell irp-hero__layout">
         <div className="irp-hero__content">
-          <span ref={kickerRef} className="irp-kicker"><i /> Diseño, fabricación e instalación a medida</span>
+          <span ref={kickerRef} className="irp-kicker"><i /> {content.eyebrow}</span>
           <h1 aria-label="Accesos que combinan seguridad, diseño y automatización.">
-            <span ref={line1Ref} className="irp-hero__title-line irp-hero__title-line--desktop">Soluciones de acceso</span>
-            <span ref={line2Ref} className="irp-hero__title-line irp-hero__title-line--desktop">que combinan <em>seguridad,</em></span>
-            <span ref={line3Ref} className="irp-hero__title-line irp-hero__title-line--desktop">diseño y <em>automatización.</em></span>
-            <span ref={mobileLine1Ref} className="irp-hero__title-line irp-hero__title-line--mobile">Accesos que</span>
-            <span ref={mobileLine2Ref} className="irp-hero__title-line irp-hero__title-line--mobile">combinan</span>
-            <span ref={mobileLine3Ref} className="irp-hero__title-line irp-hero__title-line--mobile"><em>seguridad,</em> diseño</span>
-            <span ref={mobileLine4Ref} className="irp-hero__title-line irp-hero__title-line--mobile">y <em>automatización.</em></span>
+            <span ref={line1Ref} className="irp-hero__title-line irp-hero__title-line--desktop">{content.desktopLines[0]}</span>
+            <span ref={line2Ref} className="irp-hero__title-line irp-hero__title-line--desktop">{content.desktopLines[1]}</span>
+            <span ref={line3Ref} className="irp-hero__title-line irp-hero__title-line--desktop">{content.desktopLines[2]}</span>
+            <span ref={mobileLine1Ref} className="irp-hero__title-line irp-hero__title-line--mobile">{content.mobileLines[0]}</span>
+            <span ref={mobileLine2Ref} className="irp-hero__title-line irp-hero__title-line--mobile">{content.mobileLines[1]}</span>
+            <span ref={mobileLine3Ref} className="irp-hero__title-line irp-hero__title-line--mobile">{content.mobileLines[2]}</span>
+            <span ref={mobileLine4Ref} className="irp-hero__title-line irp-hero__title-line--mobile">{content.mobileLines[3]}</span>
           </h1>
           <p ref={descriptionRef} className="irp-hero__description">
-            <span className="irp-hero__copy--desktop">Puertas automáticas, techos, ventanas, mamparas y estructuras metálicas a medida para tu hogar o negocio.</span>
-            <span className="irp-hero__copy--mobile">Puertas automáticas, techos, ventanas y estructuras metálicas a medida para tu hogar o negocio.</span>
+            <span className="irp-hero__copy--desktop">{content.desktopDescription}</span>
+            <span className="irp-hero__copy--mobile">{content.mobileDescription}</span>
           </p>
           <div ref={actionsRef} className="irp-hero__actions">
-            <Link className="irp-button irp-button--primary" href="/cotizar" data-analytics="hero_cta_click"><span className="irp-hero__copy--desktop">Diseña y cotiza tu proyecto</span><span className="irp-hero__copy--mobile">Cotiza tu proyecto</span> <ArrowRight size={18} /></Link>
-            <Link className="irp-button irp-button--glass" href="/proyectos" data-analytics="project_open"><Play size={15} fill="currentColor" /> <span className="irp-hero__copy--desktop">Ver proyectos reales</span><span className="irp-hero__copy--mobile">Ver proyectos</span></Link>
+            <Link className="irp-button irp-button--primary" href={content.primary.href} data-analytics="hero_cta_click"><span>{content.primary.label}</span> <ArrowRight size={18} /></Link>
+            <Link className="irp-button irp-button--glass" href={content.secondary.href} data-analytics="project_open"><Play size={15} fill="currentColor" /> <span>{content.secondary.label}</span></Link>
           </div>
           <div ref={proofRef} className="irp-hero__proof">
             <div className="irp-hero__proof-desktop">
-              <span><b>Diseño a medida</b> según tu espacio y forma de uso</span><i />
-              <span><b>Asesoría técnica</b> antes de fabricar e instalar</span>
+              <span><b>{content.proofLeftTitle}</b> {content.proofLeftBody}</span><i />
+              <span><b>{content.proofRightTitle}</b> {content.proofRightBody}</span>
             </div>
             <div className="irp-hero__proof-mobile">
               <span><i><ShieldCheck /></i><span><b>Mayor seguridad</b> para tu espacio</span></span>
@@ -231,8 +263,8 @@ export function HeroSection() {
         </div>
         <div className="irp-hero__visual">
           <div ref={advisorRef} className="irp-hero__advisor-stage">
-            <Link className="irp-hero__advisor" href="/asistente" data-analytics="irp_start" aria-label="Abrir IRP Asistente">
-              <Image src={HERO_ADVISOR_ASSET} alt="Asesor de Industrial Remotos Perú listo para orientar tu proyecto"
+            <Link className="irp-hero__advisor" href={content.advisorHref} data-analytics="irp_start" aria-label="Abrir IRP Asistente">
+              <Image src={content.advisorImage.src || HERO_ADVISOR_ASSET} alt={content.advisorImage.alt}
                 width={1086} height={1448} priority sizes="(max-width: 767px) 184px, (max-width: 1080px) 390px, 555px" />
             </Link>
           </div>

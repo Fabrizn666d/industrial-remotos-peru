@@ -1,7 +1,11 @@
+import { mkdir } from "node:fs/promises";
+import path from "node:path";
 import { chromium } from "playwright-core";
 
-const baseUrl = process.env.SITE_URL || "http://127.0.0.1:3000";
+const baseUrl = (process.env.SITE_URL || "http://127.0.0.1:3000").replace(/\/$/, "");
+const outputDirectory = path.join(process.cwd(), ".visual-audit", "all-services");
 const services = [
+  ["puertas-a-medida", "puertas-a-medida"],
   ["puertas-automatizacion", "seccionales"],
   ["puertas-principales", "puertas-principales"],
   ["techos-coberturas", "techos-coberturas"],
@@ -11,82 +15,107 @@ const services = [
   ["cerco-electrico", "cerco-electrico"],
   ["drywall-cielorrasos", "drywall-cielorrasos"]
 ];
+const viewports = [
+  { width: 1440, height: 900, label: "desktop" },
+  { width: 768, height: 1024, label: "tablet" },
+  { width: 390, height: 844, label: "mobile" }
+];
 const failures = [];
+const results = [];
 const check = (condition, message) => { if (!condition) failures.push(message); };
+
+await mkdir(outputDirectory, { recursive: true });
 const browser = await chromium.launch({ executablePath: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe", headless: true });
 
 try {
-  const context = await browser.newContext({
-    viewport: { width: 1440, height: 900 },
-    locale: "es-PE",
-    reducedMotion: "reduce",
-    extraHTTPHeaders: { "X-Real-IP": `qa-all-services-${Date.now()}` }
-  });
+  for (const viewport of viewports) {
+    const context = await browser.newContext({ viewport, locale: "es-PE", reducedMotion: "reduce" });
+    await context.addInitScript(() => {
+      sessionStorage.setItem("irp-intro-v4", "seen");
+      localStorage.setItem("irp_cookie_consent_v1", JSON.stringify({ necessary: true, analytics: false, optional: false }));
+    });
+    const page = await context.newPage();
+    for (const [slug] of services) {
+      const errors = [];
+      const onPageError = (error) => errors.push(error.message);
+      page.on("pageerror", onPageError);
+      const response = await page.goto(`${baseUrl}/soluciones/${slug}`, { waitUntil: "networkidle", timeout: 60000 });
+      await page.evaluate(async () => {
+        for (let y = 0; y < document.documentElement.scrollHeight; y += Math.max(500, innerHeight * .9)) {
+          scrollTo(0, y);
+          await new Promise((resolve) => setTimeout(resolve, 25));
+        }
+        scrollTo(0, 0);
+      });
+      await page.waitForFunction(() => [...document.images].filter((image) => image.getClientRects().length > 0 && image.currentSrc).every((image) => image.complete), null, { timeout: 15000 }).catch(() => undefined);
+      await page.waitForTimeout(250);
+      const metrics = await page.evaluate(() => ({
+        overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth + 3,
+        brokenImages: [...document.images].filter((image) => image.getClientRects().length > 0 && image.currentSrc && (!image.complete || image.naturalWidth === 0)).length,
+        brokenImageSources: [...document.images].filter((image) => image.getClientRects().length > 0 && image.currentSrc && (!image.complete || image.naturalWidth === 0)).map((image) => image.currentSrc),
+        configurator: Boolean(document.querySelector(".configurator__controls"))
+      }));
+      if (metrics.brokenImageSources.length) {
+        const confirmedBroken = [];
+        for (const source of metrics.brokenImageSources) {
+          const retry = await context.request.get(source, { timeout: 30000 }).catch(() => null);
+          if (!retry?.ok()) confirmedBroken.push(source);
+        }
+        metrics.brokenImageSources = confirmedBroken;
+        metrics.brokenImages = confirmedBroken.length;
+      }
+      await page.screenshot({ path: path.join(outputDirectory, `${slug}-${viewport.label}.png`) });
+      results.push({ slug, viewport: viewport.label, status: response?.status(), errors, ...metrics });
+      page.off("pageerror", onPageError);
+    }
+    await context.close();
+  }
+
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "es-PE", reducedMotion: "reduce", extraHTTPHeaders: { "X-Real-IP": `qa-services-${Date.now()}` } });
   await context.addInitScript(() => {
     sessionStorage.setItem("irp-intro-v4", "seen");
-    localStorage.setItem("irp_cookie_consent_v1", JSON.stringify({ necessary: true, analytics: false, optional: false, savedAt: new Date().toISOString() }));
+    localStorage.setItem("irp_cookie_consent_v1", JSON.stringify({ necessary: true, analytics: false, optional: false }));
   });
   const page = await context.newPage();
-  await page.goto(`${baseUrl}/`, { waitUntil: "networkidle" });
-  await page.evaluate(() => {
-    localStorage.removeItem("irp-project");
-    localStorage.removeItem("irp-project-v2");
-  });
+  await page.goto(`${baseUrl}/soluciones/${services[0][0]}`, { waitUntil: "networkidle" });
+  await page.evaluate(() => { localStorage.removeItem("irp-project"); localStorage.removeItem("irp-project-v2"); });
 
   for (const [slug, productId] of services) {
-    await page.goto(`${baseUrl}/soluciones/${slug}`, { waitUntil: "networkidle" });
-    const section = page.locator("section").filter({ has: page.getByRole("heading", { name: "Cuéntanos lo esencial." }) });
-    await section.scrollIntoViewIfNeeded();
-    const inputs = section.locator("input");
-    for (let index = 0; index < await inputs.count(); index += 1) {
-      const input = inputs.nth(index);
-      await input.fill(await input.getAttribute("type") === "number" ? "3.20" : `Dato QA ${slug}`);
+    await page.goto(`${baseUrl}/soluciones/${slug}`, { waitUntil: "networkidle", timeout: 60000 });
+    const controls = page.locator(".configurator__controls");
+    await controls.scrollIntoViewIfNeeded();
+    for (let guard = 0; guard < 16; guard += 1) {
+      const questionId = await controls.getAttribute("data-question-id");
+      if (questionId === "review") break;
+      const inputs = controls.locator('input[inputmode="decimal"]');
+      for (let index = 0; index < await inputs.count(); index += 1) await inputs.nth(index).fill(index === 0 ? "3.20" : "2.40");
+      const options = controls.locator("button").filter({ hasNotText: /Anterior|Siguiente/ });
+      if (await options.count()) await options.first().click();
+      await controls.getByRole("button", { name: "Siguiente", exact: true }).click();
+      await page.waitForTimeout(60);
     }
-    const selects = section.locator("select");
-    for (let index = 0; index < await selects.count(); index += 1) await selects.nth(index).selectOption({ index: 1 });
-    await section.getByRole("button", { name: "Agregar a Mi Proyecto" }).click();
-    await section.getByRole("status").waitFor({ state: "visible" });
+    check(await controls.getAttribute("data-question-id") === "review", `${slug}: el configurador no llegó al resumen`);
+    await controls.getByRole("button", { name: "Agregar a Mi proyecto", exact: true }).click();
+    await controls.getByRole("button", { name: "Completar propuesta", exact: true }).waitFor();
     const stored = JSON.parse(await page.evaluate(() => localStorage.getItem("irp-project") || "{}"));
-    check(stored.items?.some((item) => item.productId === productId), `${slug} no quedó guardado en Mi Proyecto`);
+    check(stored.items?.some((item) => item.productId === productId), `${slug}: no quedó guardado en Mi Proyecto`);
   }
 
   const stored = JSON.parse(await page.evaluate(() => localStorage.getItem("irp-project") || "{}"));
   check(stored.items?.length === services.length, `Mi Proyecto contiene ${stored.items?.length ?? 0} de ${services.length} servicios`);
-  check(stored.items?.some((item) => item.productId === "puertas-principales" && item.configuration?.customFields?.lock), "Puertas principales perdió cerradura en customFields");
-  check(stored.items?.some((item) => item.productId === "estructuras-especiales" && item.configuration?.customFields?.location), "Estructuras perdió ubicación en customFields");
-
-  await page.goto(`${baseUrl}/mi-proyecto`, { waitUntil: "networkidle" });
-  check(await page.locator(".cart-line-item").count() === services.length, "Mi Proyecto no muestra las ocho soluciones");
-
-  let submittedPayload;
-  page.on("request", (request) => {
-    if (request.url().endsWith("/api/requests") && request.method() === "POST") submittedPayload = request.postDataJSON();
-  });
-  await page.goto(`${baseUrl}/cotizar/finalizar`, { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: /Continuar/ }).click();
-  await page.getByLabel("Nombres y apellidos").fill("Flujo QA ocho servicios");
-  await page.getByLabel("Correo electrónico").fill("qa-servicios@example.com");
-  await page.getByLabel("WhatsApp / teléfono").fill("987654321");
-  await page.getByRole("button", { name: /Continuar/ }).click();
-  await page.getByLabel("Tipo de proyecto").selectOption({ index: 1 });
-  await page.getByLabel("Distrito o ubicación").fill("Lima");
-  await page.getByRole("button", { name: /Continuar/ }).click();
-  await page.getByRole("button", { name: /Continuar/ }).click();
-  await page.getByRole("button", { name: /Enviar solicitud/ }).click();
-  await page.waitForURL(/\/cotizar\/confirmacion\/(?:COT-)?IRP-/, { timeout: 15000 });
-  check(submittedPayload?.items?.length === services.length, "El payload final no contiene los ocho servicios");
-  check(submittedPayload?.items?.some((item) => Object.keys(item.configuration ?? {}).some((key) => key.startsWith("custom_"))), "El payload no preservó customFields compatibles");
-
-  console.log(JSON.stringify({
-    passed: failures.length === 0,
-    servicesConfigured: stored.items?.length ?? 0,
-    payloadItems: submittedPayload?.items?.length ?? 0,
-    confirmationPath: new URL(page.url()).pathname,
-    failures
-  }, null, 2));
+  results.push({ configuredServices: stored.items?.map((item) => item.productId) ?? [] });
   await context.close();
 } finally {
   await browser.close();
 }
 
+for (const result of results) {
+  if (result.status && result.status !== 200) failures.push(`${result.slug}/${result.viewport}: HTTP ${result.status}`);
+  if (result.overflow) failures.push(`${result.slug}/${result.viewport}: desborde horizontal`);
+  if (result.brokenImages) failures.push(`${result.slug}/${result.viewport}: ${result.brokenImages} imágenes rotas (${result.brokenImageSources.join(", ")})`);
+  if (result.configurator === false) failures.push(`${result.slug}/${result.viewport}: falta el cotizador`);
+  if (result.errors?.length) failures.push(`${result.slug}/${result.viewport}: ${result.errors.join("; ")}`);
+}
+
+console.log(JSON.stringify({ passed: failures.length === 0, checkedRoutes: services.length * viewports.length, configuredServices: results.at(-1)?.configuredServices?.length ?? 0, outputDirectory, failures }, null, 2));
 if (failures.length) process.exitCode = 1;

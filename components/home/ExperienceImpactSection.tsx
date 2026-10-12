@@ -1,13 +1,15 @@
 "use client";
 
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useRef } from "react";
 import { AnimatedCounter } from "./AnimatedCounter";
 
 import styles from "./ExperienceImpactSection.module.css";
+import type { HomeContent } from "@/lib/cms/content-contracts";
 
 type Metric = {
+  id?: string;
   value: number;
   prefix: string;
   suffix: string;
@@ -51,14 +53,17 @@ const visualColumns = Array.from({ length: 10 }, (_, column) => {
 
 function GaugeCard({
   metric,
-  index
+  index,
+  animateCard = false
 }: {
   metric: Metric;
   index: number;
+  animateCard?: boolean;
 }) {
   const gradientId = `irp-impact-gauge-${index}`;
   const cardRef = useRef<HTMLElement>(null);
   const start = useInView(cardRef, { once: true, amount: 0.55 });
+  const reduceMotion = useReducedMotion();
   const gaugeTransition = {
     duration: 2.15,
     ease: [0.16, 1, 0.3, 1] as const,
@@ -66,7 +71,14 @@ function GaugeCard({
   };
 
   return (
-    <article ref={cardRef} className={styles.gaugeCard} data-impact-card>
+    <motion.article
+      ref={cardRef}
+      className={styles.gaugeCard}
+      data-impact-card
+      initial={animateCard && !reduceMotion ? { opacity: 0, y: 45, scale: .965, filter: "blur(5px)" } : false}
+      animate={animateCard ? (reduceMotion || start ? { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" } : { opacity: 0, y: 45, scale: .965, filter: "blur(5px)" }) : undefined}
+      transition={animateCard ? { duration: .68, delay: index * .09, ease: [0.16, 1, 0.3, 1] } : undefined}
+    >
       <div className={styles.gauge}>
         <svg viewBox="0 0 160 92" aria-hidden="true">
           <defs>
@@ -114,11 +126,32 @@ function GaugeCard({
         </div>
       </div>
       <p>{metric.label}</p>
-    </article>
+    </motion.article>
   );
 }
 
-export function ExperienceImpactSection() {
+export function ExperienceImpactMetrics({
+  metrics,
+  className,
+  animateCards = false
+}: {
+  metrics: Metric[];
+  className?: string;
+  animateCards?: boolean;
+}) {
+  return (
+    <div className={`${styles.gauges} ${className || ""}`} data-impact-gauges>
+      {metrics.map((metric, index) => (
+        <GaugeCard metric={metric} index={index} animateCard={animateCards} key={metric.id || metric.label} />
+      ))}
+    </div>
+  );
+}
+
+export function ExperienceImpactSection({ content }: { content: HomeContent["impact"] }) {
+  const contentMetrics: Metric[] = content.metrics;
+  const contentMosaic: ImpactTile[] = content.gallery.map((image, index) => ({ src: image.src, size: tileSizes[index % tileSizes.length] }));
+  const contentColumns = Array.from({ length: 10 }, (_, column) => Array.from({ length: 4 }, (_, tile) => contentMosaic[(column + tile) % contentMosaic.length]));
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -349,7 +382,7 @@ export function ExperienceImpactSection() {
 
       <div className={styles.tileViewport} aria-hidden="true">
         <div className={styles.tileScene}>
-          {visualColumns.map((tiles, columnIndex) => (
+          {contentColumns.map((tiles, columnIndex) => (
             <div className={styles.tileColumn} data-impact-column key={`impact-column-${columnIndex + 1}`}>
               <div className={styles.tileMover} data-impact-mover>
                 {tiles.map((tile, tileIndex) => (
@@ -377,32 +410,24 @@ export function ExperienceImpactSection() {
         <div className={styles.intro} data-impact-intro>
           <h2 id="experience-impact-title">
             <span className={styles.titleMask}>
-              <span data-impact-line>EXPERIENCIA QUE</span>
+              <span data-impact-line>{content.titleLine1}</span>
               <span className={styles.titleSweep} data-impact-sweep aria-hidden="true">
-                EXPERIENCIA QUE
+                {content.titleLine1}
               </span>
             </span>
             <span className={styles.titleMask}>
-              <span data-impact-line>RESPALDA CADA <span className={styles.titleAccent}>PROYECTO</span></span>
+              <span data-impact-line>{content.titleLine2} <span className={styles.titleAccent}>{content.titleAccent}</span></span>
               <span className={styles.titleSweep} data-impact-sweep aria-hidden="true">
-                RESPALDA CADA PROYECTO
+                {content.titleLine2} {content.titleAccent}
               </span>
             </span>
           </h2>
           <p data-impact-copy>
-            Trayectoria, ejecución y compromiso respaldan cada proyecto que asumimos.
+            {content.description}
           </p>
         </div>
 
-        <div className={styles.gauges} data-impact-gauges>
-          {metrics.map((metric, index) => (
-            <GaugeCard
-              metric={metric}
-              index={index}
-              key={metric.label}
-            />
-          ))}
-        </div>
+        <ExperienceImpactMetrics metrics={contentMetrics} />
       </div>
     </section>
   );

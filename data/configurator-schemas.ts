@@ -68,8 +68,8 @@ export const configuratorSchemas: Record<ConfiguratorFamily, ConfiguratorSchema>
     steps: [
       solutionStep,
       { ...dimensionsStep("Ingresa las medidas de fabricación"), required: true, description: "La semilla publicada admite ancho de 2 a 6 m y alto de 2 a 3.5 m. Las medidas se verificarán antes de fabricar." },
-      { id: "door-type", kind: "choice", label: "Tipo", title: "Elige el tipo de puerta", description: "Esta selección define el punto de partida de la fabricación.", icon: "design", answerKey: "subtype", defaultValue: "Levadiza", options: ["Levadiza", "Corrediza", "Batiente", "Seccional"].map((value) => ({ value, label: value })) },
-      { id: "opening", kind: "choice", label: "Apertura", title: "Selecciona el sistema de apertura", description: "Mostramos opciones de fabricación, no variantes importadas.", icon: "design", answerKey: "openingSystem", defaultValue: "Vertical", options: ["Vertical", "Lateral", "Batiente"].map((value) => ({ value, label: value })) },
+      { id: "door-type", kind: "choice", label: "Tipo", title: "Elige el tipo de puerta principal", description: "Esta selección define el punto de partida de la fabricación.", icon: "design", answerKey: "subtype", defaultValue: "Una hoja", options: ["Una hoja", "Doble hoja", "Pivotante"].map((value) => ({ value, label: value })) },
+      { id: "opening", kind: "choice", label: "Apertura", title: "Selecciona el sistema de apertura", description: "Mostramos opciones de fabricación, no variantes importadas.", icon: "design", answerKey: "openingSystem", defaultValue: "Batiente", options: ["Batiente", "Pivotante", "Por definir"].map((value) => ({ value, label: value })) },
       { id: "design", kind: "choice", label: "Diseño", title: "Elige un estilo de referencia", description: "El detalle constructivo se confirma con IRP.", icon: "design", answerKey: "design", defaultValue: "Liso", options: ["Liso", "Con aplicaciones", "Personalizado"].map((value) => ({ value, label: value })) },
       { id: "material", kind: "choice", label: "Material", title: "Selecciona el material principal", description: "Las compatibilidades finales se verifican técnicamente.", icon: "design", answerKey: "material", defaultValue: "Acero", options: ["Acero", "Panel seccional", "Aluminio"].map((value) => ({ value, label: value })) },
       finishStep,
@@ -85,7 +85,8 @@ export const configuratorSchemas: Record<ConfiguratorFamily, ConfiguratorSchema>
     version: 1,
     steps: [
       solutionStep,
-      dimensionsStep(),
+      { ...dimensionsStep("Ingresa las medidas aproximadas del garaje"), required: true },
+      { id: "garage-type", kind: "choice", label: "Tipo", title: "Elige el tipo de apertura", description: "Son variantes dentro de Puertas de garaje a medida.", icon: "design", answerKey: "subtype", defaultValue: "Seccional", options: ["Seccional", "Levadiza", "Corrediza", "Batiente"].map((value) => ({ value, label: value })) },
       {
         id: "design",
         kind: "choice",
@@ -390,11 +391,7 @@ export function getConfiguratorSchema(productGroup: ProductGroup, productId?: st
         solutionStep,
         { id: "model", kind: "choice", label: "Modelo", title: "Selecciona un modelo importado", description: "Solo se muestran modelos publicados por IRP.", icon: "design", answerKey: "model", defaultValue: "", options: models.map((model) => ({ value: model.id, label: model.name })) },
         { id: "variant", kind: "choice", label: "Medida", title: "Selecciona una medida disponible", description: "Las puertas importadas no admiten medidas libres.", icon: "dimensions", answerKey: "variant", defaultValue: "", options: models.flatMap((model) => model.variants.map((variant) => ({ value: variant.id, label: variant.label }))) },
-        finishStep,
-        { id: "automation", kind: "choice", label: "Automatización", title: "Selecciona una opción publicada", description: "La automatización incluida u opcional depende del modelo.", icon: "automation", answerKey: "automation", defaultValue: "", options: models.flatMap((model) => model.automation.map((option) => ({ value: option.id, label: option.label }))) },
-        { id: "accessories", kind: "multi-choice", label: "Complementos", title: "Añade complementos habilitados", description: "Solo aparecen complementos compatibles con el modelo.", icon: "accessories", answerKey: "accessories", options: models.flatMap((model) => model.accessories.map((option) => ({ value: option.id, label: option.label }))) },
-        installationStep(fabricationInstallationOptions),
-        notesStep
+        { ...finishStep, title: "Selecciona el color disponible", description: "Solo se muestran los colores publicados para la medida elegida." }
       ]
     } satisfies ConfiguratorSchema;
   }

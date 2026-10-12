@@ -7,17 +7,20 @@ import { ExperienceImpactSection } from "@/components/home/ExperienceImpactSecti
 import { InteractiveSolutionsSection } from "@/components/home/InteractiveSolutionsSection";
 import { StatsWaveSection } from "@/components/home/StatsWaveSection";
 import { ApprovedHomeSections } from "@/components/home/ApprovedHomeSections";
+import type { HomeContent } from "@/lib/cms/content-contracts";
 
-export function HomeExperience() {
+export function HomeExperience({ content }: { content: HomeContent }) {
   return (
     <main id="contenido" className="irp-home">
-      <HeroSection />
-      <NeedsSection />
-      <ProjectsShowcase />
-      <InteractiveSolutionsSection />
-      <ExperienceImpactSection />
-      <StatsWaveSection />
-      <ApprovedHomeSections />
+      <HeroSection content={content.hero} />
+      <NeedsSection content={content.needs} />
+      <ProjectsShowcase content={content.projects} />
+      <InteractiveSolutionsSection content={content.integrated} />
+      <div className="irp-home__section-blend" aria-hidden="true" />
+      <ExperienceImpactSection content={content.impact} />
+      <StatsWaveSection content={content.process} />
+      <div className="irp-home__section-blend" aria-hidden="true" />
+      <ApprovedHomeSections content={content} />
     </main>
   );
 }

@@ -91,6 +91,8 @@ export const PublicRequestSubmissionSchema = PublicRequestSubmissionObjectSchema
   if (value.contact.documentType === "DNI" && digits.length !== 8) context.addIssue({ code: "custom", path: ["contact", "documentNumber"], message: "El DNI debe tener 8 dígitos" });
   if (value.contact.documentType === "RUC" && digits.length !== 11) context.addIssue({ code: "custom", path: ["contact", "documentNumber"], message: "El RUC debe tener 11 dígitos" });
   if (value.contact.documentType === "RUC" && !value.contact.businessName?.trim()) context.addIssue({ code: "custom", path: ["contact", "businessName"], message: "Ingresa la razón social" });
+  if (value.source === "CONTACT" && !value.details.notes?.trim()) context.addIssue({ code: "custom", path: ["details", "notes"], message: "Cuéntanos qué necesitas" });
+  if (value.source === "CONTACT" && !value.items.some((item) => item.configuration.privacyConsent === true)) context.addIssue({ code: "custom", path: ["items", 0, "configuration", "privacyConsent"], message: "Debes aceptar el aviso de privacidad" });
 });
 export type PublicRequestSubmission = z.infer<typeof PublicRequestSubmissionSchema>;
 

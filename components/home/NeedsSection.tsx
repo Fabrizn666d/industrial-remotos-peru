@@ -8,24 +8,32 @@ import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { createFadeUpVariants, createLineRevealVariants, createStaggerContainer, scrollViewport } from "@/lib/motion";
 import styles from "./NeedsSection.module.css";
 import { usePublicPricingCatalog } from "@/lib/pricing/use-public-catalog";
+import type { HomeContent } from "@/lib/cms/content-contracts";
 
 const services = [
   {
-    name: "Puertas automáticas / Principales",
-    description: "Comodidad, seguridad y control en cada acceso.",
-    image: "/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_52 (1).png",
+    name: "Puertas de garaje a medida",
+    description: "Fabricadas según el vano, el uso y el sistema de apertura.",
+    image: "/images/reales/portada-puerta-seccional.jpg",
     href: "/soluciones/puertas-automatizacion",
     icon: "garage"
   },
   {
-    name: "Puertas a medida",
-    description: "Puertas diseñadas y fabricadas según tu espacio y estilo.",
+    name: "Puertas principales a medida",
+    description: "Diseñadas y fabricadas para tu ingreso, fachada y estilo.",
     image: "/images/reales/puerta-22.jpg",
     href: "/soluciones/puertas-a-medida",
+    icon: "entry"
+  },
+  {
+    name: "Puertas principales importadas",
+    description: "Elige un modelo, una medida disponible y el color.",
+    image: "/images/placeholders/puerta-contraplacada-temporal.png",
+    href: "/soluciones/puertas-principales",
     icon: "customDoor"
   },
   {
-    name: "Baranda / acero inoxidable",
+    name: "Acero inoxidable y barandas",
     description: "Seguridad y elegancia en cada detalle.",
     image: "/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_52 (2).png",
     href: "/soluciones/acero-barandas",
@@ -39,14 +47,14 @@ const services = [
     icon: "window"
   },
   {
-    name: "Techo solisombra / estructuras",
-    description: "Protección y confort para cada espacio.",
+    name: "Techos y coberturas",
+    description: "Protección y confort para terrazas, patios y cocheras.",
     image: "/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_53 (4).png",
     href: "/soluciones/techos-coberturas",
     icon: "pergola"
   },
   {
-    name: "Drywall",
+    name: "Drywall y cielorrasos",
     description: "Espacios versátiles y acabados de alto nivel.",
     image: "/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_53 (6).png",
     href: "/soluciones/drywall-cielorrasos",
@@ -77,9 +85,11 @@ const processSteps = [
   }
 ] as const;
 
-export function NeedsSection() {
+export function NeedsSection({ content }: { content: HomeContent["needs"] }) {
   const publicCatalog = usePublicPricingCatalog();
-  const serviceItems = services.map((service, index) => service.icon === "customDoor" ? { ...service, name: publicCatalog.homeCard.title, description: publicCatalog.homeCard.description, image: publicCatalog.homeCard.image, href: publicCatalog.homeCard.destination, order: publicCatalog.homeCard.order } : { ...service, order: index + 1 }).filter((service) => service.icon !== "customDoor" || publicCatalog.homeCard.visible).sort((left, right) => left.order - right.order);
+  const serviceItems = content.services.map((service, index) => service.icon === "customDoor" ? { ...service, name: publicCatalog.homeCard.title, description: publicCatalog.homeCard.description, image: { ...service.image, src: publicCatalog.homeCard.image }, href: publicCatalog.homeCard.destination, order: publicCatalog.homeCard.order } : { ...service, name: service.title, description: service.body, order: index + 1 }).filter((service) => service.icon !== "customDoor" || publicCatalog.homeCard.visible).sort((left, right) => left.order - right.order);
+  const processIcons = { advisor: UserRoundCheck, design: PencilRuler, settings: Cog, tools: Wrench } as const;
+  const processItems = content.process.map((item) => ({ ...item, description: item.body, iconComponent: processIcons[item.icon as keyof typeof processIcons] || Wrench }));
   const reduceMotion = usePrefersReducedMotion();
 
   const fadeUp = createFadeUpVariants(reduceMotion, { delay: .18 });
@@ -108,7 +118,7 @@ export function NeedsSection() {
 
       <div className={styles.shell}>
         <motion.ol className={styles.processBand} variants={processReveal} aria-label="Beneficios de trabajar con nosotros">
-          {processSteps.map(({ title, description, icon: Icon }) => (
+          {processItems.map(({ title, description, iconComponent: Icon }) => (
             <li key={title} className={styles.processStep}>
               <Icon aria-hidden="true" />
               <span className={styles.processCopy}>
@@ -120,17 +130,16 @@ export function NeedsSection() {
         </motion.ol>
 
         <header className={styles.header}>
-          <motion.span className={styles.kicker} variants={fadeUp}>Soluciones a medida</motion.span>
+          <motion.span className={styles.kicker} variants={fadeUp}>{content.eyebrow}</motion.span>
           <motion.i className={styles.kickerLine} variants={lineReveal} aria-hidden="true" />
           <motion.h2 id="needs-title" variants={fadeUp}>
-            ¿Qué necesitas <span>construir?</span>
+            {content.title} <span>{content.titleAccent}</span>
           </motion.h2>
           <motion.p className={styles.desktopSubtitle} variants={fadeUp}>
-            Elige la solución que mejor se adapte a tu proyecto. Convertimos tu idea en espacios<br />
-            más seguros, funcionales y con diseño de alto nivel.
+            {content.desktopDescription}
           </motion.p>
           <motion.p className={styles.mobileSubtitle} variants={fadeUp}>
-            Elige la solución que mejor se adapte a tu proyecto.
+            {content.mobileDescription}
           </motion.p>
         </header>
 
@@ -142,7 +151,7 @@ export function NeedsSection() {
                   <span className={styles.ring} aria-hidden="true" />
                   <span className={styles.photo}>
                     <Image
-                      src={service.image}
+                      src={service.image.src}
                       alt={service.name}
                       fill
                       sizes="(min-width: 1100px) 210px, (min-width: 768px) 220px, 38vw"
@@ -160,9 +169,9 @@ export function NeedsSection() {
         </motion.div>
 
         <motion.div className={styles.ctaWrap} variants={fadeUp}>
-          <Link href="/soluciones" className={styles.cta}>
+          <Link href={content.cta.href} className={styles.cta}>
             <span><ArrowRight aria-hidden="true" /></span>
-            <b>Conoce más sobre nuestras soluciones</b>
+            <b>{content.cta.label}</b>
           </Link>
         </motion.div>
       </div>
@@ -170,7 +179,7 @@ export function NeedsSection() {
   );
 }
 
-function ServiceIcon({ type }: { type: (typeof services)[number]["icon"] }) {
+function ServiceIcon({ type }: { type: string }) {
   if (type === "garage") {
     return <svg viewBox="0 0 32 32"><path d="M5 27V10l11-5 11 5v17M8 27V12h16v15M9 15h14M9 19h14M9 23h14" /></svg>;
   }
@@ -182,6 +191,9 @@ function ServiceIcon({ type }: { type: (typeof services)[number]["icon"] }) {
   }
   if (type === "pergola") {
     return <svg viewBox="0 0 32 32"><path d="M4 12l12-7 12 7M6 13h20M8 13v14M24 13v14M11 10l4 3M16 7l7 6M5 27h22" /></svg>;
+  }
+  if (type === "entry") {
+    return <svg viewBox="0 0 32 32"><path d="M7 27V5h18v22M11 27V9h10v18M18 18h.5M4 27h24" /></svg>;
   }
   if (type === "customDoor") {
     return <svg viewBox="0 0 32 32"><path d="M6 27V6h20v21M10 27V10h12v17M18 18h1M4 27h24" /><path d="M7 4h18M7 2v4M25 2v4" /></svg>;

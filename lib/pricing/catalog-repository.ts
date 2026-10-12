@@ -8,9 +8,17 @@ import { PricingCatalogDocumentSchema, type PricingCatalogDocument } from "@/lib
 
 export interface PricingCatalogRepository { getPublished(): Promise<PricingCatalogDocument>; getDraft(): Promise<PricingCatalogDocument>; saveDraft(value: PricingCatalogDocument): Promise<PricingCatalogDocument>; publish(): Promise<PricingCatalogDocument>; }
 
+const importedHomeCard = { title: "Puertas principales importadas", description: "Elige un modelo, una medida disponible y el color.", image: "/images/placeholders/puerta-contraplacada-temporal.png", visible: true, order: 3, destination: "/soluciones/puertas-principales" };
+
+function normalizeDoorTaxonomy(document: PricingCatalogDocument): PricingCatalogDocument {
+  return document.homeCard.title === "Puertas a medida" || document.homeCard.title === "Puertas Principales Importadas"
+    ? PricingCatalogDocumentSchema.parse({ ...document, homeCard: importedHomeCard })
+    : document;
+}
+
 function seed(status: "DRAFT" | "PUBLISHED"): PricingCatalogDocument {
   const now = new Date().toISOString();
-  return PricingCatalogDocumentSchema.parse({ id: randomUUID(), version: 1, status, homeCard: { title: "Puertas a medida", description: "Puertas diseñadas y fabricadas según tu espacio y estilo.", image: "/images/reales/puerta-22.jpg", visible: true, order: 2, destination: "/soluciones/puertas-a-medida" }, definitions: structuredClone(publishedPricingCatalog), createdAt: now, updatedAt: now, publishedAt: status === "PUBLISHED" ? now : null });
+  return PricingCatalogDocumentSchema.parse({ id: randomUUID(), version: 1, status, homeCard: importedHomeCard, definitions: structuredClone(publishedPricingCatalog), createdAt: now, updatedAt: now, publishedAt: status === "PUBLISHED" ? now : null });
 }
 
 function productionPublishedFallback(): PricingCatalogDocument {
@@ -19,7 +27,7 @@ function productionPublishedFallback(): PricingCatalogDocument {
     id: randomUUID(),
     version: 1,
     status: "PUBLISHED",
-    homeCard: { title: "Puertas a medida", description: "Puertas diseñadas y fabricadas según tu espacio y estilo.", image: "/images/reales/puerta-22.jpg", visible: true, order: 2, destination: "/soluciones/puertas-a-medida" },
+    homeCard: importedHomeCard,
     definitions: publishedPricingCatalog.map((definition) => ({ productId: definition.productId, classification: "NOT_APPLICABLE", demo: false })),
     createdAt: now,
     updatedAt: now,
@@ -35,7 +43,7 @@ function publishedFallback() {
 
 class JsonPricingCatalogRepository implements PricingCatalogRepository {
   constructor(private filePath: string) { this.filePath = path.resolve(filePath); }
-  private async state(): Promise<{ draft: PricingCatalogDocument; published: PricingCatalogDocument }> { try { const value = JSON.parse(await readFile(this.filePath, "utf8")); return { draft: PricingCatalogDocumentSchema.parse(value.draft), published: PricingCatalogDocumentSchema.parse(value.published) }; } catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; return { draft: seed("DRAFT"), published: publishedFallback() }; } }
+  private async state(): Promise<{ draft: PricingCatalogDocument; published: PricingCatalogDocument }> { try { const value = JSON.parse(await readFile(this.filePath, "utf8")); return { draft: normalizeDoorTaxonomy(PricingCatalogDocumentSchema.parse(value.draft)), published: normalizeDoorTaxonomy(PricingCatalogDocumentSchema.parse(value.published)) }; } catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; return { draft: seed("DRAFT"), published: publishedFallback() }; } }
   private async write(value: { draft: PricingCatalogDocument; published: PricingCatalogDocument }) { await mkdir(path.dirname(this.filePath), { recursive: true }); const temp = `${this.filePath}.${process.pid}.tmp`; await writeFile(temp, `${JSON.stringify(value, null, 2)}\n`, "utf8"); await rename(temp, this.filePath); }
   async getPublished() { return (await this.state()).published; }
   async getDraft() { return (await this.state()).draft; }
@@ -46,7 +54,7 @@ class JsonPricingCatalogRepository implements PricingCatalogRepository {
 interface CatalogRow extends QueryResultRow { payload: unknown; }
 class PostgresPricingCatalogRepository implements PricingCatalogRepository {
   constructor(private pool: Pool) {}
-  private async latest(status: "DRAFT" | "PUBLISHED") { const result = await this.pool.query<CatalogRow>("SELECT payload FROM irp_pricing_catalog_versions WHERE status = $1 ORDER BY version DESC LIMIT 1", [status]); return result.rows[0] ? PricingCatalogDocumentSchema.parse(result.rows[0].payload) : null; }
+  private async latest(status: "DRAFT" | "PUBLISHED") { const result = await this.pool.query<CatalogRow>("SELECT payload FROM irp_pricing_catalog_versions WHERE status = $1 ORDER BY version DESC LIMIT 1", [status]); return result.rows[0] ? normalizeDoorTaxonomy(PricingCatalogDocumentSchema.parse(result.rows[0].payload)) : null; }
   async getPublished() { return (await this.latest("PUBLISHED")) ?? publishedFallback(); }
   async getDraft() { return (await this.latest("DRAFT")) ?? seed("DRAFT"); }
   async saveDraft(value: PricingCatalogDocument) { const current = await this.getDraft(); const draft = PricingCatalogDocumentSchema.parse({ ...value, id: current.id, version: current.version, status: "DRAFT", createdAt: current.createdAt, updatedAt: new Date().toISOString(), publishedAt: null }); await this.pool.query("INSERT INTO irp_pricing_catalog_versions (id, version, status, payload, created_at, updated_at) VALUES ($1,$2,'DRAFT',$3::jsonb,$4,$5) ON CONFLICT (id) DO UPDATE SET payload=EXCLUDED.payload, updated_at=EXCLUDED.updated_at", [draft.id, draft.version, JSON.stringify(draft), draft.createdAt, draft.updatedAt]); return draft; }

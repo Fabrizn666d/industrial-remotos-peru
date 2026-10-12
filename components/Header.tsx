@@ -44,6 +44,7 @@ export function Header() {
   const darkRoute = home || ["/cotizar", "/asistente", "/confirmacion", "/proyectos"].some((route) => pathname.startsWith(route));
   const [scrolled, setScrolled] = useState(!home);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [desktopMenusSuppressed, setDesktopMenusSuppressed] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const mobileMenuRef = useRef<HTMLElement>(null);
@@ -59,6 +60,28 @@ export function Header() {
   useEffect(() => {
     setMenuOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    const closeNavigationUi = () => {
+      setMenuOpen(false);
+      setDesktopMenusSuppressed(true);
+      setDrawerOpen(false);
+      if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    };
+    window.addEventListener("irp:route-transition-start", closeNavigationUi);
+    return () => window.removeEventListener("irp:route-transition-start", closeNavigationUi);
+  }, [setDrawerOpen]);
+
+  useEffect(() => {
+    if (!desktopMenusSuppressed) return;
+    const releaseAfterPointerLeaves = (event: PointerEvent) => {
+      if (document.documentElement.hasAttribute("data-irp-route-transition")) return;
+      const target = event.target;
+      if (!(target instanceof Element) || !target.closest(".nav-products")) setDesktopMenusSuppressed(false);
+    };
+    document.addEventListener("pointermove", releaseAfterPointerLeaves, { passive: true });
+    return () => document.removeEventListener("pointermove", releaseAfterPointerLeaves);
+  }, [desktopMenusSuppressed]);
 
   useEffect(() => {
     document.body.classList.toggle("overlay-open", menuOpen);
@@ -84,22 +107,22 @@ export function Header() {
     <>
       <header className={cn("site-header", "site-header--unified", scrolled && "site-header--scrolled", light && "site-header--hero", darkRoute && "site-header--dark-route")}>
         <nav className="site-header__inner" aria-label="Navegación principal">
-          <Link className="site-header__logo" href="/" aria-label="Ir al inicio"><Logo compact inverse={light && (!home || !scrolled)} /></Link>
+          <Link className="site-header__logo" href="/" aria-label="Ir al inicio" data-route-transition><Logo compact inverse={light && (!home || !scrolled)} /></Link>
           <div className="site-header__links">
             {navItems.map((item) =>
               item.label === "Soluciones" ? (
-                <div className="nav-products" key={item.href}>
-                  <Link className={cn("nav-link", pathname.startsWith(item.href) && "is-active")} href={item.href}>
+                <div className={cn("nav-products", desktopMenusSuppressed && "nav-products--suppressed")} key={item.href}>
+                  <Link className={cn("nav-link", pathname.startsWith(item.href) && "is-active")} href={item.href} data-route-transition>
                     {item.label} <ChevronDown size={13} />
                   </Link>
                   <div className="nav-products__menu">
                     {serviceNavItems.map((entry) => (
-                      <Link key={entry.href + entry.label} href={entry.href}>{entry.label}</Link>
+                      <Link key={entry.href + entry.label} href={entry.href} data-route-transition>{entry.label}</Link>
                     ))}
                   </div>
                 </div>
               ) : (
-                <Link className={cn("nav-link", pathname === item.href && "is-active")} key={item.href} href={item.href}>
+                <Link className={cn("nav-link", pathname === item.href && "is-active")} key={item.href} href={item.href} data-route-transition>
                   {item.label}
                 </Link>
               )
@@ -110,7 +133,7 @@ export function Header() {
             <a className="header-whatsapp-cta" href={siteConfig.social.whatsapp} target="_blank" rel="noreferrer" aria-label="Hablar por WhatsApp" data-analytics="whatsapp_click">
               <MessageCircle size={17} /><span>WhatsApp</span>
             </a>
-            <Link className="header-quote-cta" href="/cotizar" data-analytics="configurator_start">Cotizar mi proyecto</Link>
+            <Link className="header-quote-cta" href="/cotizar" data-analytics="configurator_start" data-route-transition>Cotizar mi proyecto</Link>
             <button className="project-chip" type="button" onClick={() => setDrawerOpen(true)} aria-label={"Abrir Mi proyecto con " + count + " elementos"}>
               <BriefcaseBusiness size={17} />
               <span>Mi proyecto</span>
@@ -153,7 +176,7 @@ export function Header() {
         inert={menuOpen ? undefined : true}
       >
         <header className="irp-mobile-menu__header">
-          <Link className="irp-mobile-menu__brand" href="/" aria-label="Industrial Remotos Perú, inicio" onClick={() => setMenuOpen(false)}>
+          <Link className="irp-mobile-menu__brand" href="/" aria-label="Industrial Remotos Perú, inicio" data-route-transition onClick={() => setMenuOpen(false)}>
             <Logo compact priority />
           </Link>
           <button
@@ -179,6 +202,7 @@ export function Header() {
                   style={{ "--mobile-menu-index": index } as CSSProperties}
                   href={item.href}
                   key={item.href}
+                  data-route-transition
                   onClick={() => setMenuOpen(false)}
                 >
                   <span className="irp-mobile-menu__link-icon"><Icon size={21} strokeWidth={1.55} /></span>
@@ -190,7 +214,7 @@ export function Header() {
           </nav>
 
           <div className="irp-mobile-menu__footer">
-            <Link className="irp-mobile-menu__quote" href="/cotizar" onClick={() => setMenuOpen(false)}>
+            <Link className="irp-mobile-menu__quote" href="/cotizar" data-route-transition onClick={() => setMenuOpen(false)}>
               <span><ArrowUpRight size={22} strokeWidth={1.6} /></span>
               <strong>Cotizar mi proyecto<small>Te respondemos a la brevedad</small></strong>
               <ChevronRight size={19} strokeWidth={1.6} />

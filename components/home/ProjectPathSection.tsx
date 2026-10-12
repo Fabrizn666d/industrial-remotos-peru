@@ -15,6 +15,7 @@ import Link from "next/link";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { createFadeUpVariants, createLineRevealVariants, motionDuration, motionEase, scrollViewport } from "@/lib/motion";
 import styles from "./ProjectPathSection.module.css";
+import type { HomeContent } from "@/lib/cms/content-contracts";
 
 const PATH_ASSETS = {
   desktopBackground: "/NUEVO/E/ChatGPT Image 22 sept 2026%2C 10_38_39 (1).png",
@@ -22,7 +23,7 @@ const PATH_ASSETS = {
   configuratorPreview: "/images/reales/portada-puerta-seccional.jpg"
 } as const;
 
-export function ProjectPathSection() {
+export function ProjectPathSection({ content }: { content: HomeContent["projectPath"] }) {
   const reduceMotion = usePrefersReducedMotion();
   const fadeUp = createFadeUpVariants(reduceMotion);
   const lineReveal = createLineRevealVariants(reduceMotion, .12);
@@ -45,16 +46,16 @@ export function ProjectPathSection() {
       viewport={scrollViewport}
     >
       <div className={styles.background} aria-hidden="true">
-        <Image className={styles.desktopBackground} src={PATH_ASSETS.desktopBackground} alt="" fill sizes="100vw" />
-        <Image className={styles.mobileBackground} src={PATH_ASSETS.mobileBackground} alt="" fill sizes="100vw" />
+        <Image className={styles.desktopBackground} src={content.desktopBackground.src || PATH_ASSETS.desktopBackground} alt="" fill sizes="100vw" />
+        <Image className={styles.mobileBackground} src={content.mobileBackground.src || PATH_ASSETS.mobileBackground} alt="" fill sizes="100vw" />
       </div>
 
       <div className={styles.content}>
         <header className={styles.header}>
-          <motion.span className={styles.kicker} variants={fadeUp}>Empieza tu proyecto</motion.span>
+          <motion.span className={styles.kicker} variants={fadeUp}>{content.eyebrow}</motion.span>
           <motion.i className={styles.kickerLine} variants={lineReveal} aria-hidden="true" />
-          <motion.h2 id="project-path-title" variants={fadeUp}>¿Cómo quieres <span>avanzar?</span></motion.h2>
-          <motion.p variants={fadeUp}>Elige si prefieres conversar con nuestro asistente o configurar tu proyecto para obtener una referencia inicial.</motion.p>
+          <motion.h2 id="project-path-title" variants={fadeUp}>{content.title} <span>{content.titleAccent}</span></motion.h2>
+          <motion.p variants={fadeUp}>{content.description}</motion.p>
         </header>
 
         <div className={styles.paths}>
@@ -62,11 +63,11 @@ export function ProjectPathSection() {
             <div className={styles.cardHeading}>
               <i><MessageCircle aria-hidden="true" /></i>
               <div>
-                <h3><span>IRP</span> Asistente</h3>
-                <strong>Te guiamos paso a paso</strong>
+                <h3>{content.assistant.title}</h3>
+                <strong>{content.assistant.subtitle}</strong>
               </div>
             </div>
-            <p className={styles.description}>Cuéntanos qué tienes en mente y te ayudaremos a encontrar la solución que mejor se adapte a tu proyecto.</p>
+            <p className={styles.description}>{content.assistant.description}</p>
 
             <div className={styles.chatPreview} aria-label="Ejemplo de interfaz del asistente">
               <div className={styles.assistantBubble}>Hola, ¿en qué podemos ayudarte?</div>
@@ -79,9 +80,9 @@ export function ProjectPathSection() {
               <span><Check aria-hidden="true" /> Respuesta guiada</span>
             </div>
 
-            <Link className={styles.cardCta} href="/asistente">
+            <Link className={styles.cardCta} href={content.assistant.button.href}>
               <MessageCircle aria-hidden="true" />
-              Hablar con IRP Asistente
+              {content.assistant.button.label}
               <ArrowRight aria-hidden="true" />
             </Link>
           </motion.article>
@@ -90,11 +91,11 @@ export function ProjectPathSection() {
             <div className={styles.cardHeading}>
               <i><SlidersHorizontal aria-hidden="true" /></i>
               <div>
-                <h3>Cotizador <span>inteligente</span></h3>
-                <strong>Diseña y cotiza tu proyecto</strong>
+                <h3>{content.quote.title}</h3>
+                <strong>{content.quote.subtitle}</strong>
               </div>
             </div>
-            <p className={styles.description}>Configura una referencia inicial con las características principales de tu proyecto y continúa con una solicitud de cotización.</p>
+            <p className={styles.description}>{content.quote.description}</p>
 
             <div className={styles.configPreview} aria-label="Vista resumida del cotizador">
               <div className={styles.previewControls}>
@@ -112,7 +113,7 @@ export function ProjectPathSection() {
                 </div>
               </div>
               <div className={styles.previewImage}>
-                <Image src={PATH_ASSETS.configuratorPreview} alt="Vista de referencia de una puerta seccional" fill sizes="(min-width: 901px) 280px, 44vw" />
+                <Image src={content.quote.preview.src || PATH_ASSETS.configuratorPreview} alt={content.quote.preview.alt} fill sizes="(min-width: 901px) 280px, 44vw" />
                 <span>Vista exterior</span>
               </div>
             </div>
@@ -122,9 +123,9 @@ export function ProjectPathSection() {
               <span><Ruler aria-hidden="true" /> Medidas y acabados</span>
             </div>
 
-            <Link className={styles.cardCta} href="/cotizar">
+            <Link className={styles.cardCta} href={content.quote.button.href}>
               <SlidersHorizontal aria-hidden="true" />
-              Abrir cotizador inteligente
+              {content.quote.button.label}
               <ArrowRight aria-hidden="true" />
             </Link>
           </motion.article>

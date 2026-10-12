@@ -30,6 +30,12 @@ export function SiteSearch() {
   }, []);
 
   useEffect(() => {
+    const closeSearch = () => setOpen(false);
+    window.addEventListener("irp:route-transition-start", closeSearch);
+    return () => window.removeEventListener("irp:route-transition-start", closeSearch);
+  }, []);
+
+  useEffect(() => {
     if (!open) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";

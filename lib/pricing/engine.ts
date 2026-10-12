@@ -28,6 +28,7 @@ export function calculateItemPrice(item: PriceRequestItem, catalog?: PublishedPr
   const definition = pricingDefinition(item.productId, catalog);
   if (!definition) return requiresEvaluation("NOT_APPLICABLE", "Esta solución todavía no tiene una tarifa publicada y requiere evaluación técnica.", ["tarifa publicada"]);
   const config = item.configuration;
+  const demoAssumptions = definition.demo ? ["Tarifa referencial editable, pendiente de validación comercial por Industrial Remotos Perú."] : [];
 
   if (definition.classification === "IMPORTED") {
     const model = definition.importedModels?.find((entry) => entry.id === config.model);
@@ -35,12 +36,12 @@ export function calculateItemPrice(item: PriceRequestItem, catalog?: PublishedPr
     const variant = model.variants.find((entry) => entry.id === config.variant);
     if (!variant) return requiresEvaluation("IMPORTED", "La medida debe corresponder a una variante publicada para el modelo.", ["medida disponible"]);
     if (!config.finish || !variant.allowedFinishes.includes(config.finish)) return requiresEvaluation("IMPORTED", "El acabado elegido no está habilitado para esta variante.", ["acabado compatible"]);
-    const automation = model.automation.find((entry) => entry.id === config.automation || entry.label === config.automation);
-    if (!automation) return requiresEvaluation("IMPORTED", "Selecciona la automatización habilitada para este modelo.", ["automatización"]);
+    const automation = config.automation ? model.automation.find((entry) => entry.id === config.automation || entry.label === config.automation) : undefined;
+    if (config.automation && !automation) return requiresEvaluation("IMPORTED", "La automatización indicada no está habilitada para este modelo.", ["automatización compatible"]);
     const breakdown: PriceBreakdownLine[] = [
       { key: "variant", label: `${model.name} · ${variant.label} · ${config.finish}`, amountMinor: multiplyMinor(variant.priceMinorByFinish[config.finish], item.quantity) }
     ];
-    if (automation.priceMinor) breakdown.push({ key: "automation", label: automation.label, amountMinor: multiplyMinor(automation.priceMinor, item.quantity) });
+    if (automation?.priceMinor) breakdown.push({ key: "automation", label: automation.label, amountMinor: multiplyMinor(automation.priceMinor, item.quantity) });
     for (const accessory of config.accessories) {
       const published = model.accessories.find((entry) => entry.id === accessory || entry.label === accessory);
       if (!published) return requiresEvaluation("IMPORTED", `El complemento “${accessory}” no está habilitado para este modelo.`, ["complemento compatible"]);
@@ -48,11 +49,41 @@ export function calculateItemPrice(item: PriceRequestItem, catalog?: PublishedPr
     }
     if (config.installation === "Incluir instalación") breakdown.push({ key: "installation", label: "Instalación", amountMinor: multiplyMinor(22_000, item.quantity) });
     const totalMinor = breakdown.reduce((sum, line) => sum + line.amountMinor, 0);
-    return { status: "ESTIMATED", catalogVersion, classification: "IMPORTED", subtotalMinor: totalMinor, totalMinor, breakdown, assumptions: ["Medida cerrada y acabado compatibles con la variante publicada."], currency: "PEN" };
+    return { status: "ESTIMATED", catalogVersion, classification: "IMPORTED", subtotalMinor: totalMinor, totalMinor, breakdown, assumptions: ["Medida cerrada y acabado compatibles con la variante publicada.", ...demoAssumptions], currency: "PEN" };
   }
 
   const width = decimal(config.width);
   const height = decimal(config.height);
+
+  if (definition.formula) {
+    const rule = definition.formula;
+    if (rule.kind === "TECHNICAL_REVIEW") return requiresEvaluation("NOT_APPLICABLE", "Esta solución requiere evaluación técnica; la estimación comercial no sustituye el dimensionamiento ni la validación estructural.", ["evaluación técnica"]);
+    const breakdown: PriceBreakdownLine[] = [];
+    if (rule.kind === "FIXED") {
+      const option = config.automation || config.subtype || "";
+      const optionMinor = rule.fixedPriceMinorByOption[option];
+      if (!option || optionMinor === undefined || optionMinor <= 0) return requiresEvaluation("NOT_APPLICABLE", "Selecciona una intervención con tarifa publicada o solicita evaluación.", ["tipo de intervención"]);
+      if (rule.baseMinor) breakdown.push({ key: "base", label: rule.label, amountMinor: multiplyMinor(rule.baseMinor, item.quantity) });
+      breakdown.push({ key: `option:${option}`, label: option, amountMinor: multiplyMinor(optionMinor, item.quantity) });
+    } else {
+      const requiresHeight = rule.kind === "AREA";
+      if (!width || (requiresHeight && !height)) return requiresEvaluation("NOT_APPLICABLE", "Faltan medidas válidas para aplicar esta regla.", [!width ? "medida principal" : "", requiresHeight && !height ? "medida secundaria" : ""].filter(Boolean));
+      if (width < rule.minPrimary || width > rule.maxPrimary || (height && (height < rule.minSecondary || height > rule.maxSecondary))) return requiresEvaluation("NOT_APPLICABLE", "Las medidas están fuera de los límites publicados y necesitan revisión.", ["medidas dentro del rango"]);
+      const measured = rule.kind === "AREA" ? width * height! : width;
+      const billable = Math.max(measured, rule.minimumBillable);
+      const unitPriceMinor = rule.unitPriceMinorBySubtype[config.subtype || ""] ?? rule.unitPriceMinor;
+      if (unitPriceMinor <= 0) return requiresEvaluation("NOT_APPLICABLE", "La opción seleccionada no tiene una tarifa publicada.", ["tarifa por opción"]);
+      const unit = rule.kind === "AREA" ? "m²" : "m lineales";
+      if (rule.baseMinor) breakdown.push({ key: "base", label: `${rule.label} · componentes base`, amountMinor: multiplyMinor(rule.baseMinor, item.quantity) });
+      breakdown.push({ key: "quantity", label: `${billable.toFixed(2)} ${unit} × S/ ${(unitPriceMinor / 100).toFixed(2)}`, amountMinor: Math.round(billable * unitPriceMinor * item.quantity) });
+      const finishBps = rule.finishPercentBps[config.finish || ""] ?? 0;
+      if (finishBps) { const base = breakdown.reduce((sum, line) => sum + line.amountMinor, 0); breakdown.push({ key: "finish", label: `Acabado ${config.finish}`, amountMinor: Math.round(base * finishBps / 10_000) }); }
+    }
+    if (config.installation === "Incluir instalación" && rule.installationMinor) breakdown.push({ key: "installation", label: "Instalación", amountMinor: multiplyMinor(rule.installationMinor, item.quantity) });
+    const totalMinor = breakdown.reduce((sum, line) => sum + line.amountMinor, 0);
+    return { status: "ESTIMATED", catalogVersion, classification: "NOT_APPLICABLE", subtotalMinor: totalMinor, totalMinor, breakdown, assumptions: demoAssumptions, currency: "PEN" };
+  }
+
   if (!width || !height) return requiresEvaluation(definition.classification, "Faltan medidas para calcular esta solución.", [!width ? "ancho" : "", !height ? "alto" : ""].filter(Boolean));
 
   if (definition.custom) {
@@ -81,7 +112,7 @@ export function calculateItemPrice(item: PriceRequestItem, catalog?: PublishedPr
     }
     if (config.installation === "Incluir instalación") breakdown.push({ key: "installation", label: "Instalación", amountMinor: multiplyMinor(rule.installationMinor, item.quantity) });
     const totalMinor = breakdown.reduce((sum, line) => sum + line.amountMinor, 0);
-    return { status: "ESTIMATED", catalogVersion, classification: "MADE_TO_MEASURE", subtotalMinor: totalMinor, totalMinor, breakdown, assumptions: areaM2 < rule.minimumAreaM2 ? [`Área real ${areaM2.toFixed(2)} m²; mínimo facturable ${rule.minimumAreaM2.toFixed(2)} m².`] : [], currency: "PEN" };
+    return { status: "ESTIMATED", catalogVersion, classification: "MADE_TO_MEASURE", subtotalMinor: totalMinor, totalMinor, breakdown, assumptions: [...(areaM2 < rule.minimumAreaM2 ? [`Área real ${areaM2.toFixed(2)} m²; mínimo facturable ${rule.minimumAreaM2.toFixed(2)} m².`] : []), ...demoAssumptions], currency: "PEN" };
   }
 
   if (definition.simpleArea) {
@@ -91,7 +122,7 @@ export function calculateItemPrice(item: PriceRequestItem, catalog?: PublishedPr
     const breakdown: PriceBreakdownLine[] = [{ key: "base", label: `${billableAreaM2.toFixed(2)} m² facturables`, amountMinor: Math.round(billableAreaM2 * rule.unitPriceMinor * item.quantity) }];
     if (config.installation === "Incluir instalación") breakdown.push({ key: "installation", label: "Instalación", amountMinor: multiplyMinor(rule.installationMinor, item.quantity) });
     const totalMinor = breakdown.reduce((sum, line) => sum + line.amountMinor, 0);
-    return { status: "ESTIMATED", catalogVersion, classification: "NOT_APPLICABLE", subtotalMinor: totalMinor, totalMinor, breakdown, assumptions: areaM2 < rule.minimumAreaM2 ? [`Mínimo facturable ${rule.minimumAreaM2.toFixed(2)} m².`] : [], currency: "PEN" };
+    return { status: "ESTIMATED", catalogVersion, classification: "NOT_APPLICABLE", subtotalMinor: totalMinor, totalMinor, breakdown, assumptions: [...(areaM2 < rule.minimumAreaM2 ? [`Mínimo facturable ${rule.minimumAreaM2.toFixed(2)} m².`] : []), ...demoAssumptions], currency: "PEN" };
   }
 
   return requiresEvaluation(definition.classification, "Esta solución requiere evaluación comercial.", ["regla de precio"]);

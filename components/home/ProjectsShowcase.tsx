@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { FadeInUp } from "@/components/ui/motion-presets";
 import styles from "./ProjectsShowcase.module.css";
+import type { HomeContent } from "@/lib/cms/content-contracts";
 
 type GalleryItem = {
   src: string;
@@ -111,7 +112,9 @@ function GallerySlides({ items, row, variant }: { items: GalleryItem[]; row: str
   )));
 }
 
-export function ProjectsShowcase() {
+export function ProjectsShowcase({ content }: { content: HomeContent["projects"] }) {
+  const contentTopRow = content.topGallery.map(({ src, alt }) => ({ src, alt }));
+  const contentBottomRow = content.bottomGallery.map(({ src, alt }) => ({ src, alt }));
   const galleryRef = useRef<HTMLDivElement>(null);
   const [topPlugins] = useState(() => [AutoScroll({
     playOnInit: false,
@@ -144,7 +147,7 @@ export function ProjectsShowcase() {
     align: "start",
     containScroll: false,
     skipSnaps: true,
-    startIndex: bottomRow.length
+    startIndex: contentBottomRow.length
   }, bottomPlugins);
 
   useEffect(() => {
@@ -236,35 +239,34 @@ export function ProjectsShowcase() {
 
       <header className={styles.intro}>
         <FadeInUp as="span" className={styles.kicker} duration={0.54} offset={14}>
-          Nuestros proyectos
+          {content.eyebrow}
         </FadeInUp>
         <FadeInUp className={styles.titleReveal} duration={0.72} offset={34}>
           <h2 id="projects-showcase-title">
-            <span>Proyectos reales que</span>
-            <span className={styles.accent}>inspiran confianza</span>
+            <span>{content.title}</span>
+            <span className={styles.accent}>{content.titleAccent}</span>
           </h2>
         </FadeInUp>
         <FadeInUp as="p" className={styles.description} delay={0.1} duration={0.62} offset={18}>
-          Conoce algunas de nuestras instalaciones y soluciones realizadas en hogares, empresas e industrias.<br />
-          Cada proyecto refleja nuestro compromiso con la calidad, la seguridad y la excelencia en cada detalle.
+          {content.description}
         </FadeInUp>
         <FadeInUp className={styles.ctaReveal} delay={0.18} duration={0.58} offset={14}>
-          <Link href="/proyectos" className={styles.cta}>
-            Ver más proyectos <ArrowUpRight aria-hidden="true" />
+          <Link href={content.cta.href} className={styles.cta}>
+            {content.cta.label} <ArrowUpRight aria-hidden="true" />
           </Link>
         </FadeInUp>
       </header>
 
-      {topRow.length > 0 && bottomRow.length > 0 ? (
+      {contentTopRow.length > 0 && contentBottomRow.length > 0 ? (
         <div ref={galleryRef} className={styles.gallery} aria-label="Proyectos de Industrial Remotos Perú">
           <div ref={topRef} className={styles.row} aria-label="Carrusel superior de proyectos" aria-roledescription="carrusel">
             <div className={styles.track}>
-              <GallerySlides items={topRow} row="top" variant="landscape" />
+              <GallerySlides items={contentTopRow} row="top" variant="landscape" />
             </div>
           </div>
           <div ref={bottomRef} className={styles.row} aria-label="Carrusel inferior de proyectos" aria-roledescription="carrusel">
             <div className={styles.track}>
-              <GallerySlides items={bottomRow} row="bottom" variant="portrait" />
+              <GallerySlides items={contentBottomRow} row="bottom" variant="portrait" />
             </div>
           </div>
         </div>

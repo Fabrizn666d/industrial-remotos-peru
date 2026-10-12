@@ -121,7 +121,7 @@ export const solutionEditorialProfiles: Record<string, SolutionEditorialProfile>
     variant: "custom",
     heroHeading: "Tu acceso.",
     heroAccent: "Diseñado a tu medida.",
-    heroDescription: "Diseñamos y fabricamos desde cero puertas para garaje e ingreso principal, adaptadas al espacio, al sistema de apertura y al estilo del proyecto.",
+    heroDescription: "Diseñamos y fabricamos desde cero puertas para el ingreso principal, adaptadas al vano, al sistema de apertura y al estilo de la fachada.",
     visuals: {
       hero: { src: `${serviceMedia}/hero-puertas-a-medida.webp`, objectPosition: "50% 52%", mobileObjectPosition: "55% 52%" },
       characters: {
@@ -130,18 +130,18 @@ export const solutionEditorialProfiles: Record<string, SolutionEditorialProfile>
         quote: character("puertas-a-medida-cotizador.webp", "Configura tu proyecto y solicita tu propuesta.", "left")
       }
     },
-    applicationsTitle: "Dos accesos. Una identidad.",
-    applicationsIntro: "El garaje y el ingreso principal pueden resolverse como una composición coherente, sin perder la función propia de cada acceso.",
+    applicationsTitle: "Una entrada con identidad propia.",
+    applicationsIntro: "El ingreso principal se diseña desde sus dimensiones, uso y relación con la arquitectura de la fachada.",
     applications: [
-      { title: "Para tu garaje", description: "Diseño fabricado según el vano, el recorrido disponible y la forma de uso.", image: img.customDoor },
-      { title: "Para tu ingreso principal", description: "Una puerta concebida desde el espacio, el material y la presencia que buscas.", image: img.entry }
+      { title: "Una hoja", description: "Una puerta concebida desde el vano, el material y la presencia que buscas.", image: img.customDoor },
+      { title: "Doble hoja o pivotante", description: "Composiciones amplias desarrolladas según el ingreso y sus herrajes.", image: img.entry }
     ],
-    alternativesTitle: "Una apertura que se adapta a tu espacio.",
+    alternativesTitle: "Un diseño que se adapta a tu ingreso.",
     alternativesIntro: "El sistema definitivo se selecciona después de revisar dimensiones, recorrido, uso y condiciones del lugar.",
     alternatives: [
-      { title: "Levadiza", description: "Alternativa vertical para garajes con condiciones compatibles.", image: img.customDoor },
-      { title: "Corrediza", description: "Movimiento lateral para accesos con área de desplazamiento disponible.", image: img.gate },
-      { title: "Batiente", description: "Una o más hojas para ingresos donde el radio de apertura lo permite.", image: img.entry }
+      { title: "Batiente", description: "Una o más hojas para ingresos donde el radio de apertura lo permite.", image: img.customDoor },
+      { title: "Pivotante", description: "Una alternativa contemporánea evaluada según dimensiones y herrajes.", image: img.gate },
+      { title: "Diseño especial", description: "Una composición desarrollada desde la referencia y las condiciones del proyecto.", image: img.entry }
     ],
     detailTitle: "El diseño está en los detalles.",
     detailDescription: "Cada propuesta se desarrolla desde sus dimensiones y su sistema de apertura, sin reutilizar las restricciones ni los precios de una puerta importada.",
@@ -162,9 +162,9 @@ export const solutionEditorialProfiles: Record<string, SolutionEditorialProfile>
   },
   "puertas-automatizacion": {
     variant: "technical",
-    heroHeading: "Puertas automáticas",
-    heroAccent: "y de garaje",
-    heroDescription: "Modelos para accesos vehiculares configurados únicamente con las variantes, medidas, acabados y opciones de automatización disponibles para cada referencia.",
+    heroHeading: "Puertas de garaje",
+    heroAccent: "a medida",
+    heroDescription: "Fabricamos accesos vehiculares según las dimensiones del garaje, el tipo de apertura, el diseño, el acabado y la automatización requerida.",
     visuals: {
       hero: { src: `${serviceMedia}/hero-puertas-automaticas.webp`, objectPosition: "50% 54%", mobileObjectPosition: "54% 54%" },
       characters: {
@@ -174,35 +174,35 @@ export const solutionEditorialProfiles: Record<string, SolutionEditorialProfile>
       }
     },
     applicationsTitle: "Una solución para cada acceso.",
-    applicationsIntro: "La disponibilidad final depende del modelo publicado y de la evaluación de las condiciones de instalación.",
+    applicationsIntro: "La solución se configura desde las medidas del vano y se confirma después de evaluar las condiciones de instalación.",
     applications: [
-      { title: "Viviendas", description: "Accesos residenciales con selección de modelo y variante disponible.", image: img.garage },
+      { title: "Viviendas", description: "Accesos residenciales fabricados de acuerdo con el vano disponible.", image: img.garage },
       { title: "Condominios", description: "Configuración evaluada según frecuencia de uso y condiciones del ingreso.", image: img.customDoor },
       { title: "Comercios", description: "Alternativas para accesos donde el modelo seleccionado resulte compatible.", image: img.gate }
     ],
-    alternativesTitle: "Modelos y variantes disponibles.",
-    alternativesIntro: "No se ofrecen medidas libres para una puerta importada. Cada selección se valida contra las opciones vigentes del modelo.",
+    alternativesTitle: "Tipos de apertura para cada garaje.",
+    alternativesIntro: "El tipo definitivo se selecciona según dimensiones, recorrido, frecuencia de uso y condiciones del lugar.",
     alternatives: [
-      { title: "Seccional", description: "Apertura vertical, con medidas y acabados disponibles según modelo.", image: img.garage },
-      { title: "Levadiza", description: "Alternativa sujeta a la línea disponible y a las condiciones del acceso.", image: img.customDoor },
-      { title: "Corrediza o batiente", description: "Opciones habilitadas únicamente cuando forman parte de la oferta publicada.", image: img.gate }
+      { title: "Seccional", description: "Apertura vertical fabricada para las medidas del acceso.", image: img.garage },
+      { title: "Levadiza", description: "Alternativa vertical diseñada según el espacio y recorrido disponibles.", image: img.customDoor },
+      { title: "Corrediza o batiente", description: "Opciones fabricadas para el movimiento y forma de uso del ingreso.", image: img.gate }
     ],
-    detailTitle: "Acabados y automatización para cada modelo.",
-    detailDescription: "Al elegir un modelo se muestran sus medidas predefinidas, colores compatibles, automatización incluida u opcional y complementos habilitados.",
-    details: ["Medidas disponibles según modelo", "Colores y acabados compatibles", "Automatización definida por variante", "Instalación evaluada"],
+    detailTitle: "Diseño, acabado y automatización a tu medida.",
+    detailDescription: "El cotizador recoge dimensiones, tipo de apertura, acabado y operación para preparar una propuesta coherente con el garaje.",
+    details: ["Dimensiones del vano", "Tipo de apertura", "Colores y acabados", "Automatización compatible"],
     detailImage: img.garage,
-    inspirationTitle: "Referencias para elegir tu modelo.",
+    inspirationTitle: "Referencias para diseñar tu garaje.",
     gallery: [img.garage, img.house, img.gate, img.customDoor],
     processTitle: "Un proceso simple y seguro.",
     process: standardProcess,
-    ctaTitle: "Hablemos de tu puerta automática.",
-    ctaDescription: "Te orientamos para encontrar una variante disponible y compatible con tu acceso.",
+    ctaTitle: "Hablemos de tu puerta de garaje.",
+    ctaDescription: "Comparte las medidas de tu acceso y te orientamos en el tipo de apertura más adecuado.",
     ctaImage: img.garage
   },
   "puertas-principales": {
     variant: "catalog",
-    heroHeading: "Puertas",
-    heroAccent: "principales",
+    heroHeading: "Puertas principales",
+    heroAccent: "importadas",
     heroDescription: "Accesos peatonales exteriores disponibles por modelo, con medidas predefinidas, colores, acabados y herrajes compatibles según cada referencia.",
     visuals: {
       hero: { src: `${serviceMedia}/hero-puertas-principales.webp`, objectPosition: "57% 52%", mobileObjectPosition: "62% 52%" },
@@ -501,7 +501,7 @@ export const solutionFinishPresentations: Record<string, SolutionFinishPresentat
   "puertas-principales": {
     eyebrow: "Colores y terminaciones",
     title: "Opciones compatibles con cada referencia.",
-    description: "En modelos importados se muestran únicamente las combinaciones publicadas; una fabricación libre se deriva a Puertas a medida.",
+    description: "En modelos importados se muestran únicamente las combinaciones publicadas; una fabricación libre se deriva a Puertas principales a medida.",
     options: [
       { name: "Blanco texturado", color: "#e7e7e2", description: "Disponible en las variantes habilitadas de la línea publicada." },
       { name: "Negro mate", color: "#16191d", description: "Acabado compatible con referencias específicas del catálogo." },

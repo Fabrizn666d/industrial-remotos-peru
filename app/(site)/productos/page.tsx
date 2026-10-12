@@ -17,8 +17,8 @@ export default function ProductsPage() {
         title={<>Sistemas para convertir una necesidad en un <em>proyecto a medida.</em></>}
         copy="Compara alternativas y prepara una configuración inicial. Las especificaciones y el precio se confirman después de revisar el espacio y el alcance."
       />
-      <section className="catalog-section">
-        <div className="page-shell">
+      <section className="catalog-section" data-motion-section>
+        <div className="page-shell" data-motion-item data-motion-direction="up">
           <Suspense fallback={<div className="catalog-loading">Preparando catálogo…</div>}>
             <CatalogExperience />
           </Suspense>

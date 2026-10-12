@@ -118,7 +118,7 @@ export function Hero() {
           </motion.p>
           <h1 className="mt-5 max-w-[820px] font-display text-[clamp(2.25rem,5.5vw,4.5rem)] font-extrabold uppercase leading-[.98]">
             {[
-              { text: "Puertas automáticas", accent: false },
+              { text: "Puertas de garaje a medida", accent: false },
               { text: "Diseñadas para", accent: false },
               { text: "tu espacio", accent: true }
             ].map((line, index) => (
@@ -175,7 +175,7 @@ export function Hero() {
             className="mt-7 grid grid-cols-2 gap-2 sm:flex sm:gap-3"
           >
             <a
-              href={buildQuickQuoteUrl("una puerta automática")}
+              href={buildQuickQuoteUrl("una puerta de garaje a medida")}
               target="_blank"
               rel="noreferrer"
               className="btn btn-primary px-2 text-[10px] sm:px-4 sm:text-xs"

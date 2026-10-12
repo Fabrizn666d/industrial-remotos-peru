@@ -35,10 +35,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         <span aria-current="page">{product.shortName}</span>
       </nav>
 
-      <section className="page-shell product-detail">
-        <div className="product-gallery">
+      <section className="page-shell product-detail" data-motion-hero>
+        <div className="product-gallery" data-motion-hero-item data-motion-direction="left" data-motion-mask>
           <div className="product-gallery__main">
-            <Image src={product.gallery[0] ?? product.image} alt={product.name} fill priority sizes="(min-width: 900px) 58vw, 100vw" className="object-cover" />
+            <Image src={product.gallery[0] ?? product.image} alt={product.name} fill priority data-transition-essential sizes="(min-width: 900px) 58vw, 100vw" className="object-cover" />
             <span>{product.evidence === "real" ? "Fotografía de referencia del sistema" : "Referencia visual del servicio"}</span>
           </div>
           <div className="product-gallery__thumbs" aria-label="Galería de referencias">
@@ -48,7 +48,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           </div>
         </div>
 
-        <div className="product-detail__copy">
+        <div className="product-detail__copy" data-motion-hero-item data-motion-direction="right">
           <span className="eyebrow">{product.group.replace("automatizacion", "automatización")}</span>
           <h1>{product.name}</h1>
           <p className="product-detail__lead">{product.description}</p>

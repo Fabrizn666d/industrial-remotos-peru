@@ -1,19 +1,38 @@
 "use client";
 
-import { BookOpenCheck, ClipboardList, FileText, LayoutDashboard, LogOut, Menu, Package, Settings2, X } from "lucide-react";
+import { Activity, BookOpenCheck, Building2, ClipboardList, FileImage, FileText, FolderKanban, LayoutDashboard, LogOut, Mail, Menu, Package, Palette, PanelBottom, Settings2, UsersRound, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import type { AdminSession } from "@/lib/backend/contracts";
 import styles from "./admin.module.css";
 
-const navigation = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/admin/solicitudes", label: "Solicitudes", icon: ClipboardList, exact: false },
-  { href: "/admin/reclamos", label: "Reclamos", icon: BookOpenCheck, exact: false },
-  { href: "/admin/cotizaciones", label: "Cotizaciones", icon: FileText, exact: false },
-  { href: "/admin/configuracion/productos-cotizacion", label: "Productos de cotización", icon: Package, exact: false }
-  ,{ href: "/admin/configuracion/cotizador", label: "Cotizador y asistente", icon: Settings2, exact: false }
+const sections = [
+  { label: "Resumen", items: [{ href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true }] },
+  { label: "Contenido", items: [
+    { href: "/admin/contenido/inicio", label: "Inicio", icon: LayoutDashboard, exact: false },
+    { href: "/admin/contenido/nosotros", label: "Nosotros", icon: UsersRound, exact: false },
+    { href: "/admin/contenido/servicios", label: "Servicios", icon: Package, exact: false },
+    { href: "/admin/contenido/proyectos", label: "Proyectos", icon: FolderKanban, exact: false },
+    { href: "/admin/contenido/contacto", label: "Contacto", icon: Mail, exact: false },
+    { href: "/admin/contenido/footer", label: "Footer y legal", icon: PanelBottom, exact: false },
+    { href: "/admin/contenido/biblioteca", label: "Biblioteca", icon: FileImage, exact: false }
+  ] },
+  { label: "Cotizadores", items: [
+    { href: "/admin/configuracion/productos-cotizacion", label: "Servicios y modelos", icon: Package, exact: false },
+    { href: "/admin/configuracion/cotizador", label: "Precios y simulador", icon: Settings2, exact: false }
+  ] },
+  { label: "Comercial", items: [
+    { href: "/admin/solicitudes", label: "Consultas", icon: ClipboardList, exact: false },
+    { href: "/admin/clientes", label: "Clientes", icon: UsersRound, exact: false },
+    { href: "/admin/cotizaciones", label: "Cotizaciones", icon: FileText, exact: false },
+    { href: "/admin/reclamos", label: "Reclamos", icon: BookOpenCheck, exact: false }
+  ] },
+  { label: "Sistema", items: [
+    { href: "/admin/configuracion/apariencia", label: "Apariencia", icon: Palette, exact: false },
+    { href: "/admin/configuracion/empresa", label: "Empresa y contacto", icon: Building2, exact: false },
+    { href: "/admin/actividad", label: "Actividad", icon: Activity, exact: false }
+  ] }
 ] as const;
 
 export function AdminShell({ session, children }: { session: AdminSession; children: React.ReactNode }) {
@@ -46,12 +65,11 @@ export function AdminShell({ session, children }: { session: AdminSession; child
           <button type="button" onClick={() => setDrawerOpen(false)} aria-label="Cerrar menú"><X size={18} /></button>
         </div>
         <nav className={styles.navigation} aria-label="Navegación administrativa">
-          <small>Operación</small>
-          {navigation.filter((item) => session.role !== "COMMERCIAL" || !item.href.startsWith("/admin/configuracion")).map(({ href, label, icon: Icon, exact }) => {
-            const active = exact ? pathname === href : pathname.startsWith(href);
-            return <Link className={active ? styles.activeLink : ""} href={href} key={href} onClick={() => setDrawerOpen(false)}><Icon size={17} />{label}</Link>;
+          {sections.map((section) => {
+            const items = section.items.filter((item) => session.role !== "COMMERCIAL" || (!item.href.startsWith("/admin/configuracion") && !item.href.startsWith("/admin/contenido")));
+            if (!items.length) return null;
+            return <div key={section.label}><small>{section.label}</small>{items.map(({ href, label, icon: Icon, exact }) => { const active = exact ? pathname === href : pathname.startsWith(href); return <Link className={active ? styles.activeLink : ""} href={href} key={href} onClick={() => setDrawerOpen(false)}><Icon size={17} />{label}</Link>; })}</div>;
           })}
-          <small>Configuración</small>
         </nav>
         <div className={styles.account}>
           <div><span>{session.email.slice(0, 1).toUpperCase()}</span><p><b>{session.email}</b><small>{session.role.replace("_", " ")}</small></p></div>

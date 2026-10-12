@@ -18,6 +18,7 @@ import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { createFadeUpVariants, createLineRevealVariants, createStaggerContainer, motionDuration, motionEase, scrollViewport } from "@/lib/motion";
 import styles from "./InteractiveSolutionsSection.module.css";
 import { usePublicPricingCatalog } from "@/lib/pricing/use-public-catalog";
+import type { HomeContent } from "@/lib/cms/content-contracts";
 
 const SCENE_ASSETS = {
   desktop: "/NUEVO/D/ChatGPT Image 22 sept 2026%2C 10_00_28.png",
@@ -26,10 +27,10 @@ const SCENE_ASSETS = {
 
 const services = [
   {
-    id: "puertas",
-    shortTitle: "Puertas",
-    title: "Puertas automáticas / garaje",
-    description: "Puertas de garaje y accesos vehiculares con automatización y control adaptados al proyecto.",
+    id: "garage",
+    shortTitle: "Garaje",
+    title: "Puertas de garaje a medida",
+    description: "Fabricadas según las dimensiones, el uso y el sistema de apertura de cada acceso.",
     href: "/soluciones/puertas-automatizacion",
     icon: Warehouse,
     desktop: { x: 38, y: 65 },
@@ -37,10 +38,32 @@ const services = [
     cardPosition: "doors"
   },
   {
+    id: "principales-medida",
+    shortTitle: "A medida",
+    title: "Puertas principales a medida",
+    description: "Diseñadas y fabricadas para integrarse al ingreso, la fachada y el estilo del proyecto.",
+    href: "/soluciones/puertas-a-medida",
+    icon: DoorOpen,
+    desktop: { x: 65, y: 60 },
+    mobile: { x: 61, y: 68 },
+    cardPosition: "doors"
+  },
+  {
+    id: "puertas-medida",
+    shortTitle: "Importadas",
+    title: "Puertas principales importadas",
+    description: "Modelos de catálogo disponibles por medida, acabado y color.",
+    href: "/soluciones/puertas-principales",
+    icon: PencilRuler,
+    desktop: { x: 85, y: 25 },
+    mobile: { x: 89, y: 39 },
+    cardPosition: "fence"
+  },
+  {
     id: "baranda",
-    shortTitle: "Baranda",
-    title: "Baranda / acero inoxidable",
-    description: "Barandas y elementos en acero inoxidable integrados al diseño y las necesidades del proyecto.",
+    shortTitle: "Barandas",
+    title: "Acero inoxidable y barandas",
+    description: "Barandas y pasamanos integrados al diseño y las necesidades del proyecto.",
     href: "/soluciones/acero-barandas",
     icon: Fence,
     desktop: { x: 49, y: 42 },
@@ -60,9 +83,9 @@ const services = [
   },
   {
     id: "solisombra",
-    shortTitle: "Solisombra",
-    title: "Techo solisombra",
-    description: "Coberturas diseñadas para acondicionar terrazas y otros espacios exteriores.",
+    shortTitle: "Techos",
+    title: "Techos y coberturas",
+    description: "Coberturas diseñadas para acondicionar terrazas, patios y cocheras.",
     href: "/soluciones/techos-coberturas",
     icon: SunMedium,
     desktop: { x: 58, y: 25 },
@@ -70,20 +93,9 @@ const services = [
     cardPosition: "roof"
   },
   {
-    id: "puertas-medida",
-    shortTitle: "A medida",
-    title: "Puertas a medida",
-    description: "Puertas diseñadas y fabricadas según tu espacio y estilo.",
-    href: "/soluciones/puertas-a-medida",
-    icon: PencilRuler,
-    desktop: { x: 85, y: 25 },
-    mobile: { x: 89, y: 39 },
-    cardPosition: "fence"
-  },
-  {
     id: "drywall",
     shortTitle: "Drywall",
-    title: "Drywall",
+    title: "Drywall y cielorrasos",
     description: "Acondicionamiento de interiores para distribuir y transformar espacios.",
     href: "/soluciones/drywall-cielorrasos",
     icon: Layers3,
@@ -95,10 +107,10 @@ const services = [
 
 type ServiceId = (typeof services)[number]["id"];
 
-export function InteractiveSolutionsSection() {
+export function InteractiveSolutionsSection({ content }: { content: HomeContent["integrated"] }) {
   const publicCatalog = usePublicPricingCatalog();
-  const serviceItems = services.map((service) => service.id === "puertas-medida" ? { ...service, shortTitle: publicCatalog.homeCard.title, title: publicCatalog.homeCard.title, description: publicCatalog.homeCard.description, href: publicCatalog.homeCard.destination } : service).filter((service) => service.id !== "puertas-medida" || publicCatalog.homeCard.visible);
-  const [selectedId, setSelectedId] = useState<ServiceId>("puertas");
+  const serviceItems = services.map((service) => { const edited = content.services.find((item) => item.id === service.id); const merged = edited ? { ...service, shortTitle: edited.shortTitle, title: edited.title, description: edited.body, href: edited.href, visible: edited.visible } : { ...service, visible: true }; return service.id === "puertas-medida" ? { ...merged, shortTitle: publicCatalog.homeCard.title, title: publicCatalog.homeCard.title, description: publicCatalog.homeCard.description, href: publicCatalog.homeCard.destination } : merged; }).filter((service) => service.visible && (service.id !== "puertas-medida" || publicCatalog.homeCard.visible));
+  const [selectedId, setSelectedId] = useState<ServiceId>("garage");
   const [previewId, setPreviewId] = useState<ServiceId | null>(null);
   const reduceMotion = usePrefersReducedMotion();
   const panelId = useId();
@@ -146,14 +158,14 @@ export function InteractiveSolutionsSection() {
     >
       <div className={styles.shell}>
         <motion.div className={styles.intro} variants={reveal}>
-          <span className={styles.kicker}>Soluciones para cada espacio</span>
+          <span className={styles.kicker}>{content.eyebrow}</span>
           <motion.i className={styles.kickerLine} variants={lineReveal} aria-hidden="true" />
           <h2 id="integrated-solutions-title">
-            Soluciones que<br />se integran a tu <span>espacio</span>
+            {content.title} <span>{content.titleAccent}</span>
           </h2>
-          <p>Integramos soluciones de acceso, protección y acondicionamiento adaptadas a la arquitectura y necesidades de cada proyecto.</p>
-          <Link className={styles.primaryCta} href="/soluciones">
-            Explorar soluciones <ArrowRight aria-hidden="true" />
+          <p>{content.description}</p>
+          <Link className={styles.primaryCta} href={content.cta.href}>
+            {content.cta.label} <ArrowRight aria-hidden="true" />
           </Link>
 
           <motion.div className={styles.desktopSelector} variants={list} role="tablist" aria-label="Soluciones disponibles">
@@ -193,8 +205,8 @@ export function InteractiveSolutionsSection() {
           onPointerLeave={resetScene}
         >
           <motion.div className={styles.sceneArtwork} style={reduceMotion ? undefined : { x: smoothX, y: smoothY }}>
-            <Image className={styles.desktopScene} src={SCENE_ASSETS.desktop} alt="Casa moderna con soluciones de acceso, protección y acondicionamiento" fill sizes="(min-width: 1101px) 62vw, 100vw" />
-            <Image className={styles.mobileScene} src={SCENE_ASSETS.mobile} alt="Casa moderna con soluciones integradas" fill sizes="100vw" />
+            <Image className={styles.desktopScene} src={content.desktopScene.src || SCENE_ASSETS.desktop} alt={content.desktopScene.alt} fill sizes="(min-width: 1101px) 62vw, 100vw" />
+            <Image className={styles.mobileScene} src={content.mobileScene.src || SCENE_ASSETS.mobile} alt={content.mobileScene.alt} fill sizes="100vw" />
 
             {serviceItems.map((service, index) => {
               const isActive = service.id === activeId;
@@ -228,11 +240,15 @@ export function InteractiveSolutionsSection() {
 
             <Link
               href="/soluciones/puertas-principales"
-              className={`${styles.hotspot} ${styles.secondaryDoor} ${activeId === "puertas" ? styles.activeHotspot : ""}`}
-              aria-label="Conocer puertas principales"
-              title="Puertas principales"
+              className={`${styles.hotspot} ${styles.secondaryDoor} ${activeId === "principales-medida" || activeId === "puertas-medida" ? styles.activeHotspot : ""}`}
+              aria-label="Conocer puertas principales importadas"
+              title="Puertas principales importadas"
+              onPointerEnter={(event) => preview("puertas-medida", event)}
+              onPointerLeave={() => setPreviewId(null)}
+              onFocus={() => setPreviewId("puertas-medida")}
+              onBlur={() => setPreviewId(null)}
             >
-              <DoorOpen aria-hidden="true" />
+              <span aria-hidden="true" />
             </Link>
 
             <AnimatePresence mode="wait">

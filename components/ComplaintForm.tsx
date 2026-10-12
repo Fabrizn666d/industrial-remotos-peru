@@ -9,7 +9,7 @@ type SubmissionState =
   | { kind: "idle" }
   | { kind: "submitting" }
   | { kind: "error"; message: string }
-  | { kind: "success"; code: string };
+  | { kind: "success"; code: string; pdfUrl: string };
 
 const fieldClass = "mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-[15px] text-slate-950 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100";
 
@@ -38,9 +38,9 @@ export function ComplaintForm() {
 
     try {
       const response = await fetch("/api/complaints", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-      const result = await response.json() as { ok: boolean; complaint?: { code: string }; error?: { message?: string } };
+      const result = await response.json() as { ok: boolean; complaint?: { code: string; pdfUrl: string }; error?: { message?: string } };
       if (!response.ok || !result.ok || !result.complaint) throw new Error(result.error?.message || "No pudimos registrar tu solicitud.");
-      setState({ kind: "success", code: result.complaint.code });
+      setState({ kind: "success", code: result.complaint.code, pdfUrl: result.complaint.pdfUrl });
       window.dispatchEvent(new CustomEvent("irp:analytics", { detail: { name: "complaint_submit" } }));
     } catch (error) {
       setState({ kind: "error", message: error instanceof Error ? error.message : "Ocurrió un error. Intenta nuevamente." });
@@ -66,7 +66,8 @@ export function ComplaintForm() {
           <button className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-white/10 px-4 font-semibold hover:bg-white/20" type="button" onClick={() => copyCode(state.code)}><Clipboard size={17} /> {copied ? "Copiado" : "Copiar código"}</button>
         </div>
         <div className="mt-7 flex flex-wrap gap-3">
-          <Link className="button button--primary" href="/">Volver al inicio</Link>
+          <a className="button button--primary" href={state.pdfUrl}>Descargar constancia PDF</a>
+          <Link className="button button--secondary" href="/">Volver al inicio</Link>
           <a className="button button--secondary" href={siteConfig.social.whatsapp} target="_blank" rel="noreferrer"><MessageCircle size={18} /> WhatsApp</a>
         </div>
       </section>

@@ -14,13 +14,13 @@ import { calculateItemPrice, calculateProjectPrice, formatPublicPrice, PROPOSAL_
 import { usePublicPricingCatalog } from "@/lib/pricing/use-public-catalog";
 
 const quickReplies = [
-  { label: "Puerta automática / garaje", product: "seccionales" },
-  { label: "Puerta principal", product: "puertas-principales" },
+  { label: "Puerta de garaje a medida", product: "seccionales" },
+  { label: "Puerta principal importada", product: "puertas-principales" },
   { label: "Techo o cobertura", product: "techos-coberturas" },
   { label: "Mampara o ventana", product: "ventanas-mamparas" },
   { label: "Baranda o acero", product: "acero-barandas" },
   { label: "Estructura metálica", product: "estructuras-especiales" },
-  { label: "Puerta a medida", product: "puertas-a-medida" },
+  { label: "Puerta principal a medida", product: "puertas-a-medida" },
   { label: "Drywall o cielorraso", product: "drywall-cielorrasos" },
   { label: "No sé qué solución necesito", product: "estructuras-especiales" }
 ];

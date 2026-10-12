@@ -16,6 +16,7 @@ import Link from "next/link";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { createFadeUpVariants, createLineRevealVariants, createStaggerContainer, motionDuration, motionEase, scrollViewport } from "@/lib/motion";
 import styles from "./StatsWaveSection.module.css";
+import type { HomeContent } from "@/lib/cms/content-contracts";
 
 const steps = [
   {
@@ -58,7 +59,10 @@ const benefits = [
   { icon: BadgeCheck, firstLine: "Resultados", secondLine: "que generan confianza" }
 ] as const;
 
-export function StatsWaveSection() {
+export function StatsWaveSection({ content }: { content: HomeContent["process"] }) {
+  const icons = { advisor: ClipboardCheck, design: PencilRuler, settings: Cog, tools: Wrench, shield: ShieldCheck, badge: BadgeCheck } as const;
+  const contentSteps = content.steps.map((step) => ({ ...step, description: step.body, iconComponent: icons[step.icon as keyof typeof icons] || Wrench, imageSrc: step.image.src, imagePosition: step.image.position }));
+  const contentBenefits = content.benefits.map((benefit) => ({ ...benefit, iconComponent: icons[benefit.icon as keyof typeof icons] || BadgeCheck }));
   const reduceMotion = usePrefersReducedMotion();
   const fadeUp = createFadeUpVariants(reduceMotion);
   const lineReveal = createLineRevealVariants(reduceMotion, .12);
@@ -78,13 +82,13 @@ export function StatsWaveSection() {
 
       <div className={styles.content}>
         <header className={styles.header}>
-          <motion.span className={styles.kicker} variants={fadeUp}>De la idea a la instalación</motion.span>
+          <motion.span className={styles.kicker} variants={fadeUp}>{content.eyebrow}</motion.span>
           <motion.i className={styles.kickerLine} variants={lineReveal} aria-hidden="true" />
           <motion.h2 id="process-title" variants={fadeUp}>
-            Así convertimos tu proyecto<br />en una <span>solución instalada</span>
+            {content.title} <span>{content.titleAccent}</span>
           </motion.h2>
           <motion.p variants={fadeUp}>
-            Un proceso claro, coordinado y enfocado en la calidad, para que tú solo te preocupes por disfrutar el resultado.
+            {content.description}
           </motion.p>
         </header>
 
@@ -100,7 +104,7 @@ export function StatsWaveSection() {
             <i /><i /><i />
           </motion.div>
 
-          {steps.map(({ number, title, description, icon: Icon, image, imagePosition }) => (
+          {contentSteps.map(({ number, title, description, iconComponent: Icon, imageSrc, imagePosition }) => (
             <motion.article className={styles.step} variants={stepReveal} key={number}>
               <motion.span
                 className={styles.number}
@@ -121,7 +125,7 @@ export function StatsWaveSection() {
                 </div>
                 <div className={styles.cardMedia}>
                   <Image
-                    src={image}
+                    src={imageSrc}
                     alt=""
                     fill
                     sizes="(min-width: 1101px) 330px, (min-width: 768px) 44vw, calc(100vw - 64px)"
@@ -137,15 +141,15 @@ export function StatsWaveSection() {
 
         <motion.div className={styles.footer} variants={fadeUp}>
           <div className={styles.benefits}>
-            {benefits.map(({ icon: Icon, firstLine, secondLine }) => (
+            {contentBenefits.map(({ iconComponent: Icon, firstLine, secondLine }) => (
               <div className={styles.benefit} key={firstLine}>
                 <Icon aria-hidden="true" />
                 <p><strong>{firstLine}</strong><span>{secondLine}</span></p>
               </div>
             ))}
           </div>
-          <Link className={styles.cta} href="/cotizar">
-            Hablemos de tu proyecto <ArrowRight aria-hidden="true" />
+          <Link className={styles.cta} href={content.cta.href}>
+            {content.cta.label} <ArrowRight aria-hidden="true" />
           </Link>
         </motion.div>
       </div>

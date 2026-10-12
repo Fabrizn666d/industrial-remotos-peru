@@ -8,9 +8,9 @@ import { siteConfig } from "@/data/site";
 import type { Project } from "@/types/catalog";
 
 const solutionByCategory = {
-  seccionales: { href: "/soluciones/puertas-automatizacion", label: "Puertas automáticas y de garaje" },
-  levadizas: { href: "/soluciones/puertas-automatizacion", label: "Puertas automáticas y de garaje" },
-  corredizas: { href: "/soluciones/puertas-automatizacion", label: "Puertas automáticas y de garaje" },
+  seccionales: { href: "/soluciones/puertas-automatizacion", label: "Puertas de garaje a medida" },
+  levadizas: { href: "/soluciones/puertas-automatizacion", label: "Puertas de garaje a medida" },
+  corredizas: { href: "/soluciones/puertas-automatizacion", label: "Puertas de garaje a medida" },
   automatizacion: { href: "/soluciones/puertas-automatizacion", label: "Automatización de accesos" },
   estructuras: { href: "/soluciones/estructuras-metalicas", label: "Estructuras metálicas" }
 } as const;
@@ -49,9 +49,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const related = relatedProjects(project);
 
   return <main id="contenido" className="project-detail-page">
-    <section className="project-detail-page__hero">
+    <section className="project-detail-page__hero" data-motion-hero>
       <div className="page-shell project-detail-page__grid">
-        <div className="project-detail-page__copy">
+        <div className="project-detail-page__copy" data-motion-hero-item data-motion-direction="left">
           <nav className="project-detail-page__breadcrumb" aria-label="Migas de pan">
             <Link href="/">Inicio</Link><span>/</span><Link href="/proyectos">Proyectos</Link><span>/</span><b>{project.badge}</b>
           </nav>
@@ -64,38 +64,38 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <a className="button" href={siteConfig.social.whatsapp} target="_blank" rel="noreferrer" data-analytics="whatsapp_click"><MessageCircle size={17} /> Hablar con un asesor</a>
           </div>
         </div>
-        <figure className="project-detail-page__media">
-          <Image src={project.image} alt={`${project.title} en ${project.location}`} fill priority sizes="(min-width:900px) 55vw, 100vw" />
+        <figure className="project-detail-page__media" data-motion-hero-item data-motion-direction="right" data-motion-mask>
+          <Image src={project.image} alt={`${project.title} en ${project.location}`} fill priority data-transition-essential sizes="(min-width:900px) 55vw, 100vw" />
           <figcaption>Trabajo registrado · Industrial Remotos Perú</figcaption>
         </figure>
       </div>
     </section>
 
-    <section className="project-detail-page__information" aria-labelledby="project-information-title">
+    <section className="project-detail-page__information" aria-labelledby="project-information-title" data-motion-section>
       <div className="page-shell project-detail-page__information-grid">
-        <div className="project-detail-page__editorial">
+        <div className="project-detail-page__editorial" data-motion-item data-motion-direction="left">
           <span className="eyebrow">Información del proyecto</span>
           <h2 id="project-information-title">Una solución definida para este acceso.</h2>
           <p>{project.description} El alcance técnico, las medidas y la instalación se coordinan de acuerdo con las condiciones verificadas del espacio.</p>
         </div>
-        <dl className="project-detail-page__facts">
+        <dl className="project-detail-page__facts" data-motion-item data-motion-direction="right">
           <div><dt>Solución aplicada</dt><dd>{solution.label}</dd></div>
           <div><dt>Tipo de proyecto</dt><dd>{project.badge.charAt(0) + project.badge.slice(1).toLowerCase()}</dd></div>
           <div><dt>Ubicación general</dt><dd>{project.location}, Perú</dd></div>
           <div><dt>Registro visual</dt><dd><CheckCircle2 size={16} /> Trabajo registrado</dd></div>
         </dl>
       </div>
-      <div className="page-shell project-detail-page__service-cta">
+      <div className="page-shell project-detail-page__service-cta" data-motion-item data-motion-direction="up">
         <div><span>Servicio relacionado</span><h2>{solution.label}</h2><p>Conoce opciones, referencias y configura los primeros datos de una solución similar.</p></div>
         <Link className="button button--primary" href={solution.href}>Explorar servicio <ArrowRight size={17} /></Link>
       </div>
     </section>
 
-    {related.length > 0 && <section className="project-detail-page__related" aria-labelledby="related-projects-title">
+    {related.length > 0 && <section className="project-detail-page__related" aria-labelledby="related-projects-title" data-motion-section>
       <div className="page-shell">
-        <header><div><span className="eyebrow">Más trabajos</span><h2 id="related-projects-title">Otros proyectos registrados</h2></div><Link href="/proyectos">Ver todos <ArrowRight size={16} /></Link></header>
+        <header data-motion-item data-motion-direction="up"><div><span className="eyebrow">Más trabajos</span><h2 id="related-projects-title">Otros proyectos registrados</h2></div><Link href="/proyectos">Ver todos <ArrowRight size={16} /></Link></header>
         <div className="project-detail-page__related-grid">
-          {related.map((item) => <Link href={`/proyectos/${item.slug}`} key={item.id}>
+          {related.map((item) => <Link href={`/proyectos/${item.slug}`} key={item.id} data-motion-item data-motion-direction="up">
             <span><Image src={item.image} alt={item.title} fill sizes="(min-width:900px) 30vw, 92vw" /></span>
             <small>{item.badge} · {item.location}</small>
             <h3>{item.title}</h3>

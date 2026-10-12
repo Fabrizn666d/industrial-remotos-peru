@@ -9,9 +9,9 @@ import type { ProductAudience, ProductGroup } from "@/types/catalog";
 
 const groups: Array<{ value: "todos" | ProductGroup; label: string }> = [
   { value: "todos", label: "Todos" },
-  { value: "puertas", label: "Puertas automáticas" },
-  { value: "puertas-medida", label: "Puertas a medida" },
-  { value: "puertas-principales", label: "Puertas principales" },
+  { value: "puertas", label: "Garaje a medida" },
+  { value: "puertas-medida", label: "Principales a medida" },
+  { value: "puertas-principales", label: "Principales importadas" },
   { value: "techos", label: "Techos" },
   { value: "ventanas", label: "Ventanas y mamparas" },
   { value: "acero", label: "Acero y barandas" },

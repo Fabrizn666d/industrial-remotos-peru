@@ -231,17 +231,9 @@
 .hotspot:focus-visible { outline: 3px solid rgba(255, 255, 255, .95); outline-offset: 5px; }
 
 .secondaryDoor {
-  top: 62%;
+  top: 67%;
   left: 65%;
-  width: 18px;
-  height: 18px;
-  border-width: 2px;
-  opacity: .42;
 }
-
-.secondaryDoor svg { width: 10px; height: 10px; color: #fff; }
-.secondaryDoor::before { inset: -7px; }
-.secondaryDoor.activeHotspot { opacity: .92; }
 
 .floatingCard {
   position: absolute;
@@ -477,8 +469,7 @@
   .scene .floatingCard p { margin-top: 6px; font-size: 11px; }
   .scene .floatingCard a { margin-top: 9px; }
 
-  .secondaryDoor { top: 68%; left: 60%; width: 22px; height: 22px; opacity: .48; }
-  .secondaryDoor svg { width: 12px; height: 12px; }
+  .secondaryDoor { top: 76%; left: 60%; }
   .mobileControls { position: relative; z-index: 9; margin-top: -70px; }
   .mobileSelector { margin-inline: -14px; padding: 8px 14px 12px; }
   .mobileSelector button { min-height: 44px; padding-inline: 14px; }

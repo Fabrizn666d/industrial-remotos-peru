@@ -47,7 +47,7 @@
   width: min(920px, calc(100% - 64px));
   min-height: 90px;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin: -45px auto 8px;
+  margin: -45px auto 18px;
   border: 1px solid rgba(101, 148, 207, .28);
   border-radius: 32px;
   background: rgba(255, 255, 255, .96);
@@ -138,7 +138,7 @@
   display: block;
   width: 42px;
   height: 2px;
-  margin: 15px auto 24px;
+  margin: 18px auto 24px;
   background: #075cff;
 }
 
@@ -195,7 +195,7 @@
 .grid {
   display: grid;
   max-width: 1760px;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: clamp(8px, .8vw, 16px);
   align-items: start;
   margin: 54px auto 0;

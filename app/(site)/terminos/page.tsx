@@ -10,7 +10,7 @@ const h2 = "m-0 text-xl font-semibold tracking-[-.03em] text-slate-950 md:text-2
 const copy = "mt-4 text-sm leading-7 text-slate-600 md:text-[15px]";
 
 export default function TermsPage() {
-  return <main id="contenido">
+  return <main id="contenido" data-motion-auto>
     <PageHero eyebrow="Condiciones del sitio" title={<>Términos y <em>condiciones.</em></>} copy="Estas condiciones explican el alcance del sitio y de las solicitudes realizadas desde sus herramientas." />
     <section className="section-space"><div className="page-shell mx-auto max-w-[920px]"><div className="grid gap-6">
       <section className={card}><h2 className={h2}>Titular y aceptación</h2><p className={copy}>Este sitio pertenece a <strong>{companyLegalData.legalName}</strong>, RUC {companyLegalData.ruc}. Al navegar o enviar información aceptas estas condiciones y la <Link className="font-semibold text-blue-700 underline" href="/politica-privacidad">Política de privacidad</Link>.</p></section>

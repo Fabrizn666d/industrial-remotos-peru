@@ -13,13 +13,13 @@ import { usePublicPricingCatalog } from "@/lib/pricing/use-public-catalog";
 
 const STORAGE_KEY = "irp-assistant-v2";
 const intents = [
-  { label: "Puerta automática / garaje", product: "seccionales" },
-  { label: "Puerta principal", product: "puertas-principales" },
+  { label: "Puerta de garaje a medida", product: "seccionales" },
+  { label: "Puerta principal importada", product: "puertas-principales" },
   { label: "Techo o cobertura", product: "techos-coberturas" },
   { label: "Mampara o ventana", product: "ventanas-mamparas" },
   { label: "Baranda o acero", product: "acero-barandas" },
   { label: "Estructura metálica", product: "estructuras-especiales" },
-  { label: "Puerta a medida", product: "puertas-a-medida" },
+  { label: "Puerta principal a medida", product: "puertas-a-medida" },
   { label: "Drywall o cielorraso", product: "drywall-cielorrasos" },
   { label: "No estoy seguro", product: "estructuras-especiales" }
 ] as const;
@@ -70,7 +70,7 @@ export function AssistantExperience() {
   const configuration = useMemo(() => ({ subtype: doorType || undefined, dimensions: parsedMeasures ? { width: parsedMeasures[1].replace(",", "."), height: parsedMeasures[2].replace(",", "."), unit: "m" as const } : undefined, model: model || undefined, variant: variant || undefined, openingSystem: openingSystem || undefined, material: material || undefined, finish: finish || undefined, automation: automation || undefined, notes: [use && `Uso: ${use}`, location && `Ubicación: ${location}`, detail].filter(Boolean).join(". ") || undefined, accessories: [] as string[], customFields: { source: "ASSISTANT" } }), [automation, detail, doorType, finish, location, material, measures, model, openingSystem, parsedMeasures, use, variant]);
   const price = useMemo(() => calculateItemPrice({ productId: recommendation.id, quantity: 1, configuration: { width: configuration.dimensions?.width, height: configuration.dimensions?.height, subtype: configuration.subtype, model: configuration.model, variant: configuration.variant, openingSystem: configuration.openingSystem, material: configuration.material, finish: configuration.finish, automation: configuration.automation, accessories: [], installation: "Por definir" } }, publicCatalog.definitions, `v${publicCatalog.version}`), [configuration, publicCatalog, recommendation.id]);
   const configureUrl = `/cotizar?${new URLSearchParams({ producto: recommendation.id, ...(doorType ? { subtype: doorType } : {}), ...(model ? { model } : {}), ...(variant ? { variant } : {}), ...(openingSystem ? { openingSystem } : {}), ...(material ? { material } : {}), ...(finish ? { finish } : {}), ...(automation ? { automation } : {}), ...([location, measures, detail].filter(Boolean).length ? { notes: [location && `Ubicación: ${location}`, measures && `Medidas: ${measures}`, detail].filter(Boolean).join(". ") } : {}) }).toString()}`;
-  const stage = !intent ? "intent" : !use ? "use" : !location ? "location" : imported && !model ? "model" : imported && !variant ? "variant" : madeToMeasure && !measures ? "measures" : madeToMeasure && !doorType ? "doorType" : madeToMeasure && !openingSystem ? "opening" : madeToMeasure && !material ? "material" : (imported || madeToMeasure) && !finish ? "finish" : (imported || madeToMeasure) && !automation ? "automation" : !imported && !madeToMeasure && !measures ? "measures" : !imported && !madeToMeasure && !detail ? "detail" : "result";
+  const stage = !intent ? "intent" : !use ? "use" : !location ? "location" : imported && !model ? "model" : imported && !variant ? "variant" : madeToMeasure && !measures ? "measures" : madeToMeasure && !doorType ? "doorType" : madeToMeasure && !openingSystem ? "opening" : madeToMeasure && !material ? "material" : (imported || madeToMeasure) && !finish ? "finish" : madeToMeasure && !automation ? "automation" : !imported && !madeToMeasure && !measures ? "measures" : !imported && !madeToMeasure && !detail ? "detail" : "result";
 
   const send = (event: FormEvent) => {
     event.preventDefault();

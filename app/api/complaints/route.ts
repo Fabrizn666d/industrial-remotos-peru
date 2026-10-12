@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     if (raw.length > 64 * 1024) return noStore(NextResponse.json({ ok: false, error: { code: "TOO_LARGE", message: "Solicitud demasiado grande" } }, { status: 413 }));
     const input = ComplaintSubmissionSchema.parse(JSON.parse(raw));
     const complaint = await createComplaint(input);
-    return noStore(NextResponse.json({ ok: true, complaint: { id: complaint.id, code: complaint.code, status: complaint.status, createdAt: complaint.createdAt } }, { status: 201 }));
+    return noStore(NextResponse.json({ ok: true, complaint: { id: complaint.id, code: complaint.code, status: complaint.status, createdAt: complaint.createdAt, pdfUrl: `/api/complaints/${complaint.code}/pdf?token=${encodeURIComponent(complaint.publicToken)}` } }, { status: 201 }));
   } catch (error) {
     if (error instanceof z.ZodError) return noStore(NextResponse.json({ ok: false, error: { code: "VALIDATION", message: "Revisa los campos indicados", fields: error.issues.map((issue) => ({ path: issue.path.join("."), message: issue.message })) } }, { status: 400 }));
     if (error instanceof SyntaxError) return noStore(NextResponse.json({ ok: false, error: { code: "JSON", message: "JSON inválido" } }, { status: 400 }));

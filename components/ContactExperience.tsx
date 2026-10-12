@@ -1,73 +1,98 @@
 "use client";
 
-import { ArrowRight, CheckCircle2, LoaderCircle, MessageCircle, RotateCcw } from "lucide-react";
+import { ArrowRight, CheckCircle2, LayoutGrid, LoaderCircle, Mail, MessageCircle, Pencil, Phone, RotateCcw, UserRound } from "lucide-react";
+import Link from "next/link";
 import { FormEvent, useRef, useState } from "react";
-import { products } from "@/data/products";
-import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { readSessionAttribution } from "@/lib/attribution";
+import type { CompanyContent, ContactContent } from "@/lib/cms/content-contracts";
+import styles from "./ContactDialog.module.css";
 
-type State = { kind: "idle" | "submitting" } | { kind: "success"; code: string; whatsappUrl: string } | { kind: "error"; message: string };
+type FormValues = { name: string; phone: string; email: string; solution: string; message: string; privacy: boolean };
+type State = { kind: "idle" | "submitting" } | { kind: "success"; code: string } | { kind: "error"; message: string };
 
-export function ContactExperience({ compact = false }: { compact?: boolean }) {
+const emptyForm: FormValues = { name: "", phone: "", email: "", solution: "", message: "", privacy: false };
+
+function whatsappUrl(number: string, message: string) {
+  return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+}
+
+export function ContactExperience({ content, company, originPage, services }: { content: ContactContent; company: CompanyContent; originPage: string; services: Array<{ value: string; label: string }> }) {
+  const [form, setForm] = useState<FormValues>(emptyForm);
   const [state, setState] = useState<State>({ kind: "idle" });
   const submissionId = useRef(crypto.randomUUID());
 
+  const update = (key: keyof FormValues, value: string | boolean) => {
+    setForm((current) => ({ ...current, [key]: value }));
+    if (state.kind === "error") setState({ kind: "idle" });
+  };
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (state.kind === "submitting") return;
+    if (state.kind === "submitting" || state.kind === "success") return;
     setState({ kind: "submitting" });
-    const data = new FormData(event.currentTarget);
-    const name = String(data.get("name") || "");
-    const phone = String(data.get("phone") || "");
-    const location = String(data.get("location") || "");
-    const product = String(data.get("product") || "");
-    const notes = String(data.get("message") || "");
-    const message = ["Hola, Industrial Remotos Perú. Quisiera conversar sobre un proyecto.", "", `Nombre: ${name}`, `Teléfono: ${phone}`, `Ubicación: ${location}`, `Solución: ${product}`, `Mensaje: ${notes || "Por completar"}`].join("\n");
     const attribution = readSessionAttribution();
+    const selectedService = services.find((service) => service.value === form.solution);
+    const serviceLabel = selectedService?.label || "Consulta general";
 
     try {
       const response = await fetch("/api/requests", {
-        method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" },
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({
           clientSubmissionId: submissionId.current,
-          contact: { name, email: String(data.get("email") || ""), phone, whatsapp: phone },
-          details: { projectType: product, location, notes: notes || undefined },
-          items: [{ name: product, quantity: 1, configuration: { channel: "Formulario de contacto" } }],
-          attachmentNames: [], ...(attribution ? { attribution } : {}), source: "CONTACT"
+          contact: { name: form.name, email: form.email, phone: form.phone, whatsapp: form.phone },
+          details: {
+            projectType: serviceLabel,
+            location: company.location || company.address || "Por confirmar",
+            notes: form.message
+          },
+          items: [{
+            name: serviceLabel,
+            quantity: 1,
+            configuration: { channel: "Ventana global de contacto", originPage, privacyConsent: form.privacy, serviceSlug: form.solution, serviceLabel }
+          }],
+          attachmentNames: [],
+          attribution: { ...(attribution ?? {}), landingPage: originPage },
+          source: "CONTACT"
         })
       });
       const result = await response.json() as { code?: string; error?: string };
-      if (!response.ok || !result.code) throw new Error(result.error || "No pudimos registrar tu solicitud.");
-      setState({ kind: "success", code: result.code, whatsappUrl: buildWhatsAppUrl(`${message}\n\nCódigo web: ${result.code}`) });
-      window.dispatchEvent(new CustomEvent("irp:analytics", { detail: { name: "contact_submit" } }));
+      if (!response.ok || !result.code) throw new Error(result.error || "No pudimos registrar tu consulta.");
+      setState({ kind: "success", code: result.code });
+      window.dispatchEvent(new CustomEvent("irp:analytics", { detail: { name: "contact_submit", parameters: { origin: originPage } } }));
     } catch (error) {
-      setState({ kind: "error", message: error instanceof Error ? error.message : "No pudimos registrar tu solicitud." });
-      requestAnimationFrame(() => document.getElementById("contact-error")?.focus());
+      setState({ kind: "error", message: error instanceof Error ? error.message : "No pudimos registrar tu consulta." });
+      requestAnimationFrame(() => document.getElementById("contact-dialog-error")?.focus());
     }
   }
 
   if (state.kind === "success") return (
-    <section className={"contact-form " + (compact ? "contact-form--compact" : "")} aria-labelledby="contact-success-title">
-      <div className="contact-form__head"><CheckCircle2 size={38} className="text-emerald-600" /><small>Solicitud registrada</small><h2 id="contact-success-title">Ya tenemos los datos iniciales.</h2><p>Tu código es <strong>{state.code}</strong>. Puedes continuar por WhatsApp para compartir fotos y medidas.</p></div>
-      <a className="button button--primary" href={state.whatsappUrl} target="_blank" rel="noreferrer"><MessageCircle size={18} />Continuar por WhatsApp <ArrowRight size={17} /></a>
+    <section className={styles.successPanel} aria-labelledby="contact-success-title" aria-live="polite">
+      <CheckCircle2 aria-hidden="true" />
+      <small>Consulta registrada</small>
+      <h2 id="contact-success-title">¡Gracias por escribirnos!</h2>
+      <p>{content.successMessage}</p>
+      <span>Código de seguimiento: <strong>{state.code}</strong></span>
+      {content.showWhatsapp && <a href={whatsappUrl(company.whatsappNumber, `${content.whatsappMessage}\n\nCódigo web: ${state.code}`)} target="_blank" rel="noreferrer"><MessageCircle size={18} />{content.whatsappLabel}<ArrowRight size={17} /></a>}
+      <button type="button" onClick={() => { setForm(emptyForm); submissionId.current = crypto.randomUUID(); setState({ kind: "idle" }); }}>Enviar otra consulta</button>
     </section>
   );
 
   return (
-    <form className={"contact-form " + (compact ? "contact-form--compact" : "")} onSubmit={submit}>
-      <div className="contact-form__head"><small>Solicitud inicial</small><h2>Cuéntanos sobre tu espacio</h2><p>Registraremos tu consulta y podrás continuar por WhatsApp para compartir fotos o medidas.</p></div>
-      <div className="contact-form__fields">
-        <label>Nombres y apellidos<input name="name" required autoComplete="name" placeholder="Tu nombre" maxLength={120} /></label>
-        <label>WhatsApp / Teléfono<input name="phone" required autoComplete="tel" inputMode="tel" placeholder="987 654 321" minLength={7} maxLength={24} /></label>
-        <label>Correo electrónico<input name="email" type="email" required autoComplete="email" placeholder="tu@correo.com" maxLength={254} /></label>
-        <label>Distrito o ubicación<input name="location" required autoComplete="address-level2" placeholder="Distrito, ciudad" maxLength={240} /></label>
-        <label>Tipo de proyecto<select name="product" required defaultValue=""><option value="" disabled>Selecciona una solución</option>{products.map((product) => <option value={product.name} key={product.id}>{product.name}</option>)}</select></label>
-        <label className="field-wide">Cuéntanos qué necesitas<textarea name="message" rows={4} maxLength={4000} placeholder="Uso del espacio, medidas aproximadas o referencias..." /></label>
+    <form className={styles.form} onSubmit={submit}>
+      <div className={styles.fields}>
+        <label>Nombre completo<span className={styles.inputControl}><UserRound aria-hidden="true" /><input name="name" required autoComplete="name" value={form.name} onChange={(event) => update("name", event.target.value)} placeholder="Tu nombre completo" maxLength={120} /></span></label>
+        <label>Teléfono<span className={styles.inputControl}><Phone aria-hidden="true" /><input name="phone" required autoComplete="tel" inputMode="tel" value={form.phone} onChange={(event) => update("phone", event.target.value)} placeholder="987 654 321" minLength={7} maxLength={24} pattern="[+()\- 0-9]{7,24}" /></span></label>
+        <label className={styles.wide}>Correo<span className={styles.inputControl}><Mail aria-hidden="true" /><input name="email" type="email" required autoComplete="email" value={form.email} onChange={(event) => update("email", event.target.value)} placeholder="tu@correo.com" maxLength={254} /></span></label>
+        <label className={styles.wide}>¿Qué solución buscas?<span className={styles.inputControl}><LayoutGrid aria-hidden="true" /><select name="solution" required value={form.solution} onChange={(event) => update("solution", event.target.value)}><option value="">Selecciona una opción</option>{services.map((service) => <option key={service.value} value={service.value}>{service.label}</option>)}</select></span></label>
+        <label className={styles.wide}>Cuéntanos tu proyecto<span className={`${styles.inputControl} ${styles.textareaControl}`}><Pencil aria-hidden="true" /><textarea name="message" required rows={4} maxLength={4000} value={form.message} onChange={(event) => update("message", event.target.value)} placeholder="Cuéntanos brevemente sobre tu proyecto…" /></span></label>
       </div>
-      {state.kind === "error" && <div id="contact-error" role="alert" tabIndex={-1} className="form-error"><strong>No se pudo enviar.</strong> {state.message} Tus datos permanecen aquí.</div>}
-      <button className="button button--primary" type="submit" disabled={state.kind === "submitting"}>{state.kind === "submitting" ? <><LoaderCircle className="animate-spin" size={18} />Registrando…</> : <><MessageCircle size={18} />Registrar solicitud <ArrowRight size={17} /></>}</button>
-      {state.kind === "error" && <button className="form-note" type="submit"><RotateCcw size={15} /> Reintentar</button>}
-      <p className="form-note">No compartimos datos sensibles con herramientas analíticas.</p>
+      <label className={styles.privacyConsent}><input type="checkbox" required checked={form.privacy} onChange={(event) => update("privacy", event.target.checked)} /><span>Acepto el tratamiento de mis datos para atender esta consulta. Consulta la <Link href="/politica-privacidad" target="_blank">Política de privacidad</Link>.</span></label>
+      {state.kind === "error" && <div id="contact-dialog-error" role="alert" tabIndex={-1} className={styles.formError}><strong>No se pudo enviar.</strong> {state.message} Tus datos permanecen aquí.</div>}
+      <div className={styles.formActions}>
+        <button className={styles.submit} type="submit" disabled={state.kind === "submitting"}>{state.kind === "submitting" ? <><LoaderCircle className={styles.spinner} size={18} />Enviando…</> : <>{content.submitLabel}<ArrowRight size={17} /></>}</button>
+        {state.kind === "error" && <button className={styles.retry} type="submit"><RotateCcw size={15} />Reintentar</button>}
+      </div>
     </form>
   );
 }

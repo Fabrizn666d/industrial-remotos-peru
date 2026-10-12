@@ -53,6 +53,8 @@
 
 .navigation { display: flex; flex: 1; flex-direction: column; gap: 6px; padding: 26px 14px; }
 .navigation > small { margin: 13px 10px 5px; color: rgba(255,255,255,.35); font-size: 9px; font-weight: 750; letter-spacing: .15em; text-transform: uppercase; }
+.navigation > div { display: flex; flex-direction: column; gap: 5px; }
+.navigation > div > small { margin: 13px 10px 5px; color: rgba(255,255,255,.35); font-size: 9px; font-weight: 750; letter-spacing: .15em; text-transform: uppercase; }
 .navigation a,
 .disabledLink { display: flex; min-height: 44px; align-items: center; gap: 11px; border-radius: 10px; padding: 0 13px; color: rgba(255,255,255,.68); font-size: 12px; font-weight: 570; }
 .navigation a:hover { background: rgba(69,151,245,.1); color: #fff; }
@@ -185,6 +187,8 @@
 .statusControl { display: grid; gap: 9px; }
 .statusControl label { display: grid; gap: 7px; color: #718094; font-size: 9px; font-weight: 700; }
 .statusControl select { height: 42px; border: 1px solid #d8e2ec; border-radius: 9px; background: white; padding: 0 11px; color: #24374c; }
+.statusControl textarea { width: 100%; border: 1px solid #d8e2ec; border-radius: 9px; background: white; padding: 11px; color: #24374c; resize: vertical; }
+.statusControl > button { min-height: 42px; border: 0; border-radius: 9px; background: #087eff; color: white; font-weight: 700; }
 .statusControl small { color: #b4232e; font-size: 9px; }
 
 .itemList > article { display: grid; grid-template-columns: 48px minmax(0,1fr); gap: 16px; border-top: 1px solid #e8edf3; padding: 22px; }

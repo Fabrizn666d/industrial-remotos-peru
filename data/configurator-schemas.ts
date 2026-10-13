@@ -1,5 +1,6 @@
 import type { ProductGroup } from "@/types/catalog";
-import type { ConfiguratorFamily, ConfiguratorSchema, ConfiguratorStep } from "@/types/configurator";
+import { products } from "@/data/products";
+import type { ConfiguratorChoiceKey, ConfiguratorFamily, ConfiguratorSchema, ConfiguratorStep, ConfiguratorStepOverride } from "@/types/configurator";
 import { pricingDefinition, publishedPricingCatalog, type PublishedPricingDefinition } from "@/lib/pricing/catalog";
 
 const solutionStep: ConfiguratorStep = {
@@ -7,363 +8,227 @@ const solutionStep: ConfiguratorStep = {
   kind: "product",
   label: "Solución",
   title: "Selecciona la solución",
-  description: "Elige el punto de partida. Al cambiar de familia se limpian respuestas que ya no correspondan.",
-  icon: "solution"
+  description: "Elige el punto de partida. Al cambiar de familia se limpian las respuestas incompatibles.",
+  icon: "solution",
 };
 
-const dimensionsStep = (title = "Ingresa medidas aproximadas", widthLabel = "Ancho aproximado (m)", heightLabel = "Alto aproximado (m)"): Extract<ConfiguratorStep, { kind: "dimensions" }> => ({
-  id: "dimensions",
+const dimensionsStep = (
+  title: string,
+  widthLabel: string,
+  heightLabel: string,
+  options: { required?: boolean; hideHeight?: boolean; visibleWhen?: { key: ConfiguratorChoiceKey; values: string[] } } = {},
+): Extract<ConfiguratorStep, { kind: "dimensions" }> => ({
+  id: `dimensions-${options.visibleWhen?.values.join("-") ?? "general"}`,
   kind: "dimensions",
   label: "Medidas",
   title,
-  description: "Puedes dejarlas por definir. Si ingresas una medida debe ser numérica y mayor que cero; el equipo confirmará las dimensiones en la evaluación técnica.",
+  description: "Ingresa medidas con punto o coma. Las dimensiones finales se validarán durante la asesoría técnica.",
   icon: "dimensions",
   widthLabel,
-  heightLabel
+  heightLabel,
+  required: options.required,
+  hideHeight: options.hideHeight,
+  visibleWhen: options.visibleWhen,
+});
+
+const choice = (
+  id: string,
+  label: string,
+  title: string,
+  answerKey: ConfiguratorChoiceKey,
+  values: string[],
+  options: { description?: string; defaultValue?: string; visibleWhen?: { key: ConfiguratorChoiceKey; values: string[] } } = {},
+): ConfiguratorStep => ({
+  id,
+  kind: "choice",
+  label,
+  title,
+  description: options.description ?? "Selecciona la opción que corresponde a tu proyecto.",
+  icon: answerKey === "automation" ? "automation" : "design",
+  answerKey,
+  defaultValue: options.defaultValue ?? "",
+  options: values.map((value) => ({ value, label: value })),
+  visibleWhen: options.visibleWhen,
+});
+
+const multi = (
+  id: string,
+  label: string,
+  title: string,
+  values: string[],
+  visibleWhen?: { key: ConfiguratorChoiceKey; values: string[] },
+): ConfiguratorStep => ({
+  id,
+  kind: "multi-choice",
+  label,
+  title,
+  description: "Selecciona únicamente los complementos que necesitas.",
+  icon: "accessories",
+  answerKey: "accessories",
+  options: values.map((value) => ({ value, label: value })),
+  visibleWhen,
 });
 
 const finishStep: ConfiguratorStep = {
   id: "finish",
   kind: "finish",
   label: "Acabado",
-  title: "Selecciona un acabado de referencia",
-  description: "La disponibilidad y la muestra final se validarán antes de cotizar.",
-  icon: "finish"
+  title: "Selecciona el acabado",
+  description: "La muestra y disponibilidad final se confirman antes de fabricar.",
+  icon: "finish",
 };
 
 const notesStep: ConfiguratorStep = {
   id: "notes",
   kind: "text",
   label: "Notas",
-  title: "Añade contexto para el equipo",
-  description: "Incluye condiciones del espacio, preferencias o restricciones que debamos revisar.",
+  title: "Añade referencias para el equipo",
+  description: "Incluye condiciones del espacio, preferencias o restricciones relevantes.",
   icon: "notes",
   answerKey: "notes",
-  placeholder: "Ej. acceso existente, uso del ambiente o referencia del proyecto."
+  placeholder: "Uso del espacio, referencias o condiciones existentes.",
 };
-
-const installationStep = (options: Array<{ value: string; label: string }>): ConfiguratorStep => ({
-  id: "installation",
-  kind: "choice",
-  label: "Instalación",
-  title: "Define el alcance solicitado",
-  description: "Esta selección expresa tu necesidad inicial y queda sujeta a evaluación técnica.",
-  icon: "installation",
-  answerKey: "installation",
-  defaultValue: "Por definir",
-  options
-});
-
-const fabricationInstallationOptions = [
-  { value: "Por definir", label: "Por definir" },
-  { value: "Incluir instalación", label: "Incluir instalación" },
-  { value: "Solo fabricación", label: "Solo fabricación" }
-];
 
 export const configuratorSchemas: Record<ConfiguratorFamily, ConfiguratorSchema> = {
   "puertas-medida": {
     family: "puertas-medida",
     productGroup: "puertas-medida",
-    version: 2,
+    version: 3,
     steps: [
       solutionStep,
-      { ...dimensionsStep("Ingresa las medidas de fabricación"), required: true, description: "La semilla publicada admite ancho de 2 a 6 m y alto de 2 a 3.5 m. Las medidas se verificarán antes de fabricar." },
-      { id: "door-type", kind: "choice", label: "Tipo", title: "Elige el tipo de puerta principal", description: "Esta selección define el punto de partida de la fabricación.", icon: "design", answerKey: "subtype", defaultValue: "Una hoja", options: ["Una hoja", "Doble hoja", "Pivotante"].map((value) => ({ value, label: value })) },
-      { id: "opening", kind: "choice", label: "Apertura", title: "Selecciona el sistema de apertura", description: "Mostramos opciones de fabricación, no variantes importadas.", icon: "design", answerKey: "openingSystem", defaultValue: "Batiente", options: ["Batiente", "Pivotante", "Por definir"].map((value) => ({ value, label: value })) },
-      { id: "design", kind: "choice", label: "Diseño", title: "Elige un estilo de referencia", description: "El detalle constructivo se confirma con IRP.", icon: "design", answerKey: "design", defaultValue: "Liso", options: ["Liso", "Con aplicaciones", "Personalizado"].map((value) => ({ value, label: value })) },
-      { id: "material", kind: "choice", label: "Material", title: "Selecciona el material principal", description: "Las compatibilidades finales se verifican técnicamente.", icon: "design", answerKey: "material", defaultValue: "Acero", options: ["Acero", "Panel seccional", "Aluminio"].map((value) => ({ value, label: value })) },
+      choice("opening", "Apertura", "Selecciona el sistema de apertura", "openingSystem", ["Batiente", "Pivotante"]),
+      choice("leaves", "Hojas", "Indica la cantidad de hojas", "subtype", ["Una hoja", "Doble hoja"], { visibleWhen: { key: "openingSystem", values: ["Batiente"] } }),
+      dimensionsStep("Ingresa las medidas de la puerta principal", "Ancho (m)", "Alto (m)", { required: true }),
+      choice("design", "Diseño", "Elige un estilo de referencia", "design", ["Liso", "Con aplicaciones", "Personalizado"]),
+      choice("material", "Material", "Selecciona el material principal", "material", ["Acero", "Aluminio", "Acero con revestimiento"]),
       finishStep,
-      { id: "automation", kind: "choice", label: "Automatización", title: "Define el sistema de operación", description: "La potencia y compatibilidad se confirman tras revisar el proyecto.", icon: "automation", answerKey: "automation", defaultValue: "Sistema manual", options: ["Sistema manual", "Motor opcional"].map((value) => ({ value, label: value })) },
-      { id: "accessories", kind: "multi-choice", label: "Accesorios", title: "Añade complementos compatibles", description: "Puedes seleccionar más de uno.", icon: "accessories", answerKey: "accessories", options: [{ value: "Control adicional", label: "Control adicional" }] },
-      installationStep(fabricationInstallationOptions),
-      notesStep
-    ]
+      multi("entry-accessories", "Complementos", "Selecciona complementos para la puerta", ["Cerradura de seguridad", "Tirador", "Mirilla", "Control de acceso"]),
+      notesStep,
+    ],
   },
   puertas: {
     family: "puertas",
     productGroup: "puertas",
-    version: 1,
+    version: 2,
     steps: [
       solutionStep,
-      { ...dimensionsStep("Ingresa las medidas aproximadas del garaje"), required: true },
-      { id: "garage-type", kind: "choice", label: "Tipo", title: "Elige el tipo de apertura", description: "Son variantes dentro de Puertas de garaje a medida.", icon: "design", answerKey: "subtype", defaultValue: "Seccional", options: ["Seccional", "Levadiza", "Corrediza", "Batiente"].map((value) => ({ value, label: value })) },
-      {
-        id: "design",
-        kind: "choice",
-        label: "Diseño",
-        title: "Indica el enfoque visual",
-        description: "Es una preferencia inicial; el diseño constructivo se confirmará con el equipo.",
-        icon: "design",
-        answerKey: "design",
-        defaultValue: "Por definir",
-        options: [
-          { value: "Por definir", label: "Por definir" },
-          { value: "Liso", label: "Liso" },
-          { value: "Con aplicaciones", label: "Con aplicaciones" },
-          { value: "Diseño personalizado", label: "Diseño personalizado" }
-        ]
-      },
+      choice("garage-type", "Tipo", "Elige el tipo de puerta de garaje", "subtype", ["Seccional", "Levadiza", "Corrediza", "Batiente"]),
+      dimensionsStep("Ingresa las medidas aproximadas del garaje", "Ancho (m)", "Alto (m)", { required: true }),
+      choice("design", "Diseño", "Elige el diseño de referencia", "design", ["Liso", "Acanalado", "Con aplicaciones", "Personalizado"]),
       finishStep,
-      {
-        id: "automation",
-        kind: "choice",
-        label: "Automatización",
-        title: "Indica cómo quieres operar la puerta",
-        description: "El equipo seleccionará el sistema compatible después de revisar peso, uso y geometría.",
-        icon: "automation",
-        answerKey: "automation",
-        defaultValue: "Por definir con el asesor",
-        options: [
-          { value: "Por definir con el asesor", label: "Por definir con el asesor" },
-          { value: "Requiero automatización", label: "Requiero automatización" },
-          { value: "Sistema manual", label: "Sistema manual" }
-        ]
-      },
-      {
-        id: "accessories",
-        kind: "multi-choice",
-        label: "Accesorios",
-        title: "Marca complementos de interés",
-        description: "Puedes seleccionar más de uno. La compatibilidad se validará técnicamente.",
-        icon: "accessories",
-        answerKey: "accessories",
-        options: [
-          { value: "Control remoto", label: "Control remoto" },
-          { value: "Sensor de seguridad", label: "Sensor de seguridad" },
-          { value: "Luz de cortesía", label: "Luz de cortesía" },
-          { value: "Batería de respaldo", label: "Batería de respaldo" }
-        ]
-      },
-      installationStep(fabricationInstallationOptions),
-      notesStep
-    ]
+      choice("automation", "Operación", "¿La puerta será manual o automatizada?", "automation", ["Sistema manual", "Requiero automatización"]),
+      multi("garage-accessories", "Accesorios", "Selecciona accesorios compatibles", ["Control remoto", "Sensor de seguridad", "Luz de cortesía", "Batería de respaldo"], { key: "automation", values: ["Requiero automatización"] }),
+      notesStep,
+    ],
   },
   automatizacion: {
     family: "automatizacion",
     productGroup: "automatizacion",
-    version: 1,
+    version: 2,
     steps: [
       solutionStep,
-      dimensionsStep("Indica las medidas aproximadas del acceso"),
-      {
-        id: "access-status",
-        kind: "choice",
-        label: "Acceso",
-        title: "Cuéntanos el estado del acceso",
-        description: "Esto ayuda a diferenciar una instalación nueva de una intervención sobre un sistema existente.",
-        icon: "design",
-        answerKey: "subtype",
-        defaultValue: "Por definir",
-        options: [
-          { value: "Por definir", label: "Por definir" },
-          { value: "Puerta existente", label: "Puerta existente" },
-          { value: "Puerta nueva o por fabricar", label: "Puerta nueva o por fabricar" }
-        ]
-      },
-      {
-        id: "automation-need",
-        kind: "choice",
-        label: "Necesidad",
-        title: "Selecciona la necesidad principal",
-        description: "No selecciona un motor ni promete compatibilidad; solo orienta la evaluación.",
-        icon: "automation",
-        answerKey: "automation",
-        defaultValue: "Por definir con el asesor",
-        options: [
-          { value: "Por definir con el asesor", label: "Por definir con el asesor" },
-          { value: "Automatización nueva", label: "Automatización nueva" },
-          { value: "Revisión o reemplazo", label: "Revisión o reemplazo" },
-          { value: "Mantenimiento o soporte", label: "Mantenimiento o soporte" }
-        ]
-      },
-      {
-        id: "accessories",
-        kind: "multi-choice",
-        label: "Controles",
-        title: "Marca funciones de interés",
-        description: "La disponibilidad depende del sistema que se determine técnicamente.",
-        icon: "accessories",
-        answerKey: "accessories",
-        options: [
-          { value: "Control remoto", label: "Control remoto" },
-          { value: "Control desde celular", label: "Control desde celular" },
-          { value: "Sensor de seguridad", label: "Sensor de seguridad" },
-          { value: "Batería de respaldo", label: "Batería de respaldo" }
-        ]
-      },
-      installationStep([
-        { value: "Por definir", label: "Por definir" },
-        { value: "Incluir instalación", label: "Incluir instalación" }
-      ]),
-      notesStep
-    ]
+      choice("access-status", "Acceso", "Selecciona el acceso existente", "subtype", ["Puerta de garaje existente", "Portón existente", "Puerta peatonal existente"]),
+      choice("door-type", "Puerta", "Indica el tipo de puerta", "openingSystem", ["Seccional", "Levadiza", "Corrediza", "Batiente", "Pivotante"]),
+      choice("intervention", "Intervención", "Selecciona la intervención", "automation", ["Automatización nueva", "Revisión o reemplazo", "Mantenimiento o soporte"]),
+      choice("equipment", "Equipo", "Selecciona el equipo de referencia", "material", ["Motor para puerta seccional", "Motor para puerta corrediza", "Motor para puerta batiente", "Diagnóstico del equipo existente"]),
+      multi("automation-accessories", "Accesorios", "Selecciona controles y accesorios", ["Control remoto", "Control desde celular", "Sensor de seguridad", "Batería de respaldo"]),
+      notesStep,
+    ],
   },
   techos: {
     family: "techos",
     productGroup: "techos",
-    version: 1,
+    version: 2,
     steps: [
       solutionStep,
-      dimensionsStep("Indica el área aproximada", "Ancho aproximado (m)", "Largo aproximado (m)"),
-      {
-        id: "roof-type",
-        kind: "choice",
-        label: "Tipo",
-        title: "Elige el punto de partida",
-        description: "La estructura, apoyos y materiales se definirán después de evaluar el lugar.",
-        icon: "design",
-        answerKey: "subtype",
-        defaultValue: "Por definir",
-        options: [
-          { value: "Por definir", label: "Por definir" },
-          { value: "Techo o cobertura", label: "Techo o cobertura" },
-          { value: "Sol y sombra", label: "Sol y sombra" }
-        ]
-      },
-      {
-        id: "coverage",
-        kind: "choice",
-        label: "Cobertura",
-        title: "Indica el efecto de cobertura buscado",
-        description: "Es una intención visual; la solución constructiva se validará con el equipo.",
-        icon: "design",
-        answerKey: "design",
-        defaultValue: "Por definir",
-        options: [
-          { value: "Por definir", label: "Por definir" },
-          { value: "Abierta", label: "Abierta" },
-          { value: "Translúcida", label: "Translúcida" },
-          { value: "Cubierta", label: "Cubierta" }
-        ]
-      },
+      choice("roof-type", "Tipo", "Selecciona el tipo de techo", "subtype", ["Techo o cobertura", "Sol y sombra"]),
+      dimensionsStep("Indica las dimensiones del área", "Ancho (m)", "Largo (m)", { required: true }),
+      choice("coverage-roof", "Cobertura", "Selecciona una cobertura compatible", "design", ["Policarbonato", "Aluzinc", "Panel termoacústico"], { visibleWhen: { key: "subtype", values: ["Techo o cobertura"] } }),
+      choice("coverage-sun", "Cobertura", "Selecciona una cobertura compatible", "design", ["Lamas metálicas", "Madera", "Aluminio"], { visibleWhen: { key: "subtype", values: ["Sol y sombra"] } }),
+      choice("roof-structure", "Estructura", "Selecciona la estructura", "material", ["Acero pintado", "Acero galvanizado", "Aluminio"]),
       finishStep,
-      installationStep(fabricationInstallationOptions),
-      notesStep
-    ]
+      notesStep,
+    ],
   },
   mamparas: {
     family: "mamparas",
     productGroup: "ventanas",
-    version: 1,
+    version: 2,
     steps: [
       solutionStep,
-      dimensionsStep("Indica las medidas aproximadas del vano"),
-      {
-        id: "window-type",
-        kind: "choice",
-        label: "Tipo",
-        title: "Selecciona el tipo de cerramiento",
-        description: "La perfilería y el vidrio se definirán durante la evaluación técnica.",
-        icon: "design",
-        answerKey: "subtype",
-        defaultValue: "Por definir",
-        options: [
-          { value: "Por definir", label: "Por definir" },
-          { value: "Ventana", label: "Ventana" },
-          { value: "Mampara", label: "Mampara" },
-          { value: "División de vidrio", label: "División de vidrio" }
-        ]
-      },
-      {
-        id: "opening",
-        kind: "choice",
-        label: "Apertura",
-        title: "Indica el movimiento preferido",
-        description: "La viabilidad depende del vano y del sistema finalmente seleccionado.",
-        icon: "design",
-        answerKey: "design",
-        defaultValue: "Por definir",
-        options: [
-          { value: "Por definir", label: "Por definir" },
-          { value: "Fija", label: "Fija" },
-          { value: "Corrediza", label: "Corrediza" },
-          { value: "Batiente", label: "Batiente" },
-          { value: "Proyectante", label: "Proyectante" },
-          { value: "Combinada", label: "Combinada" }
-        ]
-      },
+      choice("window-type", "Producto", "Selecciona el producto", "subtype", ["Ventana", "Mampara", "División de vidrio"]),
+      choice("opening-window", "Apertura", "Selecciona una apertura compatible", "openingSystem", ["Fija", "Corrediza", "Batiente", "Proyectante", "Combinada"], { visibleWhen: { key: "subtype", values: ["Ventana"] } }),
+      choice("opening-screen", "Apertura", "Selecciona una apertura compatible", "openingSystem", ["Corrediza", "Batiente", "Plegable"], { visibleWhen: { key: "subtype", values: ["Mampara"] } }),
+      choice("opening-divider", "Configuración", "Selecciona la configuración", "openingSystem", ["Fija", "Batiente"], { visibleWhen: { key: "subtype", values: ["División de vidrio"] } }),
+      dimensionsStep("Indica las medidas del vano", "Ancho (m)", "Alto (m)", { required: true }),
+      choice("profile", "Perfil", "Selecciona el perfil o material", "material", ["Aluminio estándar", "Aluminio serie europea", "Acero"]),
+      choice("glass", "Vidrio", "Selecciona el tipo de vidrio", "design", ["Templado incoloro", "Templado bronce", "Laminado", "Insulado"]),
       finishStep,
-      installationStep(fabricationInstallationOptions),
-      notesStep
-    ]
+      notesStep,
+    ],
   },
   acero: {
     family: "acero",
     productGroup: "acero",
-    version: 1,
+    version: 2,
     steps: [
       solutionStep,
-      dimensionsStep("Indica las medidas aproximadas", "Longitud o ancho (m)", "Alto aproximado (m)"),
-      {
-        id: "steel-type",
-        kind: "choice",
-        label: "Tipo",
-        title: "Selecciona el elemento principal",
-        description: "El sistema de fijación y el detalle constructivo se definirán en la evaluación.",
-        icon: "design",
-        answerKey: "subtype",
-        defaultValue: "Por definir",
-        options: [
-          { value: "Por definir", label: "Por definir" },
-          { value: "Baranda", label: "Baranda" },
-          { value: "Pasamanos", label: "Pasamanos" },
-          { value: "Complemento metálico", label: "Complemento metálico" }
-        ]
-      },
+      choice("steel-type", "Producto", "Selecciona el elemento", "subtype", ["Baranda", "Pasamanos", "Complemento metálico"]),
+      dimensionsStep("Indica longitud y altura", "Longitud (m)", "Altura (m)", { required: true, visibleWhen: { key: "subtype", values: ["Baranda"] } }),
+      dimensionsStep("Indica la longitud", "Longitud (m)", "", { required: true, hideHeight: true, visibleWhen: { key: "subtype", values: ["Pasamanos", "Complemento metálico"] } }),
+      choice("steel-material", "Material", "Selecciona el material", "material", ["Acero inoxidable", "Acero al carbono", "Aluminio"]),
       finishStep,
-      installationStep(fabricationInstallationOptions),
-      notesStep
-    ]
+      notesStep,
+    ],
   },
   estructuras: {
     family: "estructuras",
     productGroup: "estructuras",
-    version: 1,
+    version: 2,
     steps: [
       solutionStep,
-      dimensionsStep("Indica las dimensiones generales aproximadas"),
-      {
-        id: "structure-type",
-        kind: "choice",
-        label: "Tipo",
-        title: "Selecciona la necesidad principal",
-        description: "El dimensionamiento estructural requiere evaluación y no se determina en este borrador.",
-        icon: "design",
-        answerKey: "subtype",
-        defaultValue: "Por definir",
-        options: [
-          { value: "Por definir", label: "Por definir" },
-          { value: "Estructura para cobertura", label: "Estructura para cobertura" },
-          { value: "Marco o cerramiento", label: "Marco o cerramiento" },
-          { value: "Fabricación especial", label: "Fabricación especial" }
-        ]
-      },
+      choice("structure-use", "Uso", "Selecciona el uso de la estructura", "subtype", ["Cobertura", "Taller o almacén", "Marco o cerramiento", "Fabricación especial"]),
+      dimensionsStep("Indica las dimensiones generales", "Ancho o longitud (m)", "Alto (m)", { required: true }),
+      choice("structure-material", "Material", "Selecciona el material de referencia", "material", ["Acero al carbono", "Acero galvanizado", "Acero inoxidable"]),
       finishStep,
-      installationStep(fabricationInstallationOptions),
-      notesStep
-    ]
+      notesStep,
+    ],
   },
   "puertas-principales": {
-    family: "puertas-principales", productGroup: "puertas-principales", version: 1,
-    steps: [solutionStep, dimensionsStep("Indica las medidas del acceso peatonal"), {
-      id: "entry-type", kind: "choice", label: "Tipo", title: "Selecciona el tipo de puerta", description: "La composición final se valida con el espacio.", icon: "design", answerKey: "subtype", defaultValue: "Por definir",
-      options: ["Por definir", "Metálica exterior", "Decorativa", "Contraplacada"].map((value) => ({ value, label: value }))
-    }, finishStep, installationStep(fabricationInstallationOptions), notesStep]
+    family: "puertas-principales",
+    productGroup: "puertas-principales",
+    version: 2,
+    steps: [solutionStep, notesStep],
   },
   cerco: {
-    family: "cerco", productGroup: "cerco", version: 1,
-    steps: [solutionStep, dimensionsStep("Indica el perímetro aproximado", "Metros lineales (m)", "Altura disponible (m)"), {
-      id: "property-type", kind: "choice", label: "Inmueble", title: "¿Dónde se instalará?", description: "La configuración se determina después de revisar el perímetro.", icon: "design", answerKey: "subtype", defaultValue: "Por definir",
-      options: ["Por definir", "Vivienda", "Comercio", "Condominio", "Industrial"].map((value) => ({ value, label: value }))
-    }, installationStep([{ value: "Por definir", label: "Por definir" }, { value: "Incluir instalación", label: "Incluir instalación" }]), notesStep]
+    family: "cerco",
+    productGroup: "cerco",
+    version: 2,
+    steps: [
+      solutionStep,
+      choice("property-type", "Inmueble", "Selecciona el tipo de inmueble", "subtype", ["Vivienda", "Comercio", "Condominio", "Industrial"]),
+      dimensionsStep("Indica el perímetro", "Metros lineales (m)", "", { required: true, hideHeight: true }),
+      choice("fence-lines", "Líneas", "Selecciona la configuración de referencia", "design", ["4 líneas", "5 líneas", "6 líneas", "8 líneas"]),
+      choice("fence-equipment", "Equipo", "Selecciona el energizador de referencia", "material", ["Residencial", "Comercial", "Alto recorrido"]),
+      multi("fence-accessories", "Componentes", "Selecciona componentes adicionales", ["Sirena", "Batería de respaldo", "Panel de aviso", "Módulo de monitoreo"]),
+      notesStep,
+    ],
   },
   drywall: {
-    family: "drywall", productGroup: "drywall", version: 1,
-    steps: [solutionStep, dimensionsStep("Indica el área o dimensiones aproximadas"), {
-      id: "drywall-type", kind: "choice", label: "Tipo", title: "Selecciona la intervención", description: "El sistema final depende del ambiente y soporte existente.", icon: "design", answerKey: "subtype", defaultValue: "Por definir",
-      options: ["Por definir", "División", "Cielorraso", "Revestimiento"].map((value) => ({ value, label: value }))
-    }, finishStep, installationStep(fabricationInstallationOptions), notesStep]
-  }
+    family: "drywall",
+    productGroup: "drywall",
+    version: 2,
+    steps: [
+      solutionStep,
+      choice("drywall-type", "Sistema", "Selecciona la intervención", "subtype", ["División", "Cielorraso", "Revestimiento"]),
+      dimensionsStep("Indica ancho y alto", "Ancho (m)", "Alto (m)", { required: true, visibleWhen: { key: "subtype", values: ["División", "Revestimiento"] } }),
+      dimensionsStep("Indica ancho y largo", "Ancho (m)", "Largo (m)", { required: true, visibleWhen: { key: "subtype", values: ["Cielorraso"] } }),
+      choice("drywall-board", "Placa", "Selecciona el tipo de placa", "material", ["Estándar", "RH resistente a humedad", "RF resistente al fuego"]),
+      choice("drywall-system", "Estructura", "Selecciona el sistema", "design", ["Simple", "Doble placa", "Con aislamiento"]),
+      finishStep,
+      notesStep,
+    ],
+  },
 };
 
 export const configuratorFamilyByProductGroup: Record<ProductGroup, ConfiguratorFamily> = {
@@ -376,24 +241,112 @@ export const configuratorFamilyByProductGroup: Record<ProductGroup, Configurator
   estructuras: "estructuras",
   "puertas-principales": "puertas-principales",
   cerco: "cerco",
-  drywall: "drywall"
+  drywall: "drywall",
 };
 
-export function getConfiguratorSchema(productGroup: ProductGroup, productId?: string, catalog: PublishedPricingDefinition[] = publishedPricingCatalog) {
+type ConfiguratorAnswerBag = Partial<Record<ConfiguratorChoiceKey, string>> & {
+  width?: string;
+  height?: string;
+  accessories?: string[];
+};
+
+export function isConfiguratorStepVisible(step: ConfiguratorStep, answers: ConfiguratorAnswerBag) {
+  if (!step.visibleWhen) return true;
+  const answer = answers[step.visibleWhen.key];
+  return typeof answer === "string" && step.visibleWhen.values.includes(answer);
+}
+
+export function sanitizeConfiguratorAnswers<T extends ConfiguratorAnswerBag>(productId: string, current: T, key: ConfiguratorChoiceKey, value: string): T {
+  const next = { ...current, [key]: value } as T & ConfiguratorAnswerBag;
+  if (key === "model") Object.assign(next, { variant: "", finish: "", automation: "", accessories: [] });
+  if (key === "variant") Object.assign(next, { finish: "", accessories: [] });
+  if (["seccionales", "levadizas", "corredizas", "batientes"].includes(productId) && key === "subtype") Object.assign(next, { automation: "", accessories: [] });
+  if (["seccionales", "levadizas", "corredizas", "batientes"].includes(productId) && key === "automation" && value === "Sistema manual") Object.assign(next, { accessories: [] });
+  if (["techos-coberturas", "ventanas-mamparas", "drywall-cielorrasos", "acero-barandas"].includes(productId) && key === "subtype") Object.assign(next, { design: "", openingSystem: "", width: "", height: "" });
+  return next;
+}
+
+export function pruneConfiguratorAnswers<T extends ConfiguratorAnswerBag>(schema: ConfiguratorSchema, current: T): T {
+  const next = { ...current, accessories: [...(current.accessories ?? [])] } as T & ConfiguratorAnswerBag;
+  const visible = schema.steps.filter((step) => isConfiguratorStepVisible(step, next));
+  const controlledKeys = [...new Set(schema.steps.filter((step): step is Extract<ConfiguratorStep, { kind: "choice" }> => step.kind === "choice").map((step) => step.answerKey))];
+  for (const key of controlledKeys) {
+    const value = next[key];
+    if (!value) continue;
+    const allowed = visible.filter((step): step is Extract<ConfiguratorStep, { kind: "choice" }> => step.kind === "choice" && step.answerKey === key).flatMap((step) => step.options.map((option) => option.value));
+    if (!allowed.includes(value)) Object.assign(next, { [key]: "" });
+  }
+  const allowedAccessories = visible.filter((step): step is Extract<ConfiguratorStep, { kind: "multi-choice" }> => step.kind === "multi-choice").flatMap((step) => step.options.map((option) => option.value));
+  next.accessories = (next.accessories ?? []).filter((accessory) => allowedAccessories.includes(accessory));
+  if (!visible.some((step) => step.kind === "dimensions")) Object.assign(next, { width: "", height: "" });
+  return next;
+}
+
+function applyStepOverrides(schema: ConfiguratorSchema, overrides: ConfiguratorStepOverride[] = []): ConfiguratorSchema {
+  const familyOverrides = overrides.filter((override) => override.family === schema.family);
+  if (!familyOverrides.length) return schema;
+  return {
+    ...schema,
+    steps: schema.steps.flatMap((step) => {
+      const override = familyOverrides.find((candidate) => candidate.stepId === step.id);
+      if (!override || step.kind === "product") return [step];
+      if (override.enabled === false) return [];
+      const common = {
+        ...step,
+        ...(override.label ? { label: override.label } : {}),
+        ...(override.title ? { title: override.title } : {}),
+        ...(override.description ? { description: override.description } : {}),
+        ...(override.visibleWhen !== undefined ? { visibleWhen: override.visibleWhen ?? undefined } : {}),
+      };
+      if ((step.kind === "choice" || step.kind === "multi-choice") && override.options?.length) return [{ ...common, options: override.options } as ConfiguratorStep];
+      return [common as ConfiguratorStep];
+    }),
+  };
+}
+
+export function getConfiguratorSchema(productGroup: ProductGroup, productId?: string, catalog: PublishedPricingDefinition[] = publishedPricingCatalog, overrides: ConfiguratorStepOverride[] = []) {
   const definition = productId ? pricingDefinition(productId, catalog) : undefined;
   if (definition?.classification === "IMPORTED") {
-    const models = definition?.importedModels ?? [];
-    return {
+    const models = definition.importedModels ?? [];
+    const accessories = models.flatMap((model) => model.accessories).filter((option, index, all) => all.findIndex((entry) => entry.id === option.id) === index);
+    return applyStepOverrides({
       family: "puertas-principales",
       productGroup: "puertas-principales",
-      version: 2,
+      version: 3,
       steps: [
         solutionStep,
-        { id: "model", kind: "choice", label: "Modelo", title: "Selecciona un modelo importado", description: "Solo se muestran modelos publicados por IRP.", icon: "design", answerKey: "model", defaultValue: "", options: models.map((model) => ({ value: model.id, label: model.name })) },
-        { id: "variant", kind: "choice", label: "Medida", title: "Selecciona una medida disponible", description: "Las puertas importadas no admiten medidas libres.", icon: "dimensions", answerKey: "variant", defaultValue: "", options: models.flatMap((model) => model.variants.map((variant) => ({ value: variant.id, label: variant.label }))) },
-        { ...finishStep, title: "Selecciona el color disponible", description: "Solo se muestran los colores publicados para la medida elegida." }
-      ]
-    } satisfies ConfiguratorSchema;
+        choice("model", "Modelo", "Selecciona un modelo importado", "model", models.map((model) => model.id)),
+        choice("variant", "Medida", "Selecciona una medida disponible", "variant", models.flatMap((model) => model.variants.map((variant) => variant.id))),
+        { ...finishStep, title: "Selecciona un acabado disponible", description: "Solo se muestran acabados compatibles con la variante elegida." },
+        ...(accessories.length ? [multi("imported-accessories", "Complementos", "Selecciona complementos compatibles", accessories.map((option) => option.id))] : []),
+        notesStep,
+      ],
+    } satisfies ConfiguratorSchema, overrides);
   }
-  return configuratorSchemas[configuratorFamilyByProductGroup[productGroup]];
+  if (definition?.classification === "MADE_TO_MEASURE" && productGroup === "puertas-principales") return applyStepOverrides(configuratorSchemas["puertas-medida"], overrides);
+  return applyStepOverrides(configuratorSchemas[configuratorFamilyByProductGroup[productGroup]], overrides);
+}
+
+export function validateConfiguratorCompatibility(productId: string, answers: ConfiguratorAnswerBag & { finish?: string }, catalog: PublishedPricingDefinition[] = publishedPricingCatalog, overrides: ConfiguratorStepOverride[] = []) {
+  const product = products.find((candidate) => candidate.id === productId);
+  if (!product) return "La solución seleccionada no existe.";
+  const schema = getConfiguratorSchema(product.group, productId, catalog, overrides);
+  const visibleSteps = schema.steps.filter((step) => isConfiguratorStepVisible(step, answers));
+  const unanswered = visibleSteps.find((step): step is Extract<ConfiguratorStep, { kind: "choice" }> => step.kind === "choice" && !answers[step.answerKey] && !step.defaultValue);
+  if (unanswered) return `Falta completar “${unanswered.label}” para calcular esta solución.`;
+  const choiceKeys: ConfiguratorChoiceKey[] = ["subtype", "design", "panel", "automation", "model", "variant", "openingSystem", "material"];
+  for (const key of choiceKeys) {
+    const value = answers[key];
+    if (!value) continue;
+    const step = visibleSteps.find((candidate): candidate is Extract<ConfiguratorStep, { kind: "choice" }> => candidate.kind === "choice" && candidate.answerKey === key);
+    if (!step) return `La respuesta “${value}” no corresponde al flujo de esta solución.`;
+    if (!step.options.some((option) => option.value === value)) return `La opción “${value}” no es compatible con esta solución.`;
+  }
+  const accessories = answers.accessories ?? [];
+  if (accessories.length) {
+    const allowed = visibleSteps.filter((step): step is Extract<ConfiguratorStep, { kind: "multi-choice" }> => step.kind === "multi-choice").flatMap((step) => step.options.map((option) => option.value));
+    const incompatible = accessories.find((accessory) => !allowed.includes(accessory));
+    if (incompatible) return `El complemento “${incompatible}” no es compatible con esta configuración.`;
+  }
+  return null;
 }

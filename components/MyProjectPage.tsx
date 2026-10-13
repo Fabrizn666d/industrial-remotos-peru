@@ -21,9 +21,8 @@ export function MyProjectPage() {
     material: item.configuration.material,
     finish: item.configuration.finish,
     automation: item.configuration.automation,
-    accessories: item.configuration.accessories,
-    installation: item.configuration.installation
-  } })), "", publicCatalog.definitions, `v${publicCatalog.version}`, publicCatalog.proposalSettings);
+    accessories: item.configuration.accessories
+  } })), "", publicCatalog.definitions, `v${publicCatalog.version}`, publicCatalog.proposalSettings, publicCatalog.configuratorStepOverrides);
 
   if (!items.length) {
     return (

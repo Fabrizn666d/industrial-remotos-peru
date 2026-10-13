@@ -33,8 +33,6 @@ export default async function AboutPage({ searchParams }: { searchParams?: Promi
     <main id="contenido" className={styles.page} data-about-sticky={content.hero.visible && content.hero.stickyEnabled ? "true" : "false"}>
       {content.hero.visible && <AboutHero content={content.hero} />}
 
-      {content.hero.visible && content.presentation.visible && <div className="irp-section-blend irp-section-blend--hero" aria-hidden="true" />}
-
       {content.presentation.visible && <section className={`${styles.presentation} ${styles.heroFollower}`} aria-labelledby="presentation-title" data-about-presentation data-motion-section>
         <div className={styles.presentationInner}>
           <div className={styles.presentationGrid}>

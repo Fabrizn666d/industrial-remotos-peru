@@ -12,7 +12,7 @@ export type ConfiguratorIcon =
   | "installation"
   | "notes";
 
-export type ConfiguratorChoiceKey = "subtype" | "design" | "panel" | "automation" | "installation" | "model" | "variant" | "openingSystem" | "material";
+export type ConfiguratorChoiceKey = "subtype" | "design" | "panel" | "automation" | "model" | "variant" | "openingSystem" | "material";
 
 export type ConfiguratorOption = {
   value: string;
@@ -26,6 +26,10 @@ type ConfiguratorStepBase = {
   title: string;
   description: string;
   icon: ConfiguratorIcon;
+  visibleWhen?: {
+    key: ConfiguratorChoiceKey;
+    values: string[];
+  };
 };
 
 export type ProductConfiguratorStep = ConfiguratorStepBase & {
@@ -37,6 +41,7 @@ export type DimensionsConfiguratorStep = ConfiguratorStepBase & {
   required?: boolean;
   widthLabel: string;
   heightLabel: string;
+  hideHeight?: boolean;
 };
 
 export type ChoiceConfiguratorStep = ConfiguratorStepBase & {
@@ -75,4 +80,18 @@ export type ConfiguratorSchema = {
   productGroup: ProductGroup;
   version: number;
   steps: ConfiguratorStep[];
+};
+
+export type ConfiguratorStepOverride = {
+  family: ConfiguratorFamily;
+  stepId: string;
+  enabled?: boolean;
+  label?: string;
+  title?: string;
+  description?: string;
+  options?: ConfiguratorOption[];
+  visibleWhen?: {
+    key: ConfiguratorChoiceKey;
+    values: string[];
+  } | null;
 };

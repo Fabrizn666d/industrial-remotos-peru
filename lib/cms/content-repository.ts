@@ -58,6 +58,21 @@ function defaultDocument<K extends CmsKey>(key: K): CmsDocument<K> {
 function normalizeDoorTaxonomy<K extends CmsKey>(key: K, content: CmsContentMap[K]): CmsContentMap[K] {
   if (key === "home") {
     const home = structuredClone(content as CmsContentMap["home"]);
+    const legacyIntroVideos = new Set([
+      "/NUEVO/Garage_door_opening_transition_1080p_20260921110657.mp4",
+      "/NUEVO/HERO%20MOPVIL.mp4"
+    ]);
+    const defaultHero = defaultCmsContent.home.hero;
+    if (legacyIntroVideos.has(home.hero.composition.desktopVideo.src) || legacyIntroVideos.has(home.hero.composition.mobileVideo.src)) {
+      home.hero.composition.desktopVideo = structuredClone(defaultHero.composition.desktopVideo);
+      home.hero.composition.mobileVideo = structuredClone(defaultHero.composition.mobileVideo);
+      home.hero.composition.desktopPoster = structuredClone(defaultHero.composition.desktopPoster);
+      home.hero.composition.mobilePoster = structuredClone(defaultHero.composition.mobilePoster);
+      home.hero.composition.fallbackImage = structuredClone(defaultHero.composition.fallbackImage);
+    }
+    if (legacyIntroVideos.has(home.hero.videoOnly.desktop.src) || legacyIntroVideos.has(home.hero.videoOnly.mobile.src)) {
+      home.hero.videoOnly = structuredClone(defaultHero.videoOnly);
+    }
     const legacyNeeds = new Set(["Puertas automáticas / Principales", "Puertas a medida", "Puertas de Garaje y Principales a Medida"]);
     if (home.needs.services.some((item) => legacyNeeds.has(item.title))) {
       const existing = new Map(home.needs.services.map((item) => [item.id, item]));

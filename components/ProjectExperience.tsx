@@ -6,7 +6,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useProject } from "@/components/ProjectContext";
-import { RobotAvatar } from "@/components/RobotAvatar";
 import { products } from "@/data/products";
 import { motionDuration, motionEase } from "@/lib/motion";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
@@ -25,12 +24,14 @@ const quickReplies = [
   { label: "No sé qué solución necesito", product: "estructuras-especiales" }
 ];
 
+const assistantIcon = "/NUEVO/COTIZADORES/Robot sonriente en insignia circular-3.png";
+
 function projectItemSummary(item: ReturnType<typeof useProject>["items"][number]) {
   const dimensions = item.configuration.dimensions;
   const measures = dimensions?.width || dimensions?.height
     ? `${dimensions.width ?? "?"} ${dimensions.unit} × ${dimensions.height ?? "?"} ${dimensions.unit}`
     : "Medidas por definir";
-  return [measures, item.configuration.finish, item.configuration.design, ...Object.values(item.configuration.customFields ?? {})]
+  return [measures, item.configuration.finish, item.configuration.design]
     .filter((value): value is string => Boolean(value) && value !== "Por definir")
     .join(" · ");
 }
@@ -66,7 +67,7 @@ export function ProjectExperience() {
 
   const selectedProduct = quickReplies.find((reply) => reply.label === selected)?.product ?? "estructuras-especiales";
   const recommendation = products.find((product) => product.id === selectedProduct) || products[0];
-  const projectPricing = calculateProjectPrice(items.map((item) => ({ productId: item.productId, quantity: item.quantity, configuration: { width: item.configuration.dimensions?.width, height: item.configuration.dimensions?.height, subtype: item.configuration.subtype, model: item.configuration.model, variant: item.configuration.variant, openingSystem: item.configuration.openingSystem, design: item.configuration.design, material: item.configuration.material, finish: item.configuration.finish, automation: item.configuration.automation, accessories: item.configuration.accessories, installation: item.configuration.installation } })), "", publicCatalog.definitions, `v${publicCatalog.version}`, publicCatalog.proposalSettings);
+  const projectPricing = calculateProjectPrice(items.map((item) => ({ productId: item.productId, quantity: item.quantity, configuration: { width: item.configuration.dimensions?.width, height: item.configuration.dimensions?.height, subtype: item.configuration.subtype, model: item.configuration.model, variant: item.configuration.variant, openingSystem: item.configuration.openingSystem, design: item.configuration.design, material: item.configuration.material, finish: item.configuration.finish, automation: item.configuration.automation, accessories: item.configuration.accessories } })), "", publicCatalog.definitions, `v${publicCatalog.version}`, publicCatalog.proposalSettings, publicCatalog.configuratorStepOverrides);
 
   return (
     <>
@@ -79,7 +80,7 @@ export function ProjectExperience() {
           )}
         </AnimatePresence>
         <button type="button" className="quote-assistant__button" onClick={() => { setAssistantOpen((value) => !value); setTip(false); }} aria-label="Abrir asistente de cotización" title="¿Necesitas ayuda?">
-          <RobotAvatar />
+          <Image src={assistantIcon} alt="" width={68} height={68} priority />
           <i />
           <span>Asistente</span>
         </button>
@@ -90,7 +91,7 @@ export function ProjectExperience() {
           <motion.aside className="assistant-panel" role="dialog" aria-modal="true" aria-label="Asistente de cotización" initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 24, scale: .98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 18, scale: .98 }} transition={{ duration: reduceMotion ? motionDuration.reduced : .48, ease: motionEase.enter }}>
             <button className="panel-close" type="button" onClick={() => setAssistantOpen(false)} aria-label="Cerrar asistente"><X size={18} /></button>
             <div className="assistant-panel__head">
-              <span className="assistant-panel__avatar"><RobotAvatar /></span>
+              <span className="assistant-panel__avatar"><Image src={assistantIcon} alt="" width={82} height={82} /></span>
               <div><small><i /> En línea · IRP Asistente</small><h2>Hola 👋 ¿En qué te ayudamos?</h2></div>
               <Sparkles size={18} />
             </div>
@@ -132,7 +133,7 @@ export function ProjectExperience() {
                 <>
                   <div className="project-drawer__list">
                     {items.map((item) => {
-                      const priced = calculateItemPrice({ productId: item.productId, quantity: item.quantity, configuration: { width: item.configuration.dimensions?.width, height: item.configuration.dimensions?.height, subtype: item.configuration.subtype, model: item.configuration.model, variant: item.configuration.variant, openingSystem: item.configuration.openingSystem, design: item.configuration.design, material: item.configuration.material, finish: item.configuration.finish, automation: item.configuration.automation, accessories: item.configuration.accessories, installation: item.configuration.installation } }, publicCatalog.definitions, `v${publicCatalog.version}`);
+                      const priced = calculateItemPrice({ productId: item.productId, quantity: item.quantity, configuration: { width: item.configuration.dimensions?.width, height: item.configuration.dimensions?.height, subtype: item.configuration.subtype, model: item.configuration.model, variant: item.configuration.variant, openingSystem: item.configuration.openingSystem, design: item.configuration.design, material: item.configuration.material, finish: item.configuration.finish, automation: item.configuration.automation, accessories: item.configuration.accessories } }, publicCatalog.definitions, `v${publicCatalog.version}`, publicCatalog.configuratorStepOverrides);
                       return (
                       <article key={item.id}>
                         <span className="project-drawer__image"><Image src={item.image} alt="" fill sizes="96px" className="object-cover" /></span>

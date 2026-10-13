@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { useProject } from "@/components/ProjectContext";
-import { products } from "@/data/products";
 import { LAST_REQUEST_KEY, type QuoteContact, type QuoteDetails, type SubmittedRequest } from "@/types/quote";
 import type { QuoteItem, QuoteItemConfiguration } from "@/types/catalog";
 import { readSessionAttribution } from "@/lib/attribution";
@@ -15,12 +14,25 @@ import type { ProjectPricing } from "@/lib/pricing/contracts";
 import { usePublicPricingCatalog } from "@/lib/pricing/use-public-catalog";
 
 const steps = [
-  { label: "Mi proyecto", icon: ShoppingBag },
-  { label: "Datos", icon: Contact },
-  { label: "Detalles", icon: ClipboardList },
-  { label: "Resumen", icon: FileCheck2 },
+  { label: "Resumen", icon: ShoppingBag },
+  { label: "Datos del cliente", icon: Contact },
+  { label: "Datos del proyecto", icon: ClipboardList },
+  { label: "Confirmación", icon: FileCheck2 },
   { label: "Enviar", icon: Send }
 ];
+
+const projectContextOptions = [
+  "Vivienda unifamiliar",
+  "Departamento",
+  "Condominio o edificio residencial",
+  "Negocio o local comercial",
+  "Oficina",
+  "Terreno u obra nueva",
+  "Proyecto inmobiliario",
+  "Industria o almacén",
+  "Institución o espacio público",
+  "Otro"
+] as const;
 
 const initialContact: QuoteContact = { name: "", email: "", phone: "", documentType: "DNI", documentNumber: "", businessName: "" };
 const initialDetails: QuoteDetails = { projectType: "", location: "", region: "Lima", province: "Lima", district: "", address: "", stage: "En evaluación", estimatedDate: "", notes: "" };
@@ -60,7 +72,6 @@ function compactConfiguration(configuration: QuoteItemConfiguration) {
   if (configuration.openingSystem) values.openingSystem = configuration.openingSystem;
   if (configuration.material) values.material = configuration.material;
   if (configuration.accessories.length) values.accessories = configuration.accessories;
-  if (configuration.installation) values.installation = configuration.installation;
   if (configuration.notes) values.notes = configuration.notes;
   for (const [key, value] of Object.entries(configuration.customFields ?? {})) values[`custom_${key}`] = value;
   return values;
@@ -73,7 +84,8 @@ function dimensionsLabel(item: QuoteItem) {
 }
 
 function itemSummary(item: QuoteItem) {
-  return [dimensionsLabel(item), item.configuration.finish, item.configuration.design]
+  const scope = item.productId === "puertas-principales" ? "Suministro e instalación incluidos" : "Ejecución e instalación incluidas";
+  return [dimensionsLabel(item), item.configuration.finish, item.configuration.design, scope]
     .filter((value): value is string => Boolean(value) && value !== "Por definir")
     .join(" · ");
 }
@@ -89,7 +101,7 @@ export function CheckoutExperience() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const submissionId = useRef<string | null>(null);
-  const pricing = calculateProjectPrice(items.map((item) => ({ productId: item.productId, quantity: item.quantity, configuration: { width: item.configuration.dimensions?.width, height: item.configuration.dimensions?.height, subtype: item.configuration.subtype, model: item.configuration.model, variant: item.configuration.variant, openingSystem: item.configuration.openingSystem, design: item.configuration.design, material: item.configuration.material, finish: item.configuration.finish, automation: item.configuration.automation, accessories: item.configuration.accessories, installation: item.configuration.installation } })), details.location, publicCatalog.definitions, `v${publicCatalog.version}`, publicCatalog.proposalSettings);
+  const pricing = calculateProjectPrice(items.map((item) => ({ productId: item.productId, quantity: item.quantity, configuration: { width: item.configuration.dimensions?.width, height: item.configuration.dimensions?.height, subtype: item.configuration.subtype, model: item.configuration.model, variant: item.configuration.variant, openingSystem: item.configuration.openingSystem, design: item.configuration.design, material: item.configuration.material, finish: item.configuration.finish, automation: item.configuration.automation, accessories: item.configuration.accessories } })), details.location, publicCatalog.definitions, `v${publicCatalog.version}`, publicCatalog.proposalSettings, publicCatalog.configuratorStepOverrides);
 
   const valid = [
     items.length > 0,
@@ -195,7 +207,7 @@ export function CheckoutExperience() {
           <section className="checkout-card">
             {active === 0 && <CheckoutCartReview items={items} pricing={pricing} />}
             {active === 1 && <div className="checkout-panel"><div className="checkout-panel__heading"><span className="eyebrow">Datos de contacto</span><h1>¿Cómo nos comunicamos contigo?</h1><p>Usaremos estos datos únicamente para atender esta solicitud.</p></div><div className="checkout-form-grid"><label>Nombres y apellidos<input value={contact.name} onChange={(event) => setContact({ ...contact, name: event.target.value })} placeholder="Nombre completo" autoComplete="name" />{touched && contact.name.trim().length < 2 && <small>Ingresa tu nombre.</small>}</label><label>Correo electrónico<input value={contact.email} onChange={(event) => setContact({ ...contact, email: event.target.value })} placeholder="nombre@correo.com" type="email" autoComplete="email" />{touched && !/^\S+@\S+\.\S+$/.test(contact.email) && <small>Ingresa un correo válido.</small>}</label><label>WhatsApp / teléfono<input value={contact.phone} onChange={(event) => setContact({ ...contact, phone: event.target.value })} placeholder="Número de contacto" type="tel" autoComplete="tel" />{touched && contact.phone.replace(/\D/g, "").length < 7 && <small>Ingresa un teléfono válido.</small>}</label><label>Tipo de documento<select value={contact.documentType} onChange={(event) => setContact({ ...contact, documentType: event.target.value as "DNI" | "RUC", documentNumber: "", businessName: "" })}><option value="DNI">DNI</option><option value="RUC">RUC</option></select></label><label>{contact.documentType}<input value={contact.documentNumber} onChange={(event) => setContact({ ...contact, documentNumber: event.target.value.replace(/\D/g, "").slice(0, contact.documentType === "DNI" ? 8 : 11) })} inputMode="numeric" autoComplete="off" placeholder={contact.documentType === "DNI" ? "8 dígitos" : "11 dígitos"} />{touched && !new RegExp(`^\\d{${contact.documentType === "DNI" ? 8 : 11}}$`).test(contact.documentNumber) && <small>Revisa el número de documento.</small>}</label>{contact.documentType === "RUC" && <label>Razón social<input value={contact.businessName} onChange={(event) => setContact({ ...contact, businessName: event.target.value })} placeholder="Razón social" autoComplete="organization" />{touched && contact.businessName.trim().length < 2 && <small>Ingresa la razón social.</small>}</label>}</div></div>}
-            {active === 2 && <div className="checkout-panel"><div className="checkout-panel__heading"><span className="eyebrow">Detalles del proyecto</span><h1>Cuéntanos dónde y cuándo.</h1><p>Las medidas y especificaciones finales se validarán durante la asesoría.</p></div><div className="checkout-details-grid"><div className="checkout-form-grid"><label>Tipo de proyecto<select value={details.projectType} onChange={(event) => setDetails({ ...details, projectType: event.target.value })}><option value="">Selecciona una opción</option>{products.map((product) => <option value={product.name} key={product.id}>{product.name}</option>)}</select>{touched && !details.projectType && <small>Selecciona el tipo de proyecto.</small>}</label><label>Región<input value={details.region} onChange={(event) => setDetails({ ...details, region: event.target.value })} autoComplete="address-level1" /></label><label>Provincia<input value={details.province} onChange={(event) => setDetails({ ...details, province: event.target.value })} autoComplete="address-level2" /></label><label>Distrito<input value={details.district} onChange={(event) => { const district = event.target.value; setDetails({ ...details, district, location: [district, details.province, details.region].filter(Boolean).join(", ") }); }} autoComplete="address-level3" />{touched && details.district.trim().length < 2 && <small>Indica el distrito.</small>}</label><label className="is-wide">Dirección o referencia<input value={details.address} onChange={(event) => setDetails({ ...details, address: event.target.value })} autoComplete="street-address" placeholder="Dirección, urbanización o referencia" />{touched && details.address.trim().length < 3 && <small>Indica una referencia.</small>}</label><label>Etapa del proyecto<select value={details.stage} onChange={(event) => setDetails({ ...details, stage: event.target.value })}><option>En evaluación</option><option>En construcción</option><option>Remodelación</option><option>Listo para instalar</option></select></label><label>Fecha estimada<input value={details.estimatedDate} onChange={(event) => setDetails({ ...details, estimatedDate: event.target.value })} type="month" /></label><label className="is-wide">Observaciones<textarea value={details.notes} onChange={(event) => setDetails({ ...details, notes: event.target.value })} rows={4} placeholder="Uso del espacio, preferencias o restricciones." /></label></div><div className="checkout-dropzone" role="note"><Info size={25} /><b>Fotos y planos</b><span>El envío de archivos se habilitará con almacenamiento privado. No mostramos una carga ficticia.</span></div></div></div>}
+            {active === 2 && <div className="checkout-panel"><div className="checkout-panel__heading"><span className="eyebrow">Detalles del proyecto</span><h1>Cuéntanos dónde y cuándo.</h1><p>Las medidas y especificaciones finales se validarán durante la asesoría.</p></div><div className="checkout-details-grid"><div className="checkout-form-grid"><label>Tipo de inmueble o proyecto<select value={details.projectType} onChange={(event) => setDetails({ ...details, projectType: event.target.value })}><option value="">Selecciona el contexto</option>{projectContextOptions.map((option) => <option value={option} key={option}>{option}</option>)}</select>{touched && !details.projectType && <small>Selecciona el tipo de inmueble o proyecto.</small>}</label><label>Región<input value={details.region} onChange={(event) => setDetails({ ...details, region: event.target.value })} autoComplete="address-level1" /></label><label>Provincia<input value={details.province} onChange={(event) => setDetails({ ...details, province: event.target.value })} autoComplete="address-level2" /></label><label>Distrito<input value={details.district} onChange={(event) => { const district = event.target.value; setDetails({ ...details, district, location: [district, details.province, details.region].filter(Boolean).join(", ") }); }} autoComplete="address-level3" />{touched && details.district.trim().length < 2 && <small>Indica el distrito.</small>}</label><label className="is-wide">Dirección o referencia<input value={details.address} onChange={(event) => setDetails({ ...details, address: event.target.value })} autoComplete="street-address" placeholder="Dirección, urbanización o referencia" />{touched && details.address.trim().length < 3 && <small>Indica una referencia.</small>}</label><label>Etapa del proyecto<select value={details.stage} onChange={(event) => setDetails({ ...details, stage: event.target.value })}><option>En evaluación</option><option>En construcción</option><option>Remodelación</option><option>Listo para instalar</option></select></label><label>Fecha estimada<input value={details.estimatedDate} onChange={(event) => setDetails({ ...details, estimatedDate: event.target.value })} type="month" /></label><label className="is-wide">Observaciones<textarea value={details.notes} onChange={(event) => setDetails({ ...details, notes: event.target.value })} rows={4} placeholder="Uso del espacio, preferencias o restricciones." /></label></div><div className="checkout-dropzone" role="note"><Info size={25} /><b>Fotos y planos</b><span>El envío de archivos se habilitará con almacenamiento privado. No mostramos una carga ficticia.</span></div></div></div>}
             {active === 3 && <CheckoutSummary contact={contact} details={details} items={items} pricing={pricing} />}
             {active === 4 && <div className="checkout-send"><span><Send size={30} /></span><small className="eyebrow">Todo listo</small><h1>Registra tu propuesta.</h1><p>El servidor volverá a validar catálogo, compatibilidades y precios antes de guardar.</p><div><b>{contact.name}</b><span>{contact.email} · {contact.phone}</span><strong>{pricing.estimatedTotalMinor !== null ? formatPublicPrice(pricing.estimatedTotalMinor) : "Requiere evaluación"}</strong></div><button className="button button--primary" type="button" onClick={submit} disabled={submitting}>{submitting ? "Preparando tu propuesta…" : "Confirmar y enviar"} <ArrowRight size={17} /></button>{submitError && <small role="alert">{submitError}</small>}<small>{PROPOSAL_DISCLAIMER}</small></div>}
           </section>

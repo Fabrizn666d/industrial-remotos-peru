@@ -46,7 +46,7 @@ function MediaOnlyHero({ content }: { content: HeroContent }) {
 }
 
 function CompositionHero({ content }: { content: HeroContent["composition"] }) {
-  const { status, logoRef, markPlaying, beginReveal, complete, fail } = useHomeIntro();
+  const { logoRef, markPlaying, beginReveal, complete, fail } = useHomeIntro();
   const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -65,12 +65,17 @@ function CompositionHero({ content }: { content: HeroContent["composition"] }) {
   const waveRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
   const stopVideoClockRef = useRef<() => void>(() => {});
-  const fallback = status === "failed" || status === "skipped";
+  const staticHero = true;
+  const fallback = true;
 
   useLayoutEffect(() => {
     const section = sectionRef.current;
     const video = videoRef.current;
     if (!section) return;
+    if (staticHero) {
+      section.dataset.heroSettled = "true";
+      return;
+    }
     const header = document.querySelector<HTMLElement>(".site-header");
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const mobile = window.matchMedia("(max-width: 900px)").matches;
@@ -198,6 +203,7 @@ function CompositionHero({ content }: { content: HeroContent["composition"] }) {
   }, [beginReveal, complete, fail, fallback, logoRef, markPlaying]);
 
   useLayoutEffect(() => {
+    if (staticHero) return;
     if (!fallback) return;
     stopVideoClockRef.current();
     const reveal = () => timelineRef.current?.timeScale(1.6).restart();
@@ -211,20 +217,16 @@ function CompositionHero({ content }: { content: HeroContent["composition"] }) {
   }, [fallback]);
 
   return (
-    <section ref={sectionRef} className="irp-hero" id="inicio" data-intro-status={status}>
-      <link rel="preload" as="image" href={HOME_INTRO_ASSETS.firstFrame} media="(min-width: 768px)" fetchPriority="high" />
-      <link rel="preload" as="image" href={HOME_INTRO_ASSETS.mobileFirstFrame} media="(max-width: 767px)" fetchPriority="high" />
+    <section ref={sectionRef} className="irp-hero irp-hero--static" id="inicio" data-intro-status="completed">
+      <link rel="preload" as="image" href={content.fallbackImage.src} media="(min-width: 768px)" fetchPriority="high" />
+      <link rel="preload" as="image" href={content.mobilePoster.src} media="(max-width: 767px)" fetchPriority="high" />
       <div className="irp-hero__media">
-        <picture className="irp-hero__last-frame" aria-hidden="true">
-          <source media="(max-width: 767px)" srcSet={content.mobilePoster.src} />
-          <img src={content.desktopPoster.src} alt="" width={1920} height={1080} />
-        </picture>
         {fallback ? <picture className="irp-hero__fallback">
           <source media="(max-width: 767px)" srcSet={content.mobilePoster.src} />
           <img src={content.fallbackImage.src} alt={content.fallbackImage.alt} width={1920} height={1080} />
         </picture> :
           <video ref={videoRef} className="irp-hero__video" preload="auto" autoPlay muted playsInline onError={fail}
-            disablePictureInPicture tabIndex={-1} aria-label="Acceso automatizado abriéndose hacia una casa moderna">
+            disablePictureInPicture tabIndex={-1} aria-label={content.desktopVideo.alt}>
             <source media="(max-width: 767px)" src={content.mobileVideo.src} type="video/mp4" onError={fail} />
             <source media="(min-width: 768px)" src={content.desktopVideo.src} type="video/mp4" onError={fail} />
           </video>}

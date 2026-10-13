@@ -1,5 +1,7 @@
 import { PUBLIC_CATALOG_VERSION, pricingDefinition, type PublishedPricingDefinition } from "@/lib/pricing/catalog";
 import { DEFAULT_PROPOSAL_TERMS, ProjectPricingSchema, type PriceBreakdownLine, type PriceRequestItem, type PricingResult, type ProjectPricing, type ProposalTerms } from "@/lib/pricing/contracts";
+import { validateConfiguratorCompatibility } from "@/data/configurator-schemas";
+import type { ConfiguratorStepOverride } from "@/types/configurator";
 
 export const PROPOSAL_DISCLAIMER = DEFAULT_PROPOSAL_TERMS.disclaimer;
 
@@ -19,7 +21,15 @@ function multiplyMinor(value: number, quantity: number) {
   return Math.round(value * quantity);
 }
 
-export function calculateItemPrice(item: PriceRequestItem, catalog?: PublishedPricingDefinition[], catalogVersion = PUBLIC_CATALOG_VERSION): PricingResult {
+function appendIncludedInstallation(breakdown: PriceBreakdownLine[], amountMinor: number, quantity: number, includedInRate = false) {
+  breakdown.push({
+    key: "installation",
+    label: includedInRate || amountMinor === 0 ? "Instalación incluida en la tarifa" : "Instalación incluida",
+    amountMinor: includedInRate ? 0 : multiplyMinor(amountMinor, quantity),
+  });
+}
+
+export function calculateItemPrice(item: PriceRequestItem, catalog?: PublishedPricingDefinition[], catalogVersion = PUBLIC_CATALOG_VERSION, stepOverrides: ConfiguratorStepOverride[] = []): PricingResult {
   const requiresEvaluation = (
     classification: PricingResult["classification"],
     reason: string,
@@ -28,6 +38,8 @@ export function calculateItemPrice(item: PriceRequestItem, catalog?: PublishedPr
   const definition = pricingDefinition(item.productId, catalog);
   if (!definition) return requiresEvaluation("NOT_APPLICABLE", "Esta solución todavía no tiene una tarifa publicada y requiere evaluación técnica.", ["tarifa publicada"]);
   const config = item.configuration;
+  const incompatibility = validateConfiguratorCompatibility(item.productId, config, catalog, stepOverrides);
+  if (incompatibility) return requiresEvaluation(definition.classification, incompatibility, ["configuración compatible"]);
   const demoAssumptions = definition.demo ? ["Tarifa referencial editable, pendiente de validación comercial por Industrial Remotos Perú."] : [];
 
   if (definition.classification === "IMPORTED") {
@@ -36,18 +48,15 @@ export function calculateItemPrice(item: PriceRequestItem, catalog?: PublishedPr
     const variant = model.variants.find((entry) => entry.id === config.variant);
     if (!variant) return requiresEvaluation("IMPORTED", "La medida debe corresponder a una variante publicada para el modelo.", ["medida disponible"]);
     if (!config.finish || !variant.allowedFinishes.includes(config.finish)) return requiresEvaluation("IMPORTED", "El acabado elegido no está habilitado para esta variante.", ["acabado compatible"]);
-    const automation = config.automation ? model.automation.find((entry) => entry.id === config.automation || entry.label === config.automation) : undefined;
-    if (config.automation && !automation) return requiresEvaluation("IMPORTED", "La automatización indicada no está habilitada para este modelo.", ["automatización compatible"]);
     const breakdown: PriceBreakdownLine[] = [
       { key: "variant", label: `${model.name} · ${variant.label} · ${config.finish}`, amountMinor: multiplyMinor(variant.priceMinorByFinish[config.finish], item.quantity) }
     ];
-    if (automation?.priceMinor) breakdown.push({ key: "automation", label: automation.label, amountMinor: multiplyMinor(automation.priceMinor, item.quantity) });
     for (const accessory of config.accessories) {
       const published = model.accessories.find((entry) => entry.id === accessory || entry.label === accessory);
       if (!published) return requiresEvaluation("IMPORTED", `El complemento “${accessory}” no está habilitado para este modelo.`, ["complemento compatible"]);
       breakdown.push({ key: `accessory:${published.id}`, label: published.label, amountMinor: multiplyMinor(published.priceMinor, item.quantity) });
     }
-    if (config.installation === "Incluir instalación") breakdown.push({ key: "installation", label: "Instalación", amountMinor: multiplyMinor(22_000, item.quantity) });
+    appendIncludedInstallation(breakdown, definition.installationMinor ?? 0, item.quantity, definition.installationIncludedInRate);
     const totalMinor = breakdown.reduce((sum, line) => sum + line.amountMinor, 0);
     return { status: "ESTIMATED", catalogVersion, classification: "IMPORTED", subtotalMinor: totalMinor, totalMinor, breakdown, assumptions: ["Medida cerrada y acabado compatibles con la variante publicada.", ...demoAssumptions], currency: "PEN" };
   }
@@ -78,8 +87,18 @@ export function calculateItemPrice(item: PriceRequestItem, catalog?: PublishedPr
       breakdown.push({ key: "quantity", label: `${billable.toFixed(2)} ${unit} × S/ ${(unitPriceMinor / 100).toFixed(2)}`, amountMinor: Math.round(billable * unitPriceMinor * item.quantity) });
       const finishBps = rule.finishPercentBps[config.finish || ""] ?? 0;
       if (finishBps) { const base = breakdown.reduce((sum, line) => sum + line.amountMinor, 0); breakdown.push({ key: "finish", label: `Acabado ${config.finish}`, amountMinor: Math.round(base * finishBps / 10_000) }); }
+      for (const option of [config.openingSystem, config.design, config.material]) {
+        if (!option) continue;
+        const optionMinor = rule.fixedPriceMinorByOption[option];
+        if (optionMinor) breakdown.push({ key: `option:${option}`, label: option, amountMinor: multiplyMinor(optionMinor, item.quantity) });
+      }
     }
-    if (config.installation === "Incluir instalación" && rule.installationMinor) breakdown.push({ key: "installation", label: "Instalación", amountMinor: multiplyMinor(rule.installationMinor, item.quantity) });
+    for (const accessory of config.accessories) {
+      const amount = rule.accessoryPrices?.[accessory];
+      if (amount === undefined) return requiresEvaluation("NOT_APPLICABLE", `El accesorio “${accessory}” no tiene una tarifa compatible publicada.`, ["accesorio compatible"]);
+      breakdown.push({ key: `accessory:${accessory}`, label: accessory, amountMinor: multiplyMinor(amount, item.quantity) });
+    }
+    appendIncludedInstallation(breakdown, rule.installationMinor, item.quantity, rule.installationIncludedInRate);
     const totalMinor = breakdown.reduce((sum, line) => sum + line.amountMinor, 0);
     return { status: "ESTIMATED", catalogVersion, classification: "NOT_APPLICABLE", subtotalMinor: totalMinor, totalMinor, breakdown, assumptions: demoAssumptions, currency: "PEN" };
   }
@@ -110,7 +129,7 @@ export function calculateItemPrice(item: PriceRequestItem, catalog?: PublishedPr
       if (amount === undefined) return requiresEvaluation("MADE_TO_MEASURE", `El accesorio “${accessory}” no está publicado para esta solución.`, ["accesorio compatible"]);
       breakdown.push({ key: `accessory:${accessory}`, label: accessory, amountMinor: multiplyMinor(amount, item.quantity) });
     }
-    if (config.installation === "Incluir instalación") breakdown.push({ key: "installation", label: "Instalación", amountMinor: multiplyMinor(rule.installationMinor, item.quantity) });
+    appendIncludedInstallation(breakdown, rule.installationMinor, item.quantity, rule.installationIncludedInRate);
     const totalMinor = breakdown.reduce((sum, line) => sum + line.amountMinor, 0);
     return { status: "ESTIMATED", catalogVersion, classification: "MADE_TO_MEASURE", subtotalMinor: totalMinor, totalMinor, breakdown, assumptions: [...(areaM2 < rule.minimumAreaM2 ? [`Área real ${areaM2.toFixed(2)} m²; mínimo facturable ${rule.minimumAreaM2.toFixed(2)} m².`] : []), ...demoAssumptions], currency: "PEN" };
   }
@@ -120,7 +139,7 @@ export function calculateItemPrice(item: PriceRequestItem, catalog?: PublishedPr
     const areaM2 = Math.round(width * height * 10_000) / 10_000;
     const billableAreaM2 = Math.max(areaM2, rule.minimumAreaM2);
     const breakdown: PriceBreakdownLine[] = [{ key: "base", label: `${billableAreaM2.toFixed(2)} m² facturables`, amountMinor: Math.round(billableAreaM2 * rule.unitPriceMinor * item.quantity) }];
-    if (config.installation === "Incluir instalación") breakdown.push({ key: "installation", label: "Instalación", amountMinor: multiplyMinor(rule.installationMinor, item.quantity) });
+    appendIncludedInstallation(breakdown, rule.installationMinor, item.quantity, rule.installationIncludedInRate);
     const totalMinor = breakdown.reduce((sum, line) => sum + line.amountMinor, 0);
     return { status: "ESTIMATED", catalogVersion, classification: "NOT_APPLICABLE", subtotalMinor: totalMinor, totalMinor, breakdown, assumptions: [...(areaM2 < rule.minimumAreaM2 ? [`Mínimo facturable ${rule.minimumAreaM2.toFixed(2)} m².`] : []), ...demoAssumptions], currency: "PEN" };
   }
@@ -128,8 +147,8 @@ export function calculateItemPrice(item: PriceRequestItem, catalog?: PublishedPr
   return requiresEvaluation(definition.classification, "Esta solución requiere evaluación comercial.", ["regla de precio"]);
 }
 
-export function calculateProjectPrice(items: PriceRequestItem[], location: string, catalog?: PublishedPricingDefinition[], catalogVersion = PUBLIC_CATALOG_VERSION, proposalTerms: ProposalTerms = DEFAULT_PROPOSAL_TERMS): ProjectPricing {
-  const pricedItems = items.map((item) => ({ productId: item.productId, quantity: item.quantity, result: calculateItemPrice(item, catalog, catalogVersion) }));
+export function calculateProjectPrice(items: PriceRequestItem[], location: string, catalog?: PublishedPricingDefinition[], catalogVersion = PUBLIC_CATALOG_VERSION, proposalTerms: ProposalTerms = DEFAULT_PROPOSAL_TERMS, stepOverrides: ConfiguratorStepOverride[] = []): ProjectPricing {
+  const pricedItems = items.map((item) => ({ productId: item.productId, quantity: item.quantity, result: calculateItemPrice(item, catalog, catalogVersion, stepOverrides) }));
   const estimated = pricedItems.filter((item) => item.result.status === "ESTIMATED");
   const pending = pricedItems.length - estimated.length;
   const proposalCharges: PriceBreakdownLine[] = [];

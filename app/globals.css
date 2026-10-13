@@ -617,7 +617,7 @@ em { color: var(--blue); font-style: normal; }
 /* Assistant and project drawer */
 .quote-assistant { position: fixed; right: clamp(14px, 2vw, 28px); bottom: clamp(14px, 2vw, 28px); z-index: 75; }
 .quote-assistant__button { position: relative; display: block; width: 68px; height: 68px; overflow: hidden; border: 1px solid rgba(255,255,255,.35); border-radius: 50%; background: radial-gradient(circle at 35% 24%, #2695ff, #07315d 68%, #061525); box-shadow: 0 15px 42px rgba(4,28,54,.35), 0 0 0 5px rgba(10,105,232,.08); animation: bot-breathe 5s ease-in-out infinite; }
-.quote-assistant__button img { transform: scale(1.28) translateY(7px); }
+.quote-assistant__button img { width: 100%; height: 100%; object-fit: cover; transform: none; }
 .quote-assistant__button i { position: absolute; right: 5px; bottom: 5px; width: 10px; height: 10px; border: 2px solid white; border-radius: 50%; background: #29c56f; }
 .quote-assistant__tip { position: absolute; right: calc(100% + 13px); bottom: 10px; width: max-content; max-width: 190px; border: 1px solid var(--border); border-radius: 15px 15px 4px 15px; background: white; padding: 11px 13px; box-shadow: var(--shadow); color: var(--ink); font-size: 10px; font-weight: 700; }
 @keyframes bot-breathe { 0%, 88%, 100% { transform: translateY(0); } 94% { transform: translateY(-3px); } }
@@ -626,7 +626,7 @@ em { color: var(--blue); font-style: normal; }
 .assistant-panel > .panel-close { position: absolute; top: 18px; right: 18px; z-index: 2; }
 .assistant-panel__head { display: flex; align-items: center; gap: 12px; padding-right: 40px; }
 .assistant-panel__avatar { position: relative; width: 82px; height: 82px; flex: 0 0 auto; overflow: hidden; border-radius: 24px; background: radial-gradient(circle at top, #ddecff, #a9ceff); }
-.assistant-panel__avatar img { transform: scale(1.1) translateY(8px); }
+.assistant-panel__avatar img { width: 100%; height: 100%; object-fit: cover; transform: none; }
 .assistant-panel__head small { color: var(--blue); font-size: 8px; font-weight: 750; text-transform: uppercase; }
 .assistant-panel__head h2 { margin: 3px 0 0; font-size: 17px; letter-spacing: -.03em; }
 .assistant-panel > p { color: var(--muted); font-size: 10px; line-height: 1.6; }
@@ -3325,6 +3325,12 @@ body:not(:has(.adminBoundary)) main .irp-advisor__copy p {
 
 
 /* HOME INTRO — exact video frames; logo has no entrance animation. */
+.irp-home-video-intro { position: fixed; z-index: 1000; inset: 0; overflow: hidden; background: #030b14; opacity: 1; pointer-events: auto; transition: opacity .38s cubic-bezier(.4,0,.2,1); }
+.irp-home-video-intro[data-leaving="true"] { opacity: 0; pointer-events: none; }
+.irp-home-video-intro__media { display: block; width: 100%; height: 100%; max-width: none; object-fit: cover; object-position: center; background: #030b14; }
+html:has(.irp-home-video-intro), body:has(.irp-home-video-intro) { overflow: hidden; overscroll-behavior: none; }
+html.irp-intro-seen .irp-home-video-intro { display: none !important; }
+@media (prefers-reduced-motion: reduce) { .irp-home-video-intro { transition-duration: .12s; } }
 .irp-entry-loader { position: fixed; z-index: 999; inset: 0; display: grid; place-items: center; pointer-events: none; }
 .irp-entry-loader__brand-stage { display: grid; place-items: center; width: clamp(220px,24vw,350px); opacity: 1; transform: none; }
 .irp-entry-loader__logo { display: block; width: 100%; height: auto; object-fit: contain; user-select: none; }
@@ -3341,7 +3347,7 @@ body:has(.irp-hero[data-intro-status="failed"]) .quote-assistant { opacity: 1; v
 /* HOME HERO BASE — GSAP exclusively owns reveal opacity and transforms. */
 .irp-hero { position: relative; height: max(820px,100svh); min-height: 820px; max-height: 1050px; overflow: hidden; background: #000a13; color: #fff; }
 .irp-hero--media-only{height:max(720px,100svh);min-height:720px;max-height:none}.irp-hero--media-only>picture,.irp-hero--media-only>video,.irp-hero--media-only>picture>img{display:block;width:100%;height:100%;object-fit:cover}.irp-hero--media-only>picture,.irp-hero--media-only>video{position:absolute;inset:0}.irp-hero--media-only>picture>img{position:absolute;inset:0;object-position:var(--hero-position-desktop,center)}
-.irp-hero__media { position: absolute; inset: 0; background: url("/NUEVO/garage-intro-first-frame.webp") center / cover no-repeat; }
+.irp-hero__media { position: absolute; inset: 0; background: url("/NUEVO/crear-video-industrial-first-frame.webp") center / cover no-repeat; }
 .irp-hero__video, .irp-hero__last-frame, .irp-hero__fallback { position: absolute; inset: 0; display: block; width: 100%; height: 100%; max-width: none; border: 0; }
 .irp-hero__video, .irp-hero__last-frame img, .irp-hero__fallback img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%; }
 .irp-hero__last-frame { z-index: 0; opacity: 0; }
@@ -3374,12 +3380,21 @@ body:has(.irp-hero[data-intro-status="failed"]) .quote-assistant { opacity: 1; v
 .irp-hero__wave path { fill: var(--irp-paper); }
 .irp-hero__cinema, .irp-hero__advisor-stage, .irp-hero__content > .irp-kicker,
 .irp-hero__title-line, .irp-hero__description, .irp-hero__actions, .irp-hero__proof, .irp-hero__wave { opacity: 0; visibility: hidden; transition: none !important; }
+.irp-hero--static .irp-hero__cinema,
+.irp-hero--static .irp-hero__advisor-stage,
+.irp-hero--static .irp-hero__content > .irp-kicker,
+.irp-hero--static .irp-hero__title-line,
+.irp-hero--static .irp-hero__description,
+.irp-hero--static .irp-hero__actions,
+.irp-hero--static .irp-hero__proof,
+.irp-hero--static .irp-hero__wave { opacity: 1 !important; visibility: visible !important; transform: none !important; }
+body:has(.irp-hero--static) .site-header { opacity: 1 !important; visibility: visible !important; transform: none !important; }
 
 /* Returning visits resolve the session before React hydrates. */
 html.irp-intro-seen .irp-entry-loader,
 html.irp-intro-seen .irp-hero__video,
 html.irp-intro-seen .irp-hero__last-frame { display: none !important; }
-html.irp-intro-seen .irp-hero__media { background-image: url("/NUEVO/ChatGPT Image 21 sept 2026%2C 11_01_15.png"); }
+html.irp-intro-seen .irp-hero__media { background-image: url("/NUEVO/crear-video-industrial-last-frame.webp"); }
 html.irp-intro-seen .site-header { opacity: 1 !important; visibility: visible !important; transform: none !important; }
 html.irp-intro-seen body:has(.irp-home) { overflow: auto; }
 
@@ -3408,9 +3423,9 @@ html.irp-intro-seen body:has(.irp-home) { overflow: auto; }
 
   .irp-entry-loader__brand-stage { width: min(265px,68vw); }
   .irp-hero { height: max(844px,100svh); min-height: 844px; max-height: none; }
-  .irp-hero__media { background-image: url("/NUEVO/mobile-intro-first-frame.webp"); background-position: 50% 50%; }
+  .irp-hero__media { background-image: url("/NUEVO/crear-video-industrial-first-frame.webp"); background-position: 50% 50%; }
   .irp-hero__video, .irp-hero__last-frame img, .irp-hero__fallback img { object-position: 50% 50%; }
-  html.irp-intro-seen .irp-hero__media { background-image: url("/NUEVO/mobile-intro-last-frame.webp"); }
+  html.irp-intro-seen .irp-hero__media { background-image: url("/NUEVO/crear-video-industrial-last-frame.webp"); }
   .irp-hero__layout { display: block; width: calc(100% - 28px); padding-top: 160px; padding-bottom: 118px; }
   .irp-hero__content { width: 100%; max-width: none; }
   .irp-hero__content > .irp-kicker { display: none !important; }
@@ -4568,6 +4583,168 @@ body .quote-page .configurator-v2 .configurator__summary {
     margin-top: 6px;
     font-size: 10px;
   }
+}
+
+/* El asistente abierto funciona como modal y siempre queda por encima de la navegación pública. */
+html:has(.assistant-panel),
+body:has(.assistant-panel) {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body .quote-assistant {
+  z-index: 950;
+}
+
+body:has(.assistant-panel) .quote-assistant::before {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  background: rgba(2, 14, 29, .48);
+  content: "";
+  backdrop-filter: blur(5px);
+}
+
+body .quote-assistant__button,
+body .quote-assistant__tip {
+  z-index: 1;
+}
+
+body .assistant-panel {
+  z-index: 951;
+  overscroll-behavior: contain;
+}
+
+@media (max-width: 767px) {
+  body .assistant-panel {
+    top: max(8px, env(safe-area-inset-top));
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(8px, env(safe-area-inset-bottom));
+    left: max(8px, env(safe-area-inset-left));
+    max-height: none;
+    border-radius: 22px;
+  }
+
+  body:has(.assistant-panel) .quote-assistant__button,
+  body:has(.assistant-panel) .quote-assistant__tip {
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+@media (max-width: 390px), (max-height: 620px) {
+  body .assistant-panel {
+    padding: 12px 11px 11px;
+    border-radius: 18px;
+  }
+
+  body .assistant-panel__head {
+    min-height: 50px;
+  }
+
+  body .assistant-panel__avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 15px;
+  }
+
+  body .assistant-panel__conversation {
+    margin: 7px 0;
+  }
+}
+
+/* Mobile assistant: occupy the viewport above the public navbar and keep its own scroll. */
+@media (max-width: 767px) {
+  html:has(.assistant-panel),
+  body:has(.assistant-panel) {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  body .assistant-panel {
+    top: max(8px, env(safe-area-inset-top));
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(8px, env(safe-area-inset-bottom));
+    left: max(8px, env(safe-area-inset-left));
+    display: flex;
+    width: auto;
+    min-height: 0;
+    max-height: none;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 24px;
+    padding: 16px 14px 14px;
+  }
+
+  body .assistant-panel > .panel-close {
+    top: 12px;
+    right: 12px;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+
+  body .assistant-panel__head {
+    min-height: 58px;
+    flex: 0 0 auto;
+    gap: 10px;
+    padding-right: 38px;
+  }
+
+  body .assistant-panel__avatar {
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+  }
+
+  body .assistant-panel__head > div > small { font-size: 9px; }
+  body .assistant-panel__head h2 { font-size: 17px; line-height: 1.2; }
+
+  body .assistant-panel__conversation {
+    flex: 0 0 auto;
+    gap: 6px;
+    margin: 10px 0;
+  }
+
+  body .assistant-panel__conversation p {
+    max-width: 92%;
+    padding: 9px 11px;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  body .assistant-panel__choices {
+    min-height: 0;
+    flex: 1 1 auto;
+    gap: 7px;
+    margin: 0 0 10px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-right: 3px;
+    scrollbar-width: thin;
+  }
+
+  body .assistant-panel__choices button {
+    min-height: 44px;
+    flex: 0 0 auto;
+    padding: 9px 11px;
+    font-size: 12px;
+  }
+
+  body .assistant-panel__recommendation {
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  body .assistant-panel__actions,
+  body .assistant-panel__full,
+  body .assistant-panel > .privacy-note {
+    flex: 0 0 auto;
+  }
+
+  body .assistant-panel__send { min-height: 50px; }
+  body .assistant-panel__full { margin-top: 8px; font-size: 11px; }
+  body .assistant-panel > .privacy-note { margin-top: 5px; font-size: 8px; }
 }
 
 /* Composición final del cotizador: navbar pública, centro de trabajo y carrito separado. */

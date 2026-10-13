@@ -1,4 +1,4 @@
-import { ArrowRight, Check, ChevronDown, ChevronRight, MessageCircle } from "lucide-react";
+import { ArrowRight, Check, ChevronDown, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense, type CSSProperties } from "react";
@@ -159,12 +159,6 @@ export function EditorialSolutionPage({ solution, profile }: Props) {
         </div>
       </section>
 
-      <section className={styles.contact} aria-labelledby="contact-title" data-motion-section>
-        <div className={styles.shell} data-motion-item data-motion-direction="up">
-          <span className={styles.kicker}>Estamos para ayudarte</span>
-          <div><h2 id="contact-title">{profile.ctaTitle}</h2><p>{profile.ctaDescription}</p><a className={styles.primaryButton} href={contactHref} target="_blank" rel="noreferrer" data-analytics="whatsapp_click"><MessageCircle aria-hidden="true" /> Hablar con IRP <ArrowRight aria-hidden="true" /></a></div>
-        </div>
-      </section>
     </main>
   );
 }

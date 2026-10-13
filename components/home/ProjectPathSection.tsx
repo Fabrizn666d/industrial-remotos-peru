@@ -4,9 +4,7 @@ import { motion, type Variants } from "framer-motion";
 import {
   ArrowRight,
   Check,
-  ChevronDown,
   MessageCircle,
-  Palette,
   Ruler,
   SlidersHorizontal
 } from "lucide-react";
@@ -20,7 +18,9 @@ import type { HomeContent } from "@/lib/cms/content-contracts";
 const PATH_ASSETS = {
   desktopBackground: "/NUEVO/E/ChatGPT Image 22 sept 2026%2C 10_38_39 (1).png",
   mobileBackground: "/NUEVO/E/ChatGPT Image 22 sept 2026%2C 10_38_40 (2).png",
-  configuratorPreview: "/images/reales/portada-puerta-seccional.jpg"
+  assistantPreview: "/NUEVO/COTIZADORES/Asistente robot con paneles de hogar-1.png",
+  configuratorPreview: "/NUEVO/COTIZADORES/Configurador inteligente de garaje y acabados-2.png",
+  assistantIcon: "/NUEVO/COTIZADORES/Robot sonriente en insignia circular-3.png"
 } as const;
 
 export function ProjectPathSection({ content }: { content: HomeContent["projectPath"] }) {
@@ -61,7 +61,7 @@ export function ProjectPathSection({ content }: { content: HomeContent["projectP
         <div className={styles.paths}>
           <motion.article className={`${styles.card} ${styles.assistantCard}`} variants={cardLeft}>
             <div className={styles.cardHeading}>
-              <i><MessageCircle aria-hidden="true" /></i>
+              <i><Image src={PATH_ASSETS.assistantIcon} alt="" width={52} height={52} /></i>
               <div>
                 <h3>{content.assistant.title}</h3>
                 <strong>{content.assistant.subtitle}</strong>
@@ -69,10 +69,8 @@ export function ProjectPathSection({ content }: { content: HomeContent["projectP
             </div>
             <p className={styles.description}>{content.assistant.description}</p>
 
-            <div className={styles.chatPreview} aria-label="Ejemplo de interfaz del asistente">
-              <div className={styles.assistantBubble}>Hola, ¿en qué podemos ayudarte?</div>
-              <div className={styles.userBubble}>Quiero mejorar el acceso de mi casa.</div>
-              <div className={styles.revealBubble}>Puedo orientarte según tu espacio y lo que necesitas.</div>
+            <div className={styles.mediaPreview} aria-label="Vista del asistente IRP">
+              <Image src={PATH_ASSETS.assistantPreview} alt="Asistente IRP mostrando opciones para el hogar" fill sizes="(min-width: 901px) 42vw, 92vw" />
             </div>
 
             <div className={styles.microPoints} aria-label="Características del asistente">
@@ -97,25 +95,8 @@ export function ProjectPathSection({ content }: { content: HomeContent["projectP
             </div>
             <p className={styles.description}>{content.quote.description}</p>
 
-            <div className={styles.configPreview} aria-label="Vista resumida del cotizador">
-              <div className={styles.previewControls}>
-                <div>
-                  <small>Tipo de solución</small>
-                  <span>Puertas seccionales <ChevronDown aria-hidden="true" /></span>
-                </div>
-                <div>
-                  <small>Medidas aproximadas</small>
-                  <span><Ruler aria-hidden="true" /> 3.20 × 2.40 m <ChevronDown aria-hidden="true" /></span>
-                </div>
-                <div>
-                  <small>Acabado / estilo</small>
-                  <span><Palette aria-hidden="true" /> Nogal oscuro <ChevronDown aria-hidden="true" /></span>
-                </div>
-              </div>
-              <div className={styles.previewImage}>
-                <Image src={content.quote.preview.src || PATH_ASSETS.configuratorPreview} alt={content.quote.preview.alt} fill sizes="(min-width: 901px) 280px, 44vw" />
-                <span>Vista exterior</span>
-              </div>
+            <div className={styles.mediaPreview} aria-label="Vista resumida del cotizador">
+              <Image src={PATH_ASSETS.configuratorPreview} alt="Cotizador inteligente de garaje y acabados" fill sizes="(min-width: 901px) 42vw, 92vw" />
             </div>
 
             <div className={styles.microPoints} aria-label="Características del cotizador">

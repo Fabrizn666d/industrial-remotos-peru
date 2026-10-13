@@ -97,7 +97,6 @@ function normalizeConfiguration(configuration: Partial<QuoteItemConfiguration> =
     ...(optionalText(configuration.openingSystem) ? { openingSystem: optionalText(configuration.openingSystem) } : {}),
     ...(optionalText(configuration.material) ? { material: optionalText(configuration.material) } : {}),
     accessories,
-    ...(optionalText(configuration.installation) ? { installation: optionalText(configuration.installation) } : {}),
     ...(optionalText(configuration.notes) ? { notes: optionalText(configuration.notes) } : {}),
     ...(Object.keys(customFields).length ? { customFields } : {})
   };
@@ -188,7 +187,13 @@ function loadStoredProject(): { items: QuoteItem[]; migrated: boolean } {
     try {
       const value: unknown = JSON.parse(raw);
       const current = projectEnvelopeSchema.safeParse(value);
-      if (current.success) return { items: current.data.items, migrated: key !== STORAGE_KEY };
+      if (current.success) {
+        const items = current.data.items.map((item) => ({
+          ...item,
+          configuration: normalizeConfiguration(item.configuration)
+        }));
+        return { items, migrated: true };
+      }
 
       const legacyItems = Array.isArray(value)
         ? value

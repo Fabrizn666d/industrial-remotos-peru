@@ -21,7 +21,7 @@ export function pricingConfigurationFromRequest(configuration: PublicRequestSubm
     width: text(configuration.width), height: text(configuration.height), subtype: text(configuration.subtype),
     model: text(configuration.model), variant: text(configuration.variant), openingSystem: text(configuration.openingSystem),
     design: text(configuration.design), material: text(configuration.material), finish: text(configuration.finish),
-    automation: text(configuration.automation), accessories: list(configuration.accessories), installation: text(configuration.installation)
+    automation: text(configuration.automation), accessories: list(configuration.accessories)
   };
 }
 
@@ -33,7 +33,7 @@ export async function calculateSubmissionPrice(input: PublicRequestSubmission) {
     productId: item.productId || "unpublished",
     quantity: item.quantity,
     configuration: pricingConfigurationFromRequest(item.configuration)
-  })), input.details.location, catalog.definitions, `v${catalog.version}`, proposalTerms);
+  })), input.details.location, catalog.definitions, `v${catalog.version}`, proposalTerms, catalog.configuratorStepOverrides);
   if (input.source === "CONFIGURATOR" || input.source === "ASSISTANT") {
     const invalidDoor = result.items.find((item) => item.result.status === "REQUIRES_EVALUATION" && item.result.classification !== "NOT_APPLICABLE");
     if (invalidDoor?.result.status === "REQUIRES_EVALUATION") throw new PricingValidationError(invalidDoor.result.reason);

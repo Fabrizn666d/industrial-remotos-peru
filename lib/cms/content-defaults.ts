@@ -21,21 +21,21 @@ export const defaultCmsContent: CmsContentMap = {
         proofRightTitle: "Asesoría técnica", proofRightBody: "antes de fabricar e instalar",
         advisorImage: { src: "/NUEVO/ChatGPT Image 22 sept 2026%2C 14_56_50.png", alt: "Asesor de Industrial Remotos Perú", position: "center" },
         advisorHref: "/asistente",
-        desktopVideo: { src: "/NUEVO/Garage_door_opening_transition_1080p_20260921110657.mp4", alt: "Acceso automatizado abriéndose", position: "center" },
-        mobileVideo: { src: "/NUEVO/HERO%20MOPVIL.mp4", alt: "Acceso automatizado en móvil", position: "center" },
-        desktopPoster: { src: "/NUEVO/garage-intro-last-frame.webp", alt: "Acceso automatizado", position: "center" },
-        mobilePoster: { src: "/NUEVO/mobile-intro-last-frame.webp", alt: "Acceso automatizado", position: "center" },
-        fallbackImage: { src: "/NUEVO/ChatGPT Image 21 sept 2026%2C 11_01_15.png", alt: "Casa moderna con acceso automatizado", position: "center" }
+        desktopVideo: { src: "/NUEVO/Crear_video_para_empresa_industrial_20261012182532.mp4", alt: "Presentación de Industrial Remotos Perú", position: "center" },
+        mobileVideo: { src: "/NUEVO/Crear_video_para_empresa_industrial_20261012182532.mp4", alt: "Presentación de Industrial Remotos Perú", position: "center" },
+        desktopPoster: { src: "/NUEVO/crear-video-industrial-first-frame.webp", alt: "Presentación de Industrial Remotos Perú", position: "center" },
+        mobilePoster: { src: "/NUEVO/crear-video-industrial-first-frame.webp", alt: "Presentación de Industrial Remotos Perú", position: "center" },
+        fallbackImage: { src: "/NUEVO/crear-video-industrial-last-frame.webp", alt: "Presentación de Industrial Remotos Perú", position: "center" }
       },
       imageOnly: {
         desktop: { src: "/NUEVO/ChatGPT Image 21 sept 2026%2C 11_01_15.png", alt: "Casa moderna con acceso automatizado", position: "center" },
         mobile: { src: "/NUEVO/mobile-intro-last-frame.webp", alt: "Casa moderna con acceso automatizado", position: "center" }
       },
       videoOnly: {
-        desktop: { src: "/NUEVO/Garage_door_opening_transition_1080p_20260921110657.mp4", alt: "Acceso automatizado", position: "center" },
-        mobile: { src: "/NUEVO/HERO%20MOPVIL.mp4", alt: "Acceso automatizado", position: "center" },
-        desktopPoster: { src: "/NUEVO/garage-intro-last-frame.webp", alt: "Acceso automatizado", position: "center" },
-        mobilePoster: { src: "/NUEVO/mobile-intro-last-frame.webp", alt: "Acceso automatizado", position: "center" }
+        desktop: { src: "/NUEVO/Crear_video_para_empresa_industrial_20261012182532.mp4", alt: "Presentación de Industrial Remotos Perú", position: "center" },
+        mobile: { src: "/NUEVO/Crear_video_para_empresa_industrial_20261012182532.mp4", alt: "Presentación de Industrial Remotos Perú", position: "center" },
+        desktopPoster: { src: "/NUEVO/crear-video-industrial-first-frame.webp", alt: "Presentación de Industrial Remotos Perú", position: "center" },
+        mobilePoster: { src: "/NUEVO/crear-video-industrial-first-frame.webp", alt: "Presentación de Industrial Remotos Perú", position: "center" }
       }
     },
     needs: {

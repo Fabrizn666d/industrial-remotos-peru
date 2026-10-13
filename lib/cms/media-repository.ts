@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { getPostgresPool } from "@/lib/backend/postgres-client";
+import { getPricingCatalogRepository } from "@/lib/pricing/catalog-repository";
 import { getCmsDocument } from "@/lib/cms/content-repository";
 import type { CmsKey } from "@/lib/cms/content-contracts";
 
@@ -70,7 +71,9 @@ export async function deleteCmsMedia(id: string) {
   const item = await storedById(id); if (!item) return false;
   const src = `/api/media/${id}`;
   const documents = await Promise.all(keys.map((key) => getCmsDocument(key)));
-  if (documents.some((document) => JSON.stringify(document.content).includes(src))) throw new Error("Esta imagen está en uso. Reemplázala en el contenido antes de quitarla.");
+  const pricingRepository = getPricingCatalogRepository();
+  const pricingDocuments = await Promise.all([pricingRepository.getDraft(), pricingRepository.getPublished()]);
+  if (documents.some((document) => JSON.stringify(document.content).includes(src)) || pricingDocuments.some((document) => JSON.stringify(document).includes(src))) throw new Error("Esta imagen está en uso. Reemplázala en el contenido antes de quitarla.");
   if (driver() === "json" && process.env.NODE_ENV !== "production") await writeJson((await readJson()).filter((entry) => entry.id !== id));
   else if (driver() === "postgres") await getPostgresPool().query("DELETE FROM irp_media_assets WHERE id = $1::uuid", [id]);
   else throw new Error("Configura IRP_REPOSITORY_DRIVER para quitar medios");

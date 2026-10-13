@@ -23,8 +23,7 @@ function configurationSummary(item: QuoteItem) {
     configuration.panel,
     configuration.automation,
     ...configuration.accessories,
-    configuration.installation,
-    ...Object.values(configuration.customFields ?? {})
+    item.productId === "puertas-principales" ? "Suministro e instalación incluidos" : "Ejecución e instalación incluidas"
   ].filter((value): value is string => Boolean(value) && value !== "Por definir" && value !== "Por definir con el asesor");
 }
 

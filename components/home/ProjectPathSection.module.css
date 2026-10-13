@@ -166,6 +166,7 @@
 }
 
 .cardHeading > i svg { width: 29px; height: 29px; stroke-width: 1.8; }
+.cardHeading > i img { width: 52px; height: 52px; object-fit: contain; }
 
 .cardHeading h3 {
   margin: 0;
@@ -193,6 +194,20 @@
   font-size: 13px;
   line-height: 1.55;
 }
+
+.mediaPreview {
+  position: relative;
+  min-height: 215px;
+  overflow: hidden;
+  margin-top: 22px;
+  border: 1px solid rgba(73, 137, 209, .12);
+  border-radius: 21px;
+  background: #e8f3ff;
+  box-shadow: inset 0 1px #fff;
+  transition: transform 450ms cubic-bezier(.16, 1, .3, 1);
+}
+
+.mediaPreview img { object-fit: cover; }
 
 .chatPreview,
 .configPreview {
@@ -370,7 +385,8 @@
 .card:hover .cardHeading > i { box-shadow: inset 0 1px #fff, 0 12px 28px rgba(25, 113, 219, .16), 0 0 24px rgba(21, 112, 255, .1); transform: scale(1.03); }
 .assistantCard:hover .revealBubble { opacity: 1; transform: translateY(0); }
 .card:hover .chatPreview,
-.card:hover .configPreview { transform: scale(1.015); }
+.card:hover .configPreview,
+.card:hover .mediaPreview { transform: scale(1.015); }
 .card:hover .previewImage img { transform: scale(1.05); }
 .cardCta:hover { box-shadow: 0 18px 35px rgba(9, 104, 233, .3); }
 .cardCta:hover svg:last-child { transform: translateX(4px); }
@@ -415,11 +431,13 @@
   .cardHeading { gap: 13px; }
   .cardHeading > i { width: 50px; height: 50px; border-radius: 14px; }
   .cardHeading > i svg { width: 24px; height: 24px; }
+  .cardHeading > i img { width: 44px; height: 44px; }
   .cardHeading h3 { font-size: 25px; }
   .cardHeading strong { font-size: 11px; }
   .description { min-height: 0; margin-top: 15px; font-size: 11.5px; }
   .chatPreview,
-  .configPreview { min-height: 174px; margin-top: 17px; border-radius: 18px; }
+  .configPreview,
+  .mediaPreview { min-height: 174px; margin-top: 17px; border-radius: 18px; }
   .chatPreview { gap: 9px; padding: 17px; }
   .assistantBubble,
   .userBubble { max-width: 88%; padding: 10px 12px; font-size: 10px; }
@@ -450,6 +468,7 @@
   .card:hover .cardHeading > i,
   .card:hover .chatPreview,
   .card:hover .configPreview,
+  .card:hover .mediaPreview,
   .card:hover .previewImage img,
   .cardCta:hover svg:last-child { transform: none; }
 }
@@ -460,6 +479,7 @@
   .revealBubble,
   .chatPreview,
   .configPreview,
+  .mediaPreview,
   .previewImage img,
   .cardCta,
   .cardCta svg { transition-duration: .01ms !important; }

@@ -3,10 +3,10 @@
 import { motion, useInView, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useRef } from "react";
-import { AnimatedCounter } from "./AnimatedCounter";
 
-import styles from "./ExperienceImpactSection.module.css";
 import type { HomeContent } from "@/lib/cms/content-contracts";
+import { AnimatedCounter } from "./AnimatedCounter";
+import styles from "./ExperienceImpactSection.module.css";
 
 type Metric = {
   id?: string;
@@ -22,39 +22,12 @@ type ImpactTile = {
   size: "small" | "medium" | "large";
 };
 
-const metrics: Metric[] = [
-  { value: 12, prefix: "+", suffix: "", label: "Años de experiencia", progress: 100 },
-  { value: 958, prefix: "+", suffix: "", label: "Proyectos finalizados", progress: 100 },
-  { value: 100, prefix: "", suffix: "%", label: "Soluciones a medida", progress: 100 },
-];
-
-const impactImages = [
-  "/NUEVO/G/Imagen%20de%20ChatGPT%2027%20sept%202026%2C%2020_40_10-1.png",
-  "/NUEVO/G/Imagen%20de%20ChatGPT%2027%20sept%202026%2C%2020_40_13-2.png",
-  "/NUEVO/G/Imagen%20de%20ChatGPT%2027%20sept%202026%2C%2020_40_16-3.png",
-  "/NUEVO/G/Imagen%20de%20ChatGPT%2027%20sept%202026%2C%2020_40_19-4.png",
-  "/NUEVO/G/Imagen%20de%20ChatGPT%2027%20sept%202026%2C%2020_40_24-5.png",
-  "/NUEVO/G/Imagen%20de%20ChatGPT%2027%20sept%202026%2C%2020_40_29-6.png",
-] as const;
 const tileSizes = ["medium", "large", "small"] as const;
-const mosaic: ImpactTile[] = impactImages.map((src, index) => ({
-  src,
-  size: tileSizes[index % tileSizes.length],
-}));
-
-const sourceColumns = Array.from({ length: 6 }, (_, column) =>
-  Array.from({ length: 4 }, (_, tile) => mosaic[(column + tile) % mosaic.length]),
-);
-
-const visualColumns = Array.from({ length: 10 }, (_, column) => {
-  const source = sourceColumns[column % sourceColumns.length];
-  return Array.from({ length: 4 }, (_, tile) => source[tile % source.length]);
-});
 
 function GaugeCard({
   metric,
   index,
-  animateCard = false
+  animateCard = false,
 }: {
   metric: Metric;
   index: number;
@@ -67,7 +40,7 @@ function GaugeCard({
   const gaugeTransition = {
     duration: 2.15,
     ease: [0.16, 1, 0.3, 1] as const,
-    delay: index * 0.12
+    delay: index * 0.12,
   };
 
   return (
@@ -75,9 +48,15 @@ function GaugeCard({
       ref={cardRef}
       className={styles.gaugeCard}
       data-impact-card
-      initial={animateCard && !reduceMotion ? { opacity: 0, y: 45, scale: .965, filter: "blur(5px)" } : false}
-      animate={animateCard ? (reduceMotion || start ? { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" } : { opacity: 0, y: 45, scale: .965, filter: "blur(5px)" }) : undefined}
-      transition={animateCard ? { duration: .68, delay: index * .09, ease: [0.16, 1, 0.3, 1] } : undefined}
+      initial={animateCard && !reduceMotion ? { opacity: 0, y: 32, scale: 0.97 } : false}
+      animate={
+        animateCard
+          ? reduceMotion || start
+            ? { opacity: 1, y: 0, scale: 1 }
+            : { opacity: 0, y: 32, scale: 0.97 }
+          : undefined
+      }
+      transition={animateCard ? { duration: 0.68, delay: index * 0.09, ease: [0.16, 1, 0.3, 1] } : undefined}
     >
       <div className={styles.gauge}>
         <svg viewBox="0 0 160 92" aria-hidden="true">
@@ -96,8 +75,12 @@ function GaugeCard({
               <stop offset="0.52" stopColor="#c5efff" />
               <stop offset="0.66" stopColor="#39b8ff" />
               <stop offset="1" stopColor="#086cf2" />
-              <animate attributeName="x1" values="-160;160" dur="2.8s" repeatCount="indefinite" />
-              <animate attributeName="x2" values="0;320" dur="2.8s" repeatCount="indefinite" />
+              {!reduceMotion ? (
+                <>
+                  <animate attributeName="x1" values="-160;160" dur="2.8s" repeatCount="indefinite" />
+                  <animate attributeName="x2" values="0;320" dur="2.8s" repeatCount="indefinite" />
+                </>
+              ) : null}
             </linearGradient>
           </defs>
           <path className={styles.gaugeTrack} pathLength="100" d="M15 79A65 65 0 0 1 145 79" />
@@ -133,7 +116,7 @@ function GaugeCard({
 export function ExperienceImpactMetrics({
   metrics,
   className,
-  animateCards = false
+  animateCards = false,
 }: {
   metrics: Metric[];
   className?: string;
@@ -149,10 +132,16 @@ export function ExperienceImpactMetrics({
 }
 
 export function ExperienceImpactSection({ content }: { content: HomeContent["impact"] }) {
-  const contentMetrics: Metric[] = content.metrics;
-  const contentMosaic: ImpactTile[] = content.gallery.map((image, index) => ({ src: image.src, size: tileSizes[index % tileSizes.length] }));
-  const contentColumns = Array.from({ length: 10 }, (_, column) => Array.from({ length: 4 }, (_, tile) => contentMosaic[(column + tile) % contentMosaic.length]));
   const sectionRef = useRef<HTMLElement>(null);
+  const contentMosaic: ImpactTile[] = content.gallery.map((image, index) => ({
+    src: image.src,
+    size: tileSizes[index % tileSizes.length],
+  }));
+  const contentColumns = contentMosaic.length
+    ? Array.from({ length: 10 }, (_, column) =>
+        Array.from({ length: 4 }, (_, tile) => contentMosaic[(column + tile) % contentMosaic.length]),
+      )
+    : [];
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -160,275 +149,159 @@ export function ExperienceImpactSection({ content }: { content: HomeContent["imp
 
     let disposed = false;
     let context: { revert: () => void } | undefined;
-    let media:
-      | {
-          add: (query: string, callback: () => void) => unknown;
-          revert: () => void;
-        }
-      | undefined;
-    let refreshFrame = 0;
-    let pendingImages: HTMLImageElement[] = [];
-    let refreshAfterImages: (() => void) | undefined;
+    let media: { add: (query: string, callback: () => void) => unknown; revert: () => void } | undefined;
 
-    void Promise.all([import("gsap"), import("gsap/ScrollTrigger")]).then(
-      ([gsapModule, scrollTriggerModule]) => {
-        if (disposed) return;
+    void Promise.all([import("gsap"), import("gsap/ScrollTrigger")]).then(([gsapModule, scrollTriggerModule]) => {
+      if (disposed) return;
 
-        const gsap = gsapModule.gsap;
-        const ScrollTrigger = scrollTriggerModule.ScrollTrigger;
-        gsap.registerPlugin(ScrollTrigger);
+      const gsap = gsapModule.gsap;
+      const ScrollTrigger = scrollTriggerModule.ScrollTrigger;
+      gsap.registerPlugin(ScrollTrigger);
 
-        context = gsap.context(() => {
-          const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-          const intro = section.querySelector<HTMLElement>("[data-impact-intro]");
-          const ambient = section.querySelector<HTMLElement>("[data-impact-ambient]");
-          const lines = gsap.utils.toArray<HTMLElement>("[data-impact-line]", section);
-          const sweeps = gsap.utils.toArray<HTMLElement>("[data-impact-sweep]", section);
-          const copy = section.querySelector<HTMLElement>("[data-impact-copy]");
-          const cards = gsap.utils.toArray<HTMLElement>("[data-impact-card]", section);
-          const gauges = section.querySelector<HTMLElement>("[data-impact-gauges]");
+      context = gsap.context(() => {
+        const viewport = section.querySelector<HTMLElement>("[data-impact-mosaic]");
+        if (!viewport) return;
 
-          if (intro && ambient) {
-            if (reduced) {
-              gsap.set(ambient, { autoAlpha: 1, scale: 1, yPercent: 0 });
-              gsap.set(lines, { autoAlpha: 1, yPercent: 0, filter: "blur(0px)" });
-              gsap.set(sweeps, { autoAlpha: 0 });
-              if (copy) gsap.set(copy, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
-            } else {
-              gsap.fromTo(
-                ambient,
-                { autoAlpha: 0, scale: 1.05, yPercent: 10 },
-                {
-                  autoAlpha: 1,
-                  scale: 1,
-                  yPercent: 0,
-                  ease: "none",
-                  scrollTrigger: { trigger: intro, start: "top 90%", end: "center 55%", scrub: 1.2 },
-                },
-              );
+        media = gsap.matchMedia();
+        const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const setupColumnParallax = (moveAmount: number) => {
+          const movers = gsap.utils
+            .toArray<HTMLElement>("[data-impact-column]", section)
+            .filter((column) => window.getComputedStyle(column).display !== "none")
+            .map((column) => column.querySelector<HTMLElement>("[data-impact-mover]"))
+            .filter((mover): mover is HTMLElement => Boolean(mover));
+          const state = { progress: 0 };
+          let travel = moveAmount;
 
-              const introTimeline = gsap.timeline({
-                scrollTrigger: { trigger: intro, start: "top 78%", once: true },
-              });
-              introTimeline
-                .fromTo(
-                  lines,
-                  { autoAlpha: 0, yPercent: 110, filter: "blur(8px)" },
-                  {
-                    autoAlpha: 1,
-                    yPercent: 0,
-                    filter: "blur(0px)",
-                    duration: 1.12,
-                    stagger: 0.13,
-                    ease: "power3.out",
-                  },
-                )
-                .fromTo(
-                  sweeps,
-                  { autoAlpha: 0, xPercent: -110 },
-                  {
-                    keyframes: [
-                      { autoAlpha: 0.52, duration: 0.18 },
-                      { xPercent: 115, autoAlpha: 0, duration: 0.7 },
-                    ],
-                    stagger: 0.1,
-                    ease: "power2.inOut",
-                  },
-                  0.16,
-                );
-
-              if (copy) {
-                introTimeline.fromTo(
-                  copy,
-                  { autoAlpha: 0, y: 18, filter: "blur(4px)" },
-                  {
-                    autoAlpha: 1,
-                    y: 0,
-                    filter: "blur(0px)",
-                    duration: 0.78,
-                    ease: "power3.out",
-                  },
-                  "-=0.32",
-                );
-              }
-            }
-          }
-
-          if (gauges) {
-            if (reduced) {
-              gsap.set(cards, { autoAlpha: 1, y: 0, scale: 1, filter: "blur(0px)" });
-            } else {
-              gsap.set(cards, { autoAlpha: 0, y: 45, scale: 0.965, filter: "blur(5px)" });
-
-              const gaugeTimeline = gsap.timeline({
-                scrollTrigger: { trigger: gauges, start: "top 92%", once: true },
-              });
-              gaugeTimeline.to(
-                cards,
-                {
-                  autoAlpha: 1,
-                  y: 0,
-                  scale: 1,
-                  filter: "blur(0px)",
-                  duration: 0.68,
-                  stagger: 0.09,
-                  ease: "power3.out",
-                },
-                0,
-              );
-
-            }
-          }
-
-          media = gsap.matchMedia();
-          const setupColumnParallax = (moveAmount: number) => {
-            const movers = gsap.utils
-              .toArray<HTMLElement>("[data-impact-column]", section)
-              .filter((column) => window.getComputedStyle(column).display !== "none")
-              .map((column) => column.querySelector<HTMLElement>("[data-impact-mover]"))
-              .filter((mover): mover is HTMLElement => Boolean(mover));
-            const state = { progress: 0 };
-            let travel = moveAmount;
-
-            const measureTravel = () => {
-              travel = ((section.offsetHeight + window.innerHeight) / window.innerHeight) * moveAmount;
-            };
-            const renderColumns = () => {
-              movers.forEach((mover, index) => {
-                const direction = index % 2 === 0 ? 1 : -1;
-                gsap.set(mover, { y: direction * travel * (state.progress - 0.5) });
-              });
-              section.dataset.parallaxProgress = state.progress.toFixed(3);
-            };
-
-            measureTravel();
-            renderColumns();
-            gsap.to(state, {
-              progress: 1,
-              ease: "none",
-              onUpdate: renderColumns,
-              scrollTrigger: {
-                trigger: section,
-                start: "top bottom",
-                end: "bottom top",
-                scrub: true,
-                invalidateOnRefresh: true,
-                onRefresh: () => {
-                  measureTravel();
-                  renderColumns();
-                },
-              },
+          const measureTravel = () => {
+            travel = ((section.offsetHeight + window.innerHeight) / window.innerHeight) * moveAmount;
+            section.dataset.parallaxDistance = Math.round(travel).toString();
+          };
+          const renderColumns = () => {
+            movers.forEach((mover, index) => {
+              const direction = index % 2 === 0 ? 1 : -1;
+              gsap.set(mover, { y: direction * travel * (state.progress - 0.5) });
             });
+            section.dataset.parallaxProgress = state.progress.toFixed(3);
           };
 
-          media.add("(min-width: 769px)", () => {
-            setupColumnParallax(100);
-            if (!reduced) {
-              gsap.utils
-                .toArray<HTMLElement>("[data-impact-tile]", section)
-                .filter((_, index) => index % 4 === 1)
-                .forEach((tile, index) => {
-                  gsap.fromTo(
-                    tile,
-                    { scale: index % 2 === 0 ? 0.985 : 0.99, autoAlpha: 0.9 },
-                    {
-                      scale: index % 2 === 0 ? 1.01 : 1,
-                      autoAlpha: 1,
-                      ease: "none",
-                      scrollTrigger: { trigger: section, start: "top bottom", end: "bottom top", scrub: 1.2 },
-                    },
-                  );
-                });
-            }
+          measureTravel();
+          renderColumns();
+          gsap.to(state, {
+            progress: 1,
+            ease: "none",
+            onUpdate: renderColumns,
+            scrollTrigger: {
+              trigger: section,
+              start: "top bottom",
+              end: "bottom top",
+              scrub: true,
+              invalidateOnRefresh: true,
+              onRefresh: () => {
+                measureTravel();
+                renderColumns();
+              },
+            },
           });
-          media.add("(max-width: 768px)", () => setupColumnParallax(46));
+        };
 
-          const images = gsap.utils.toArray<HTMLImageElement>("[data-impact-tile] img", section);
-          pendingImages = images.filter((image) => !image.complete);
-          refreshAfterImages = () => {
-            if (pendingImages.every((image) => image.complete)) ScrollTrigger.refresh();
-          };
-          pendingImages.forEach((image) => {
-            image.addEventListener("load", refreshAfterImages!, { once: true });
-            image.addEventListener("error", refreshAfterImages!, { once: true });
-          });
-          refreshFrame = window.requestAnimationFrame(() => ScrollTrigger.refresh());
-        }, section);
-      },
-    );
+        media.add("(min-width: 769px)", () => {
+          setupColumnParallax(100);
+          if (!reduced) {
+            gsap.utils
+              .toArray<HTMLElement>("[data-impact-tile]", section)
+              .filter((_, index) => index % 4 === 1)
+              .forEach((tile, index) => {
+                gsap.fromTo(
+                  tile,
+                  { scale: index % 2 === 0 ? 0.985 : 0.99, autoAlpha: 0.9 },
+                  {
+                    scale: index % 2 === 0 ? 1.01 : 1,
+                    autoAlpha: 1,
+                    ease: "none",
+                    scrollTrigger: { trigger: section, start: "top bottom", end: "bottom top", scrub: 1.2 },
+                  },
+                );
+              });
+          }
+        });
+        media.add("(max-width: 768px)", () => setupColumnParallax(46));
+        requestAnimationFrame(() => ScrollTrigger.refresh());
+      }, section);
+    });
 
     return () => {
       disposed = true;
-      if (refreshFrame) window.cancelAnimationFrame(refreshFrame);
-      if (refreshAfterImages) {
-        pendingImages.forEach((image) => {
-          image.removeEventListener("load", refreshAfterImages!);
-          image.removeEventListener("error", refreshAfterImages!);
-        });
-      }
       media?.revert();
       context?.revert();
     };
   }, []);
 
   return (
-    <section
-      ref={sectionRef}
-      id="experiencia"
-      className={styles.section}
-      aria-labelledby="experience-impact-title"
-    >
-      <div className={styles.ambient} data-impact-ambient aria-hidden="true" />
+    <section ref={sectionRef} id="experiencia" className={styles.section} aria-labelledby="experience-impact-title">
+      <Image
+        className={styles.background}
+        src="/NUEVO/EN ARCO/Patio moderno luminoso en tonos marfil-3.png"
+        alt=""
+        fill
+        sizes="100vw"
+        aria-hidden="true"
+      />
 
-      <div className={styles.tileViewport} aria-hidden="true">
-        <div className={styles.tileScene}>
-          {contentColumns.map((tiles, columnIndex) => (
-            <div className={styles.tileColumn} data-impact-column key={`impact-column-${columnIndex + 1}`}>
-              <div className={styles.tileMover} data-impact-mover>
-                {tiles.map((tile, tileIndex) => (
-                  <div
-                    className={`${styles.tile} ${styles[tile.size]}`}
-                    data-impact-tile
-                    key={`${tile.src}-${columnIndex}-${tileIndex}`}
-                  >
-                    <Image
-                      src={tile.src}
-                      alt=""
-                      fill
-                      loading="lazy"
-                      sizes="(max-width: 768px) 58vw, (max-width: 1024px) 30vw, 20vw"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className={`${styles.sideArtwork} ${styles.sideArtworkLeft}`} aria-hidden="true">
+        <Image
+          src="/NUEVO/EN ARCO/Técnico sonriente con arco azul-1.png"
+          alt=""
+          fill
+          sizes="(max-width: 768px) 48vw, 30vw"
+        />
+      </div>
+
+      <div className={`${styles.sideArtwork} ${styles.sideArtworkRight}`} aria-hidden="true">
+        <Image
+          src="/NUEVO/EN ARCO/Robot sonriente tras arco azul-2.png"
+          alt=""
+          fill
+          sizes="(max-width: 768px) 48vw, 30vw"
+        />
       </div>
 
       <div className={styles.content}>
-        <div className={styles.intro} data-impact-intro>
+        <div className={styles.intro}>
           <h2 id="experience-impact-title">
-            <span className={styles.titleMask}>
-              <span data-impact-line>{content.titleLine1}</span>
-              <span className={styles.titleSweep} data-impact-sweep aria-hidden="true">
-                {content.titleLine1}
-              </span>
-            </span>
-            <span className={styles.titleMask}>
-              <span data-impact-line>{content.titleLine2} <span className={styles.titleAccent}>{content.titleAccent}</span></span>
-              <span className={styles.titleSweep} data-impact-sweep aria-hidden="true">
-                {content.titleLine2} {content.titleAccent}
-              </span>
-            </span>
+            <span>{content.titleLine1}</span>
+            <span>{content.titleLine2}</span>
+            <span className={styles.titleAccent}>{content.titleAccent}</span>
           </h2>
-          <p data-impact-copy>
-            {content.description}
-          </p>
+          <p>{content.description}</p>
         </div>
 
-        <ExperienceImpactMetrics metrics={contentMetrics} />
+        <ExperienceImpactMetrics metrics={content.metrics} animateCards />
       </div>
+
+      {contentColumns.length ? (
+        <div className={styles.mosaicViewport} data-impact-mosaic aria-hidden="true">
+          <div className={styles.mosaicScene}>
+            {contentColumns.map((tiles, columnIndex) => (
+              <div className={styles.mosaicColumn} data-impact-column key={`impact-column-${columnIndex + 1}`}>
+                <div className={styles.mosaicMover} data-impact-mover>
+                  {tiles.map((tile, tileIndex) => (
+                    <div className={`${styles.mosaicTile} ${styles[tile.size]}`} data-impact-tile key={`${tile.src}-${columnIndex}-${tileIndex}`}>
+                      <Image
+                        src={tile.src}
+                        alt=""
+                        fill
+                        loading="lazy"
+                        sizes="(max-width: 680px) 48vw, (max-width: 1024px) 28vw, 19vw"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }

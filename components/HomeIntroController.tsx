@@ -6,12 +6,12 @@ import { HOME_INTRO_SEEN_CLASS, HOME_INTRO_SESSION_KEY } from "@/lib/home-intro-
 
 export const HOME_INTRO_ASSETS = {
   logo: "/NUEVO/LOGO.png",
-  video: "/NUEVO/Garage_door_opening_transition_1080p_20260921110657.mp4",
-  mobileVideo: "/NUEVO/HERO%20MOPVIL.mp4",
-  firstFrame: "/NUEVO/garage-intro-first-frame.webp",
-  lastFrame: "/NUEVO/garage-intro-last-frame.webp",
-  mobileFirstFrame: "/NUEVO/mobile-intro-first-frame.webp",
-  mobileLastFrame: "/NUEVO/mobile-intro-last-frame.webp",
+  video: "/NUEVO/Crear_video_para_empresa_industrial_20261012182532.mp4",
+  mobileVideo: "/NUEVO/Crear_video_para_empresa_industrial_20261012182532.mp4",
+  firstFrame: "/NUEVO/crear-video-industrial-first-frame.webp",
+  lastFrame: "/NUEVO/crear-video-industrial-last-frame.webp",
+  mobileFirstFrame: "/NUEVO/crear-video-industrial-first-frame.webp",
+  mobileLastFrame: "/NUEVO/crear-video-industrial-last-frame.webp",
   exterior: "/NUEVO/ChatGPT Image 21 sept 2026%2C 11_01_15.png"
 } as const;
 

@@ -5,7 +5,6 @@ import { ProjectExperience } from "@/components/ProjectExperience";
 import { PrivacyRuntime } from "@/components/PrivacyRuntime";
 import { FloatingActions } from "@/components/FloatingActions";
 import { HomeIntroProvider } from "@/components/HomeIntroController";
-import { IntroLoader } from "@/components/IntroLoader";
 import { PageTransition } from "@/components/PageTransition";
 import { NavigationTransitionConfigBridge } from "@/components/NavigationTransitionConfigBridge";
 import { PublicMotionRuntime } from "@/components/PublicMotionRuntime";
@@ -31,7 +30,6 @@ export default async function SiteLayout({ children }: Readonly<{ children: Reac
           <HomeIntroProvider>
             <NavigationTransitionConfigBridge config={company.routeTransition} />
             <PublicMotionRuntime />
-            <IntroLoader />
             <PremiumScrollIndicator />
             <Header />
             <PageTransition>{children}</PageTransition>

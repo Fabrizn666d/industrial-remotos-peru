@@ -71,7 +71,7 @@ const report = { baseUrl, checks: [] };
 
 const catalog = await json("/api/catalog/pricing");
 assert(catalog.response.ok, `El catálogo público respondió ${catalog.response.status}`);
-assert(catalog.body.homeCard?.title === "Puertas a medida", "La tarjeta publicada no es Puertas a medida");
+assert(catalog.body.homeCard?.title === "Puertas principales importadas", "La tarjeta publicada no es Puertas principales importadas");
 report.checks.push("catálogo público y tarjeta Home");
 
 const firstPayload = submission("CONFIGURATOR");

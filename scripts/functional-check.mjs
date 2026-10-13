@@ -58,7 +58,7 @@ try {
   await page.getByLabel("WhatsApp / teléfono").fill("987654321");
   await page.getByRole("textbox", { name: "DNI", exact: true }).fill("12345678");
   await page.getByRole("button", { name: "Continuar", exact: true }).click();
-  await page.getByLabel("Tipo de proyecto").selectOption({ index: 1 });
+  await page.getByLabel("Tipo de inmueble o proyecto").selectOption({ index: 1 });
   await page.getByLabel("Región").fill("Lima");
   await page.getByLabel("Provincia").fill("Lima");
   await page.getByLabel("Distrito").fill("Villa El Salvador");

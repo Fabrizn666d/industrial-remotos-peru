@@ -11,9 +11,25 @@ export interface PricingCatalogRepository { getPublished(): Promise<PricingCatal
 const importedHomeCard = { title: "Puertas principales importadas", description: "Elige un modelo, una medida disponible y el color.", image: "/images/placeholders/puerta-contraplacada-temporal.png", visible: true, order: 3, destination: "/soluciones/puertas-principales" };
 
 function normalizeDoorTaxonomy(document: PricingCatalogDocument): PricingCatalogDocument {
-  return document.homeCard.title === "Puertas a medida" || document.homeCard.title === "Puertas Principales Importadas"
-    ? PricingCatalogDocumentSchema.parse({ ...document, homeCard: importedHomeCard })
-    : document;
+  const modelProducts = new Set(["puertas-a-medida", "seccionales", "puertas-principales", "puertas-contraplacadas"]);
+  const obsoleteImportedIds = new Set(["irp-principal-linea-urbana", "irp-principal-linea-natura", "irp-principal-linea-minimal"]);
+  const staticByProduct = new Map(publishedPricingCatalog.map((definition) => [definition.productId, definition]));
+  const existingByProduct = new Map(document.definitions.map((definition) => [definition.productId, definition]));
+  const definitions: unknown[] = document.definitions.map((definition) => {
+    if (!modelProducts.has(definition.productId)) return definition;
+    const fallback = staticByProduct.get(definition.productId);
+    const hasObsoleteModels = definition.importedModels?.some((model) => obsoleteImportedIds.has(model.id));
+    const needsSeedModels = !definition.importedModels?.length || hasObsoleteModels;
+    return needsSeedModels && fallback?.importedModels ? { ...definition, importedModels: structuredClone(fallback.importedModels) } : definition;
+  });
+  for (const productId of modelProducts) {
+    if (!existingByProduct.has(productId)) {
+      const fallback = staticByProduct.get(productId);
+      if (fallback) definitions.push(structuredClone(fallback));
+    }
+  }
+  const homeCard = document.homeCard.title === "Puertas a medida" || document.homeCard.title === "Puertas Principales Importadas" || document.homeCard.image.includes("puerta-contraplacada-temporal") ? importedHomeCard : document.homeCard;
+  return PricingCatalogDocumentSchema.parse({ ...document, homeCard, definitions });
 }
 
 function seed(status: "DRAFT" | "PUBLISHED"): PricingCatalogDocument {

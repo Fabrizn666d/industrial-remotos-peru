@@ -33,6 +33,7 @@ const dimensionsSchema = z.object({
 const configurationSchema = z.object({
   subtype: z.string().min(1).optional(),
   dimensions: dimensionsSchema.optional(),
+  measurementsUnknown: z.boolean().optional(),
   design: z.string().min(1).optional(),
   panel: z.string().min(1).optional(),
   finish: z.string().min(1).optional(),
@@ -88,6 +89,7 @@ function normalizeConfiguration(configuration: Partial<QuoteItemConfiguration> =
   return {
     ...(optionalText(configuration.subtype) ? { subtype: optionalText(configuration.subtype) } : {}),
     ...(width || height ? { dimensions: { ...(width ? { width } : {}), ...(height ? { height } : {}), unit: "m" as const } } : {}),
+    ...(configuration.measurementsUnknown ? { measurementsUnknown: true } : {}),
     ...(optionalText(configuration.design) ? { design: optionalText(configuration.design) } : {}),
     ...(optionalText(configuration.panel) ? { panel: optionalText(configuration.panel) } : {}),
     ...(optionalText(configuration.finish) ? { finish: optionalText(configuration.finish) } : {}),
@@ -127,6 +129,7 @@ function configurationFromUnknown(value: unknown, legacyItem: UnknownRecord): Qu
   return normalizeConfiguration({
     subtype: optionalText(stored.subtype),
     dimensions,
+    measurementsUnknown: stored.measurementsUnknown === true,
     design: optionalText(stored.design),
     panel: optionalText(stored.panel),
     finish: optionalText(stored.finish) ?? optionalText(legacyItem.finish),
@@ -150,7 +153,7 @@ function migrateItem(value: unknown): QuoteItem | null {
   if (!productId) return null;
   const product = products.find((candidate) => candidate.id === productId);
   const name = product?.name ?? optionalText(value.name);
-  const image = product?.image ?? optionalText(value.image);
+  const image = optionalText(value.image) ?? product?.image;
   if (!name || !image) return null;
   const now = new Date().toISOString();
   const quantity = typeof value.quantity === "number" && Number.isFinite(value.quantity)
@@ -256,11 +259,12 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
   const addProduct = useCallback((product: Product, configuration: Partial<QuoteItemConfiguration> = {}) => {
     const now = new Date().toISOString();
+    const selectedImage = optionalText(configuration.customFields?.selectedImage) ?? product.image;
     setItems((current) => [...current, {
       id: crypto.randomUUID(),
       productId: product.id,
       name: product.name,
-      image: product.image,
+      image: selectedImage,
       quantity: 1,
       configuration: normalizeConfiguration(configuration),
       price: { status: "pending" as const },
@@ -271,11 +275,12 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const updateItem = useCallback((id: string, product: Product, configuration: Partial<QuoteItemConfiguration>) => {
+    const selectedImage = optionalText(configuration.customFields?.selectedImage) ?? product.image;
     setItems((current) => current.map((item) => item.id === id ? {
       ...item,
       productId: product.id,
       name: product.name,
-      image: product.image,
+      image: selectedImage,
       configuration: normalizeConfiguration(configuration),
       price: { status: "pending" as const },
       updatedAt: new Date().toISOString()

@@ -18,9 +18,9 @@ function list(value: unknown) {
 
 export function pricingConfigurationFromRequest(configuration: PublicRequestSubmission["items"][number]["configuration"]): PricingConfiguration {
   return {
-    width: text(configuration.width), height: text(configuration.height), subtype: text(configuration.subtype),
+    width: text(configuration.width), height: text(configuration.height), measurementsUnknown: configuration.measurementsUnknown === true, subtype: text(configuration.subtype),
     model: text(configuration.model), variant: text(configuration.variant), openingSystem: text(configuration.openingSystem),
-    design: text(configuration.design), material: text(configuration.material), finish: text(configuration.finish),
+    design: text(configuration.design), panel: text(configuration.panel), material: text(configuration.material), finish: text(configuration.finish),
     automation: text(configuration.automation), accessories: list(configuration.accessories)
   };
 }
@@ -35,7 +35,9 @@ export async function calculateSubmissionPrice(input: PublicRequestSubmission) {
     configuration: pricingConfigurationFromRequest(item.configuration)
   })), input.details.location, catalog.definitions, `v${catalog.version}`, proposalTerms, catalog.configuratorStepOverrides);
   if (input.source === "CONFIGURATOR" || input.source === "ASSISTANT") {
-    const invalidDoor = result.items.find((item) => item.result.status === "REQUIRES_EVALUATION" && item.result.classification !== "NOT_APPLICABLE");
+    const invalidDoor = result.items.find((item) => item.result.status === "REQUIRES_EVALUATION"
+      && item.result.classification !== "NOT_APPLICABLE"
+      && item.result.missing.some((missing) => ["configuración compatible", "modelo", "modelo compatible", "apertura compatible", "acabado compatible", "medida disponible", "complemento compatible"].includes(missing)));
     if (invalidDoor?.result.status === "REQUIRES_EVALUATION") throw new PricingValidationError(invalidDoor.result.reason);
   }
   return result;

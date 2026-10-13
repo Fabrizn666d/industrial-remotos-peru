@@ -3,7 +3,6 @@
 import gsap from "gsap";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
-import { HOME_INTRO_SEEN_CLASS, HOME_INTRO_SESSION_KEY } from "@/lib/home-intro-session";
 import type { CompanyContent } from "@/lib/cms/content-contracts";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 
@@ -242,11 +241,6 @@ export function NavigationTransition({ config }: { config: CompanyContent["route
       gsap.set([upper, lower], { opacity: 1 });
       gsap.set(logo, { autoAlpha: 0, scale: reduceMotionRef.current ? 1 : 0.97 });
       setPhase("closing");
-
-      if (destination.pathname === "/") {
-        try { sessionStorage.setItem(HOME_INTRO_SESSION_KEY, "seen"); } catch { /* Navigation must continue without storage. */ }
-        document.documentElement.classList.add(HOME_INTRO_SEEN_CLASS);
-      }
 
       safetyTimerRef.current = window.setTimeout(() => {
         const fallbackHref = targetHrefRef.current;

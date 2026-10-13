@@ -21,8 +21,8 @@ export const defaultCmsContent: CmsContentMap = {
         proofRightTitle: "Asesoría técnica", proofRightBody: "antes de fabricar e instalar",
         advisorImage: { src: "/NUEVO/ChatGPT Image 22 sept 2026%2C 14_56_50.png", alt: "Asesor de Industrial Remotos Perú", position: "center" },
         advisorHref: "/asistente",
-        desktopVideo: { src: "/NUEVO/Crear_video_para_empresa_industrial_20261012182532.mp4", alt: "Presentación de Industrial Remotos Perú", position: "center" },
-        mobileVideo: { src: "/NUEVO/Crear_video_para_empresa_industrial_20261012182532.mp4", alt: "Presentación de Industrial Remotos Perú", position: "center" },
+        desktopVideo: { src: "/NUEVO/crear-video-industrial-loader.mp4", alt: "Presentación de Industrial Remotos Perú", position: "center" },
+        mobileVideo: { src: "/NUEVO/crear-video-industrial-loader.mp4", alt: "Presentación de Industrial Remotos Perú", position: "center" },
         desktopPoster: { src: "/NUEVO/crear-video-industrial-first-frame.webp", alt: "Presentación de Industrial Remotos Perú", position: "center" },
         mobilePoster: { src: "/NUEVO/crear-video-industrial-first-frame.webp", alt: "Presentación de Industrial Remotos Perú", position: "center" },
         fallbackImage: { src: "/NUEVO/crear-video-industrial-last-frame.webp", alt: "Presentación de Industrial Remotos Perú", position: "center" }
@@ -32,8 +32,8 @@ export const defaultCmsContent: CmsContentMap = {
         mobile: { src: "/NUEVO/mobile-intro-last-frame.webp", alt: "Casa moderna con acceso automatizado", position: "center" }
       },
       videoOnly: {
-        desktop: { src: "/NUEVO/Crear_video_para_empresa_industrial_20261012182532.mp4", alt: "Presentación de Industrial Remotos Perú", position: "center" },
-        mobile: { src: "/NUEVO/Crear_video_para_empresa_industrial_20261012182532.mp4", alt: "Presentación de Industrial Remotos Perú", position: "center" },
+        desktop: { src: "/NUEVO/crear-video-industrial-loader.mp4", alt: "Presentación de Industrial Remotos Perú", position: "center" },
+        mobile: { src: "/NUEVO/crear-video-industrial-loader.mp4", alt: "Presentación de Industrial Remotos Perú", position: "center" },
         desktopPoster: { src: "/NUEVO/crear-video-industrial-first-frame.webp", alt: "Presentación de Industrial Remotos Perú", position: "center" },
         mobilePoster: { src: "/NUEVO/crear-video-industrial-first-frame.webp", alt: "Presentación de Industrial Remotos Perú", position: "center" }
       }

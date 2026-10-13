@@ -200,6 +200,12 @@ export const configuratorSchemas: Record<ConfiguratorFamily, ConfiguratorSchema>
     version: 2,
     steps: [solutionStep, notesStep],
   },
+  "puertas-contraplacadas": {
+    family: "puertas-contraplacadas",
+    productGroup: "puertas-contraplacadas",
+    version: 1,
+    steps: [solutionStep, notesStep],
+  },
   cerco: {
     family: "cerco",
     productGroup: "cerco",
@@ -240,6 +246,7 @@ export const configuratorFamilyByProductGroup: Record<ProductGroup, Configurator
   acero: "acero",
   estructuras: "estructuras",
   "puertas-principales": "puertas-principales",
+  "puertas-contraplacadas": "puertas-contraplacadas",
   cerco: "cerco",
   drywall: "drywall",
 };
@@ -258,9 +265,10 @@ export function isConfiguratorStepVisible(step: ConfiguratorStep, answers: Confi
 
 export function sanitizeConfiguratorAnswers<T extends ConfiguratorAnswerBag>(productId: string, current: T, key: ConfiguratorChoiceKey, value: string): T {
   const next = { ...current, [key]: value } as T & ConfiguratorAnswerBag;
-  if (key === "model") Object.assign(next, { variant: "", finish: "", automation: "", accessories: [] });
-  if (key === "variant") Object.assign(next, { finish: "", accessories: [] });
-  if (["seccionales", "levadizas", "corredizas", "batientes"].includes(productId) && key === "subtype") Object.assign(next, { automation: "", accessories: [] });
+  if (key === "model") Object.assign(next, { variant: "", panel: "", finish: "", automation: "", accessories: [] });
+  if (key === "variant") Object.assign(next, { variant: value });
+  if (["seccionales", "levadizas", "corredizas", "batientes"].includes(productId) && key === "subtype") Object.assign(next, { model: "", openingSystem: "", finish: "", automation: "", accessories: [] });
+  if (productId === "puertas-contraplacadas" && key === "openingSystem") Object.assign(next, { model: "", finish: "", accessories: [] });
   if (["seccionales", "levadizas", "corredizas", "batientes"].includes(productId) && key === "automation" && value === "Sistema manual") Object.assign(next, { accessories: [] });
   if (["techos-coberturas", "ventanas-mamparas", "drywall-cielorrasos", "acero-barandas"].includes(productId) && key === "subtype") Object.assign(next, { design: "", openingSystem: "", width: "", height: "" });
   return next;
@@ -306,8 +314,11 @@ function applyStepOverrides(schema: ConfiguratorSchema, overrides: ConfiguratorS
 
 export function getConfiguratorSchema(productGroup: ProductGroup, productId?: string, catalog: PublishedPricingDefinition[] = publishedPricingCatalog, overrides: ConfiguratorStepOverride[] = []) {
   const definition = productId ? pricingDefinition(productId, catalog) : undefined;
+  const publishedModels = (definition?.importedModels ?? [])
+    .filter((model) => model.published !== false)
+    .sort((left, right) => (left.order ?? 0) - (right.order ?? 0));
   if (definition?.classification === "IMPORTED") {
-    const models = definition.importedModels ?? [];
+    const models = publishedModels;
     const accessories = models.flatMap((model) => model.accessories).filter((option, index, all) => all.findIndex((entry) => entry.id === option.id) === index);
     return applyStepOverrides({
       family: "puertas-principales",
@@ -315,14 +326,55 @@ export function getConfiguratorSchema(productGroup: ProductGroup, productId?: st
       version: 3,
       steps: [
         solutionStep,
-        choice("model", "Modelo", "Selecciona un modelo importado", "model", models.map((model) => model.id)),
+        choice("model", "Modelo", "Selecciona el modelo disponible", "model", models.map((model) => model.id)),
+        { ...finishStep, title: "Selecciona un color disponible", description: "La imagen cambia con el color cuando existe una referencia aprobada." },
         choice("variant", "Medida", "Selecciona una medida disponible", "variant", models.flatMap((model) => model.variants.map((variant) => variant.id))),
-        { ...finishStep, title: "Selecciona un acabado disponible", description: "Solo se muestran acabados compatibles con la variante elegida." },
         ...(accessories.length ? [multi("imported-accessories", "Complementos", "Selecciona complementos compatibles", accessories.map((option) => option.id))] : []),
         notesStep,
       ],
     } satisfies ConfiguratorSchema, overrides);
   }
+  if (productId === "puertas-a-medida") return applyStepOverrides({
+    family: "puertas-medida",
+    productGroup: "puertas-medida",
+    version: 4,
+    steps: [
+      solutionStep,
+      choice("model", "Modelo", "Elige primero el diseño de la puerta", "model", publishedModels.map((model) => model.id), { description: "La apertura compatible se asigna automáticamente según el modelo." }),
+      dimensionsStep("Ingresa las medidas aproximadas", "Ancho (m)", "Alto (m)", { required: true }),
+      finishStep,
+      ...(publishedModels.some((model) => model.accessories.length) ? [multi("entry-accessories", "Complementos", "Selecciona únicamente complementos compatibles", publishedModels.flatMap((model) => model.accessories.map((option) => option.id)).filter((value, index, all) => all.indexOf(value) === index))] : []),
+      notesStep,
+    ],
+  }, overrides);
+  if (productId === "seccionales") return applyStepOverrides({
+    family: "puertas",
+    productGroup: "puertas",
+    version: 4,
+    steps: [
+      solutionStep,
+      choice("garage-family", "Familia", "Elige la familia de puerta de garaje", "subtype", ["Corredizas", "Puertas que se levantan"]),
+      choice("model", "Diseño", "Elige un diseño compatible", "model", publishedModels.map((model) => model.id)),
+      dimensionsStep("Ingresa las medidas aproximadas del garaje", "Ancho (m)", "Alto (m)", { required: true }),
+      finishStep,
+      ...(publishedModels.some((model) => model.accessories.length) ? [multi("garage-accessories", "Adicionales", "La automatización está incluida; elige solo adicionales", publishedModels.flatMap((model) => model.accessories.map((option) => option.id)).filter((value, index, all) => all.indexOf(value) === index))] : []),
+      notesStep,
+    ],
+  }, overrides);
+  if (productId === "puertas-contraplacadas") return applyStepOverrides({
+    family: "puertas-contraplacadas",
+    productGroup: "puertas-contraplacadas",
+    version: 1,
+    steps: [
+      solutionStep,
+      choice("contraplacada-opening", "Apertura", "Elige el tipo de apertura", "openingSystem", ["Batiente", "Pivotante"]),
+      choice("model", "Modelo", "Elige un modelo compatible", "model", publishedModels.map((model) => model.id)),
+      dimensionsStep("Ingresa las dimensiones de la puerta", "Ancho (m)", "Alto (m)", { required: true }),
+      ...(publishedModels.some((model) => model.thicknessOptionsMm?.length) ? [choice("contraplacada-thickness", "Espesor", "Selecciona el espesor disponible", "panel", publishedModels.flatMap((model) => model.thicknessOptionsMm ?? []).filter((value, index, all) => all.indexOf(value) === index).map((value) => `${value} mm`))] : []),
+      finishStep,
+      notesStep,
+    ],
+  }, overrides);
   if (definition?.classification === "MADE_TO_MEASURE" && productGroup === "puertas-principales") return applyStepOverrides(configuratorSchemas["puertas-medida"], overrides);
   return applyStepOverrides(configuratorSchemas[configuratorFamilyByProductGroup[productGroup]], overrides);
 }
@@ -330,6 +382,12 @@ export function getConfiguratorSchema(productGroup: ProductGroup, productId?: st
 export function validateConfiguratorCompatibility(productId: string, answers: ConfiguratorAnswerBag & { finish?: string }, catalog: PublishedPricingDefinition[] = publishedPricingCatalog, overrides: ConfiguratorStepOverride[] = []) {
   const product = products.find((candidate) => candidate.id === productId);
   if (!product) return "La solución seleccionada no existe.";
+  const definition = pricingDefinition(productId, catalog);
+  const selectedModel = definition?.importedModels?.find((model) => model.id === answers.model && model.published !== false);
+  if (answers.model && !selectedModel) return "El modelo seleccionado no existe o no está publicado.";
+  if (selectedModel?.subtype && answers.subtype && selectedModel.subtype !== answers.subtype) return "El modelo no es compatible con la familia seleccionada.";
+  if (selectedModel?.openingSystem && answers.openingSystem && selectedModel.openingSystem !== answers.openingSystem) return "La apertura no corresponde al modelo seleccionado.";
+  if (answers.panel && selectedModel?.thicknessOptionsMm?.length && !selectedModel.thicknessOptionsMm.map((value) => `${value} mm`).includes(answers.panel)) return "El espesor no corresponde al modelo seleccionado.";
   const schema = getConfiguratorSchema(product.group, productId, catalog, overrides);
   const visibleSteps = schema.steps.filter((step) => isConfiguratorStepVisible(step, answers));
   const unanswered = visibleSteps.find((step): step is Extract<ConfiguratorStep, { kind: "choice" }> => step.kind === "choice" && !answers[step.answerKey] && !step.defaultValue);
@@ -339,6 +397,7 @@ export function validateConfiguratorCompatibility(productId: string, answers: Co
     const value = answers[key];
     if (!value) continue;
     const step = visibleSteps.find((candidate): candidate is Extract<ConfiguratorStep, { kind: "choice" }> => candidate.kind === "choice" && candidate.answerKey === key);
+    if (!step && key === "openingSystem" && selectedModel?.openingSystem === value) continue;
     if (!step) return `La respuesta “${value}” no corresponde al flujo de esta solución.`;
     if (!step.options.some((option) => option.value === value)) return `La opción “${value}” no es compatible con esta solución.`;
   }

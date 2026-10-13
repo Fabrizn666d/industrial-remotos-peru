@@ -6,6 +6,14 @@ export type ImportedDoorModel = {
   id: string;
   name: string;
   image: string;
+  published?: boolean;
+  order?: number;
+  subtype?: string;
+  openingSystem?: string;
+  allowedFinishes?: string[];
+  finishImages?: Record<string, string>;
+  included?: string[];
+  thicknessOptionsMm?: number[];
   variants: Array<{
     id: string;
     label: string;
@@ -74,11 +82,107 @@ const garageDoorRule: NonNullable<PublishedPricingDefinition["custom"]> = {
     { upToM2: null, unitPriceMinor: 43_000 }
   ],
   finishPercentBps: { "Blanco texturado": 0, "Gris grafito": 800, "Nogal oscuro": 1_500 },
-  automationPrices: { "Sistema manual": 0, "Motor opcional": 85_000, "Requiero automatización": 85_000 },
-  accessoryPrices: { "Control adicional": 6_500, "Control remoto": 6_500, "Sensor de seguridad": 18_000, "Luz de cortesía": 9_000, "Batería de respaldo": 35_000 },
+  automationPrices: {},
+  accessoryPrices: { "Control adicional": 6_500, "Sensor de seguridad adicional": 18_000, "Batería de respaldo": 35_000 },
   installationMinor: 35_000,
   installationIncludedInRate: false
 };
+
+const serviceImages = "/NUEVO/IRP-imagenes-por-servicio";
+const entryClientImages = `${serviceImages}/01_Puertas_principales_a_medida/Basadas_en_fotos_cliente`;
+const garageClientImages = `${serviceImages}/03_Puertas_de_garaje/Basadas_en_fotos_cliente`;
+const importedColorImages = `${serviceImages}/02_Puertas_importadas/Colores_propuestos`;
+const contraplacadaImages = `${serviceImages}/11_Puertas_contraplacadas/Propuestas`;
+
+const entryModels: ImportedDoorModel[] = [
+  ["bloques-madera", "Bloques de madera", "puerta-bloques-madera.png"],
+  ["diagonales-nogal", "Diagonales nogal", "puerta-diagonales-nogal.png"],
+  ["dos-laterales", "Dos laterales", "puerta-dos-laterales.png"],
+  ["geometrica-madera-negro", "Geométrica madera y negro", "puerta-geometrica-madera-negro.png"],
+  ["lateral-derecho", "Lateral derecho", "puerta-lateral-derecho.png"],
+  ["lateral-negro-vidrio", "Lateral negro y vidrio", "puerta-lateral-negro-vidrio.png"],
+  ["lineas-escalonadas", "Líneas escalonadas", "puerta-lineas-escalonadas.png"],
+  ["madera-horizontal-negro", "Madera horizontal y negro", "puerta-madera-horizontal-negro.png"],
+  ["madera-horizontal-plata", "Madera horizontal y plata", "puerta-madera-horizontal-plata.png"],
+  ["madera-lisa", "Madera lisa", "puerta-madera-lisa.png"],
+  ["negra-bandas-plata", "Negra con bandas plata", "puerta-negra-bandas-plata.png"],
+  ["ventana-plata", "Ventana y detalle plata", "puerta-ventana-plata.png"],
+  ["ventana-vertical", "Ventana vertical", "puerta-ventana-vertical.png"],
+  ["vidrios-cuadrados", "Vidrios cuadrados", "puerta-vidrios-cuadrados.png"],
+].map(([id, name, file], order) => ({
+  id: `principal-${id}`,
+  name,
+  image: `${entryClientImages}/${file}`,
+  published: true,
+  order,
+  openingSystem: "Batiente",
+  allowedFinishes: ["Blanco texturado", "Negro mate", "Gris grafito", "Nogal oscuro"],
+  variants: [],
+  automation: [],
+  accessories: [
+    { id: "cerradura-seguridad", label: "Cerradura de seguridad", priceMinor: 18_000 },
+    { id: "tirador", label: "Tirador", priceMinor: 12_000 },
+    { id: "mirilla", label: "Mirilla", priceMinor: 4_500 },
+    { id: "control-acceso", label: "Control de acceso", priceMinor: 38_000 },
+  ],
+}));
+
+const garageModels: ImportedDoorModel[] = [
+  ["blanco-horizontal", "Horizontal blanco", "garaje-blanco-horizontal.png", "Puertas que se levantan", "Seccional"],
+  ["miel-horizontal", "Horizontal miel", "garaje-miel-horizontal.png", "Puertas que se levantan", "Seccional"],
+  ["nogal-horizontal", "Horizontal nogal", "garaje-nogal-horizontal.png", "Puertas que se levantan", "Seccional"],
+  ["peatonal-integrada", "Con puerta peatonal integrada", "garaje-peatonal-integrada.png", "Puertas que se levantan", "Seccional"],
+  ["geometrico", "Geométrico", "garaje-geometrico.png", "Corredizas", "Corrediza"],
+  ["negro-plata", "Negro y plata", "garaje-negro-plata.png", "Corredizas", "Corrediza"],
+].map(([id, name, file, subtype, openingSystem], order) => ({
+  id: `garaje-${id}`,
+  name,
+  image: `${garageClientImages}/${file}`,
+  published: true,
+  order,
+  subtype,
+  openingSystem,
+  allowedFinishes: ["Blanco texturado", "Gris grafito", "Negro mate", "Nogal oscuro"],
+  included: ["Automatización", "Instalación"],
+  variants: [],
+  automation: [],
+  accessories: [
+    { id: "control-adicional", label: "Control adicional", priceMinor: 6_500 },
+    { id: "sensor-adicional", label: "Sensor de seguridad adicional", priceMinor: 18_000 },
+    { id: "bateria-respaldo", label: "Batería de respaldo", priceMinor: 35_000 },
+  ],
+}));
+
+const importedDoorModel: ImportedDoorModel = {
+  id: "puerta-importada-horizontal",
+  name: "Puerta importada horizontal",
+  image: `${importedColorImages}/nogal.png`,
+  published: true,
+  order: 0,
+  openingSystem: "Batiente",
+  allowedFinishes: ["Blanco", "Grafito", "Miel", "Negro", "Nogal"],
+  finishImages: {
+    Blanco: `${importedColorImages}/blanco.png`,
+    Grafito: `${importedColorImages}/grafito.png`,
+    Miel: `${importedColorImages}/miel.png`,
+    Negro: `${importedColorImages}/negro.png`,
+    Nogal: `${importedColorImages}/nogal.png`,
+  },
+  variants: [
+    { id: "importada-090-210", label: "0.90 × 2.10 m", widthM: .9, heightM: 2.1, allowedFinishes: ["Blanco", "Grafito", "Miel", "Negro", "Nogal"], priceMinorByFinish: { Blanco: 165_000, Grafito: 172_000, Miel: 180_000, Negro: 172_000, Nogal: 180_000 } },
+    { id: "importada-100-210", label: "1.00 × 2.10 m", widthM: 1, heightM: 2.1, allowedFinishes: ["Blanco", "Grafito", "Miel", "Negro", "Nogal"], priceMinorByFinish: { Blanco: 176_000, Grafito: 183_000, Miel: 191_000, Negro: 183_000, Nogal: 191_000 } },
+  ],
+  automation: [],
+  accessories: [],
+  included: ["Suministro", "Instalación"],
+};
+
+const contraplacadaDraftModels: ImportedDoorModel[] = [
+  ["contraplacada-batiente-blanco", "Batiente blanco", `${contraplacadaImages}/Batientes/blanco.png`, "Batiente"],
+  ["contraplacada-batiente-singapur", "Batiente Singapur", `${contraplacadaImages}/Batientes/singapur.png`, "Batiente"],
+  ["contraplacada-pivotante-grafito", "Pivotante grafito", `${contraplacadaImages}/Pivotantes/grafito.png`, "Pivotante"],
+  ["contraplacada-pivotante-madera", "Pivotante madera", `${contraplacadaImages}/Pivotantes/madera.png`, "Pivotante"],
+].map(([id, name, image, openingSystem], order) => ({ id, name, image, openingSystem, subtype: openingSystem, published: false, order, allowedFinishes: [], variants: [], automation: [], accessories: [] }));
 
 const entryDoorRule: NonNullable<PublishedPricingDefinition["custom"]> = {
   minWidthM: .8,
@@ -104,43 +208,11 @@ export const publishedPricingCatalog: PublishedPricingDefinition[] = [
     demo: true,
     installationMinor: 22_000,
     installationIncludedInRate: false,
-    importedModels: [{
-      id: "irp-principal-linea-urbana",
-      name: "Línea Urbana importada",
-      image: "/images/placeholders/puerta-contraplacada-temporal.png",
-      variants: [
-        { id: "urbana-090-210", label: "0.90 × 2.10 m", widthM: .9, heightM: 2.1, allowedFinishes: ["Blanco texturado", "Negro mate", "Nogal oscuro"], priceMinorByFinish: { "Blanco texturado": 165_000, "Negro mate": 172_000, "Nogal oscuro": 180_000 } },
-        { id: "urbana-100-210", label: "1.00 × 2.10 m", widthM: 1, heightM: 2.1, allowedFinishes: ["Blanco texturado", "Negro mate"], priceMinorByFinish: { "Blanco texturado": 176_000, "Negro mate": 183_000 } }
-      ],
-      automation: [
-        { id: "included", label: "Automatización incluida", priceMinor: 0 },
-        { id: "manual", label: "Sistema manual", priceMinor: 0 }
-      ],
-      accessories: [{ id: "sensor", label: "Sensor de seguridad", priceMinor: 18_000 }]
-    }, {
-      id: "irp-principal-linea-natura",
-      name: "Línea Natura importada",
-      image: "/images/reales/puerta-29.jpg",
-      variants: [
-        { id: "natura-090-210", label: "0.90 × 2.10 m", widthM: .9, heightM: 2.1, allowedFinishes: ["Nogal oscuro", "Cedro dorado", "Negro mate"], priceMinorByFinish: { "Nogal oscuro": 189_000, "Cedro dorado": 187_000, "Negro mate": 181_000 } },
-        { id: "natura-100-220", label: "1.00 × 2.20 m", widthM: 1, heightM: 2.2, allowedFinishes: ["Nogal oscuro", "Negro mate"], priceMinorByFinish: { "Nogal oscuro": 204_000, "Negro mate": 196_000 } }
-      ],
-      automation: [{ id: "manual", label: "Sistema manual", priceMinor: 0 }],
-      accessories: []
-    }, {
-      id: "irp-principal-linea-minimal",
-      name: "Línea Minimal importada",
-      image: "/images/reales/puerta-30.jpg",
-      variants: [
-        { id: "minimal-090-210", label: "0.90 × 2.10 m", widthM: .9, heightM: 2.1, allowedFinishes: ["Blanco texturado", "Gris grafito", "Negro mate"], priceMinorByFinish: { "Blanco texturado": 174_000, "Gris grafito": 179_000, "Negro mate": 182_000 } },
-        { id: "minimal-100-210", label: "1.00 × 2.10 m", widthM: 1, heightM: 2.1, allowedFinishes: ["Gris grafito", "Negro mate"], priceMinorByFinish: { "Gris grafito": 190_000, "Negro mate": 193_000 } }
-      ],
-      automation: [{ id: "manual", label: "Sistema manual", priceMinor: 0 }],
-      accessories: []
-    }]
+    importedModels: [importedDoorModel]
   },
-  { productId: "seccionales", classification: "MADE_TO_MEASURE", demo: true, custom: garageDoorRule },
-  { productId: "puertas-a-medida", classification: "MADE_TO_MEASURE", demo: true, custom: entryDoorRule },
+  { productId: "seccionales", classification: "MADE_TO_MEASURE", demo: true, custom: garageDoorRule, importedModels: garageModels },
+  { productId: "puertas-a-medida", classification: "MADE_TO_MEASURE", demo: true, custom: entryDoorRule, importedModels: entryModels },
+  { productId: "puertas-contraplacadas", classification: "MADE_TO_MEASURE", demo: true, custom: entryDoorRule, importedModels: contraplacadaDraftModels },
   { productId: "levadizas", classification: "MADE_TO_MEASURE", demo: true, custom: garageDoorRule },
   { productId: "corredizas", classification: "MADE_TO_MEASURE", demo: true, custom: garageDoorRule },
   { productId: "batientes", classification: "MADE_TO_MEASURE", demo: true, custom: garageDoorRule },

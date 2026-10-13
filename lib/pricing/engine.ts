@@ -42,8 +42,12 @@ export function calculateItemPrice(item: PriceRequestItem, catalog?: PublishedPr
   if (incompatibility) return requiresEvaluation(definition.classification, incompatibility, ["configuración compatible"]);
   const demoAssumptions = definition.demo ? ["Tarifa referencial editable, pendiente de validación comercial por Industrial Remotos Perú."] : [];
 
+  if (config.measurementsUnknown && definition.classification !== "IMPORTED") {
+    return requiresEvaluation(definition.classification, "Pendiente de cotización: se requiere medición para calcular un importe.", ["medición en obra"]);
+  }
+
   if (definition.classification === "IMPORTED") {
-    const model = definition.importedModels?.find((entry) => entry.id === config.model);
+    const model = definition.importedModels?.find((entry) => entry.id === config.model && entry.published !== false);
     if (!model) return requiresEvaluation("IMPORTED", "Selecciona uno de los modelos importados publicados.", ["modelo"]);
     const variant = model.variants.find((entry) => entry.id === config.variant);
     if (!variant) return requiresEvaluation("IMPORTED", "La medida debe corresponder a una variante publicada para el modelo.", ["medida disponible"]);
@@ -107,6 +111,11 @@ export function calculateItemPrice(item: PriceRequestItem, catalog?: PublishedPr
 
   if (definition.custom) {
     const rule = definition.custom;
+    const model = definition.importedModels?.find((entry) => entry.id === config.model && entry.published !== false);
+    if (definition.importedModels?.some((entry) => entry.published !== false) && !model) return requiresEvaluation("MADE_TO_MEASURE", "Selecciona un modelo publicado para esta solución.", ["modelo"]);
+    if (model?.subtype && config.subtype !== model.subtype) return requiresEvaluation("MADE_TO_MEASURE", "El modelo no corresponde a la familia seleccionada.", ["modelo compatible"]);
+    if (model?.openingSystem && config.openingSystem !== model.openingSystem) return requiresEvaluation("MADE_TO_MEASURE", "La apertura debe corresponder al modelo seleccionado.", ["apertura compatible"]);
+    if (model?.allowedFinishes?.length && (!config.finish || !model.allowedFinishes.includes(config.finish))) return requiresEvaluation("MADE_TO_MEASURE", "Selecciona un acabado compatible con el modelo.", ["acabado compatible"]);
     if (width < rule.minWidthM || width > rule.maxWidthM || height < rule.minHeightM || height > rule.maxHeightM) {
       return requiresEvaluation("MADE_TO_MEASURE", `Las medidas publicadas admiten ancho de ${rule.minWidthM} a ${rule.maxWidthM} m y alto de ${rule.minHeightM} a ${rule.maxHeightM} m.`, ["medidas dentro del rango"]);
     }
@@ -125,7 +134,8 @@ export function calculateItemPrice(item: PriceRequestItem, catalog?: PublishedPr
     if (automationMinor === undefined && config.automation) return requiresEvaluation("MADE_TO_MEASURE", "La automatización elegida no es compatible con esta regla.", ["automatización compatible"]);
     if (automationMinor) breakdown.push({ key: "automation", label: config.automation!, amountMinor: multiplyMinor(automationMinor, item.quantity) });
     for (const accessory of config.accessories) {
-      const amount = rule.accessoryPrices[accessory];
+      const modelAccessory = model?.accessories.find((entry) => entry.id === accessory || entry.label === accessory);
+      const amount = modelAccessory?.priceMinor ?? rule.accessoryPrices[accessory];
       if (amount === undefined) return requiresEvaluation("MADE_TO_MEASURE", `El accesorio “${accessory}” no está publicado para esta solución.`, ["accesorio compatible"]);
       breakdown.push({ key: `accessory:${accessory}`, label: accessory, amountMinor: multiplyMinor(amount, item.quantity) });
     }

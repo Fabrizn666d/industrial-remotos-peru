@@ -35,11 +35,13 @@ export type PricingResult = z.infer<typeof PricingResultSchema>;
 export const PricingConfigurationSchema = z.object({
   width: z.string().trim().optional(),
   height: z.string().trim().optional(),
+  measurementsUnknown: z.boolean().optional(),
   subtype: z.string().trim().optional(),
   model: z.string().trim().optional(),
   variant: z.string().trim().optional(),
   openingSystem: z.string().trim().optional(),
   design: z.string().trim().optional(),
+  panel: z.string().trim().optional(),
   material: z.string().trim().optional(),
   finish: z.string().trim().optional(),
   automation: z.string().trim().optional(),

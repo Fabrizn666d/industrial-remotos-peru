@@ -54,14 +54,14 @@ export function CartLineItem({ item, pricing }: { item: QuoteItem; pricing?: Pri
         <span>{item.quantity}</span>
         <button type="button" onClick={() => changeQuantity(item.id, 1)} aria-label={`Agregar una unidad de ${item.name}`}><Plus size={15} /></button>
       </div>
-      <strong className="cart-line-item__price">{pricing?.status === "ESTIMATED" ? formatPublicPrice(pricing.totalMinor) : "Requiere evaluación"}<small>Propuesta preliminar</small></strong>
+      <strong className="cart-line-item__price">{pricing?.status === "ESTIMATED" ? formatPublicPrice(pricing.totalMinor) : "Pendiente de cotización"}<small>Propuesta preliminar</small></strong>
       <button className="delete-item" type="button" onClick={() => removeItem(item.id)} aria-label={`Eliminar ${item.name}`}><Trash2 size={18} /></button>
     </article>
   );
 }
 
 export function CartSummaryCard({ count, pricing }: { count: number; pricing: ProjectPricing }) {
-  const estimated = pricing.estimatedTotalMinor === null ? "Requiere evaluación" : formatPublicPrice(pricing.estimatedTotalMinor);
+  const estimated = pricing.status === "ESTIMATED" && pricing.estimatedTotalMinor !== null ? formatPublicPrice(pricing.estimatedTotalMinor) : "Pendiente de cotización";
   return (
     <aside className="cart-summary-card">
       <small>Propuesta preliminar</small>

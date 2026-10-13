@@ -2,12 +2,11 @@
 
 import { usePathname } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type RefObject } from "react";
-import { HOME_INTRO_SEEN_CLASS, HOME_INTRO_SESSION_KEY } from "@/lib/home-intro-session";
 
 export const HOME_INTRO_ASSETS = {
   logo: "/NUEVO/LOGO.png",
-  video: "/NUEVO/Crear_video_para_empresa_industrial_20261012182532.mp4",
-  mobileVideo: "/NUEVO/Crear_video_para_empresa_industrial_20261012182532.mp4",
+  video: "/NUEVO/crear-video-industrial-loader.mp4",
+  mobileVideo: "/NUEVO/crear-video-industrial-loader.mp4",
   firstFrame: "/NUEVO/crear-video-industrial-first-frame.webp",
   lastFrame: "/NUEVO/crear-video-industrial-last-frame.webp",
   mobileFirstFrame: "/NUEVO/crear-video-industrial-first-frame.webp",
@@ -40,31 +39,18 @@ export function HomeIntroProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (pathname !== "/") {
-      document.documentElement.classList.remove(HOME_INTRO_SEEN_CLASS);
       setStatus("skipped");
       return;
     }
-    const force = new URLSearchParams(window.location.search).get("intro") === "1" ||
-      process.env.NEXT_PUBLIC_FORCE_HOME_INTRO === "true";
-    let seen = false;
-    try { seen = sessionStorage.getItem(HOME_INTRO_SESSION_KEY) === "seen"; } catch { /* Storage can be disabled. */ }
-    if (!force && seen) {
-      document.documentElement.classList.add(HOME_INTRO_SEEN_CLASS);
-      setStatus("skipped");
-      return;
-    }
-    document.documentElement.classList.remove(HOME_INTRO_SEEN_CLASS);
-    setStatus((current) => current === "checking" || current === "skipped" ? "loading" : current);
+    document.documentElement.classList.remove("irp-intro-seen");
+    setStatus((current) => ["checking", "skipped", "completed", "failed"].includes(current) ? "loading" : current);
   }, [pathname]);
 
   const markPlaying = useCallback(() => setStatus((current) =>
     current === "checking" || current === "loading" ? "playing" : current), []);
   const beginReveal = useCallback(() => setStatus((current) =>
     current === "playing" || current === "loading" || current === "checking" ? "revealing" : current), []);
-  const complete = useCallback(() => {
-    try { sessionStorage.setItem(HOME_INTRO_SESSION_KEY, "seen"); } catch { /* Playback still completes. */ }
-    setStatus("completed");
-  }, []);
+  const complete = useCallback(() => setStatus("completed"), []);
   const fail = useCallback(() => setStatus("failed"), []);
 
   // Lifecycle only: no cue classes, timers, width compensation or visual state.

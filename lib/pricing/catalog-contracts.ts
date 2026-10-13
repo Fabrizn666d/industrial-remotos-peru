@@ -4,7 +4,22 @@ import { DEFAULT_PROPOSAL_TERMS, DoorClassificationSchema, ProposalTermsSchema }
 const money = z.number().int().min(0).max(1_000_000_000);
 const importedVariant = z.object({ id: z.string().min(1), label: z.string().min(1), widthM: z.number().positive(), heightM: z.number().positive(), allowedFinishes: z.array(z.string().min(1)).min(1), priceMinorByFinish: z.record(z.string(), money) }).strict();
 const pricedOption = z.object({ id: z.string().min(1), label: z.string().min(1), priceMinor: money }).strict();
-const importedModel = z.object({ id: z.string().min(1), name: z.string().min(1), image: z.string().min(1), variants: z.array(importedVariant).min(1), automation: z.array(pricedOption).min(1), accessories: z.array(pricedOption) }).strict();
+const importedModel = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  image: z.string().min(1),
+  published: z.boolean().default(true),
+  order: z.number().int().min(0).default(0),
+  subtype: z.string().min(1).optional(),
+  openingSystem: z.string().min(1).optional(),
+  allowedFinishes: z.array(z.string().min(1)).default([]),
+  finishImages: z.record(z.string(), z.string().min(1)).default({}),
+  included: z.array(z.string().min(1)).default([]),
+  thicknessOptionsMm: z.array(z.number().positive()).default([]),
+  variants: z.array(importedVariant).default([]),
+  automation: z.array(pricedOption).default([]),
+  accessories: z.array(pricedOption).default([])
+}).strict();
 const customRule = z.object({ minWidthM: z.number().positive(), maxWidthM: z.number().positive(), minHeightM: z.number().positive(), maxHeightM: z.number().positive(), minimumAreaM2: z.number().positive(), areaRates: z.array(z.object({ upToM2: z.number().positive().nullable(), unitPriceMinor: money }).strict()).min(1), finishPercentBps: z.record(z.string(), z.number().int().min(0).max(100_000)), automationPrices: z.record(z.string(), money), accessoryPrices: z.record(z.string(), money), installationMinor: money, installationIncludedInRate: z.boolean().default(false) }).strict();
 const simpleArea = z.object({ minimumAreaM2: z.number().positive(), unitPriceMinor: money, installationMinor: money, installationIncludedInRate: z.boolean().default(false) }).strict();
 const formula = z.object({ kind: z.enum(["FIXED", "AREA", "LINEAR", "PERIMETER", "TECHNICAL_REVIEW"]), label: z.string().min(1).max(160), minPrimary: z.number().positive(), maxPrimary: z.number().positive(), minSecondary: z.number().positive(), maxSecondary: z.number().positive(), minimumBillable: z.number().positive(), unitPriceMinor: money, unitPriceMinorBySubtype: z.record(z.string(), money), fixedPriceMinorByOption: z.record(z.string(), money), finishPercentBps: z.record(z.string(), z.number().int().min(0).max(100_000)), accessoryPrices: z.record(z.string(), money).default({}), baseMinor: money, installationMinor: money, installationIncludedInRate: z.boolean().default(false) }).strict();
@@ -17,7 +32,7 @@ const configuratorVisualOverride = z.object({
   referenceLabel: z.string().min(1).max(80).optional()
 }).strict();
 const configuratorStepOverride = z.object({
-  family: z.enum(["puertas", "puertas-medida", "puertas-principales", "automatizacion", "techos", "mamparas", "acero", "estructuras", "cerco", "drywall"]),
+  family: z.enum(["puertas", "puertas-medida", "puertas-principales", "puertas-contraplacadas", "automatizacion", "techos", "mamparas", "acero", "estructuras", "cerco", "drywall"]),
   stepId: z.string().min(1).max(120),
   enabled: z.boolean().optional(),
   label: z.string().min(1).max(80).optional(),
@@ -28,7 +43,7 @@ const configuratorStepOverride = z.object({
 }).strict();
 
 export const PublishedPricingDefinitionSchema = z.object({ productId: z.string().min(1), classification: DoorClassificationSchema, demo: z.boolean(), installationMinor: money.default(0), installationIncludedInRate: z.boolean().default(false), importedModels: z.array(importedModel).optional(), custom: customRule.optional(), simpleArea: simpleArea.optional(), formula: formula.optional() }).strict().superRefine((value, context) => {
-  if (value.classification === "IMPORTED" && !value.importedModels?.length) context.addIssue({ code: "custom", path: ["importedModels"], message: "Una puerta importada requiere modelos" });
+  if (value.classification === "IMPORTED" && !value.importedModels?.some((model) => model.published !== false && model.variants.length)) context.addIssue({ code: "custom", path: ["importedModels"], message: "Una puerta importada requiere al menos un modelo publicado con medidas" });
   value.importedModels?.forEach((model, modelIndex) => {
     model.variants.forEach((variant, variantIndex) => {
       const missingPrice = variant.allowedFinishes.find(

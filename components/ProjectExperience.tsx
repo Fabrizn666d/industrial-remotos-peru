@@ -133,7 +133,7 @@ export function ProjectExperience() {
                 <>
                   <div className="project-drawer__list">
                     {items.map((item) => {
-                      const priced = calculateItemPrice({ productId: item.productId, quantity: item.quantity, configuration: { width: item.configuration.dimensions?.width, height: item.configuration.dimensions?.height, subtype: item.configuration.subtype, model: item.configuration.model, variant: item.configuration.variant, openingSystem: item.configuration.openingSystem, design: item.configuration.design, material: item.configuration.material, finish: item.configuration.finish, automation: item.configuration.automation, accessories: item.configuration.accessories } }, publicCatalog.definitions, `v${publicCatalog.version}`, publicCatalog.configuratorStepOverrides);
+                      const priced = calculateItemPrice({ productId: item.productId, quantity: item.quantity, configuration: { width: item.configuration.dimensions?.width, height: item.configuration.dimensions?.height, measurementsUnknown: item.configuration.measurementsUnknown, subtype: item.configuration.subtype, model: item.configuration.model, variant: item.configuration.variant, openingSystem: item.configuration.openingSystem, design: item.configuration.design, material: item.configuration.material, finish: item.configuration.finish, panel: item.configuration.panel, automation: item.configuration.automation, accessories: item.configuration.accessories } }, publicCatalog.definitions, `v${publicCatalog.version}`, publicCatalog.configuratorStepOverrides);
                       return (
                       <article key={item.id}>
                         <span className="project-drawer__image"><Image src={item.image} alt="" fill sizes="96px" className="object-cover" /></span>
@@ -152,7 +152,7 @@ export function ProjectExperience() {
                     )})}
                   </div>
                   <div className="project-drawer__footer">
-                    <p><b>{projectPricing.estimatedTotalMinor !== null ? `Total estimado ${formatPublicPrice(projectPricing.estimatedTotalMinor)}` : "Partidas por evaluar"}</b><br />{PROPOSAL_DISCLAIMER}</p>
+                    <p><b>{projectPricing.status === "ESTIMATED" && projectPricing.estimatedTotalMinor !== null ? `Total estimado ${formatPublicPrice(projectPricing.estimatedTotalMinor)}` : "Pendiente de cotización"}</b><br />{PROPOSAL_DISCLAIMER}</p>
                     <Link className="button button--primary" href="/mi-proyecto" onClick={() => setDrawerOpen(false)}>Revisar mi proyecto <ArrowRight size={17} /></Link>
                     <button className="clear-project" type="button" onClick={clearProject}>Vaciar selección</button>
                   </div>

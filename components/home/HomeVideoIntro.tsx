@@ -9,6 +9,8 @@ type HeroContent = HomeContent["hero"];
 export function HomeVideoIntro({ content }: { content: HeroContent }) {
   const { status, markPlaying, complete, fail } = useHomeIntro();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const endTimerRef = useRef<number | null>(null);
+  const startedRef = useRef(false);
   const [leaving, setLeaving] = useState(false);
   const active = content.mode === "composition" && !["completed", "failed", "skipped"].includes(status);
 
@@ -16,7 +18,20 @@ export function HomeVideoIntro({ content }: { content: HeroContent }) {
     if (!active) return;
     const video = videoRef.current;
     if (!video) return;
-    void video.play().catch(() => fail());
+    const start = () => {
+      if (startedRef.current) return;
+      startedRef.current = true;
+      video.currentTime = 0;
+      void video.play().catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        fail();
+      });
+    };
+    if (document.documentElement.hasAttribute("data-irp-route-transition")) {
+      window.addEventListener("irp:route-transition-complete", start, { once: true });
+      return () => window.removeEventListener("irp:route-transition-complete", start);
+    }
+    start();
   }, [active, fail]);
 
   useEffect(() => {
@@ -24,6 +39,10 @@ export function HomeVideoIntro({ content }: { content: HeroContent }) {
     const fallback = window.setTimeout(complete, 500);
     return () => window.clearTimeout(fallback);
   }, [complete, leaving]);
+
+  useEffect(() => () => {
+    if (endTimerRef.current !== null) window.clearTimeout(endTimerRef.current);
+  }, []);
 
   if (!active) return null;
   const hero = content.composition;
@@ -41,21 +60,22 @@ export function HomeVideoIntro({ content }: { content: HeroContent }) {
       <video
         ref={videoRef}
         className="irp-home-video-intro__media"
+        src={hero.desktopVideo.src}
         poster={hero.desktopPoster.src}
         preload="auto"
-        autoPlay
         muted
         playsInline
         disablePictureInPicture
         tabIndex={-1}
         aria-label={hero.desktopVideo.alt}
         onPlaying={markPlaying}
-        onEnded={() => setLeaving(true)}
-        onError={fail}
-      >
-        <source media="(max-width: 767px)" src={hero.mobileVideo.src} type="video/mp4" />
-        <source media="(min-width: 768px)" src={hero.desktopVideo.src} type="video/mp4" />
-      </video>
+        onEnded={() => {
+          endTimerRef.current = window.setTimeout(() => setLeaving(true), 260);
+        }}
+        onError={(event) => {
+          if (event.currentTarget.error && event.currentTarget.error.code !== 1) fail();
+        }}
+      />
     </div>
   );
 }

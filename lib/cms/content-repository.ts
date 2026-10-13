@@ -60,7 +60,9 @@ function normalizeDoorTaxonomy<K extends CmsKey>(key: K, content: CmsContentMap[
     const home = structuredClone(content as CmsContentMap["home"]);
     const legacyIntroVideos = new Set([
       "/NUEVO/Garage_door_opening_transition_1080p_20260921110657.mp4",
-      "/NUEVO/HERO%20MOPVIL.mp4"
+      "/NUEVO/HERO%20MOPVIL.mp4",
+      "/NUEVO/Crear_video_para_empresa_industrial_20261012182532.mp4",
+      "/NUEVO/crear-video-industrial-web.mp4"
     ]);
     const defaultHero = defaultCmsContent.home.hero;
     if (legacyIntroVideos.has(home.hero.composition.desktopVideo.src) || legacyIntroVideos.has(home.hero.composition.mobileVideo.src)) {

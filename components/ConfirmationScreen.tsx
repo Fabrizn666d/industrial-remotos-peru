@@ -49,7 +49,7 @@ export function ConfirmationScreen({ code }: { code?: string }) {
             const restored: SubmittedRequest = {
               requestId: proposal.id, code: proposal.code, createdAt: proposal.createdAt, accessToken: token,
               contact: proposal.contact, details: { region: "", province: "", district: "", address: "", ...proposal.details }, files: [], pricing: proposal.pricingSnapshot,
-              items: proposal.items.map((item: any) => { const product = products.find((entry) => entry.id === item.productId); return { id: item.id, productId: item.productId || "", name: item.name, image: product?.image || "/images/reales/puerta-22.jpg", quantity: item.quantity, configuration: { accessories: [], ...item.configuration, dimensions: item.configuration.width || item.configuration.height ? { width: item.configuration.width, height: item.configuration.height, unit: "m" } : undefined }, price: { status: "pending" }, createdAt: proposal.createdAt, updatedAt: proposal.updatedAt }; })
+              items: proposal.items.map((item: any) => { const product = products.find((entry) => entry.id === item.productId); return { id: item.id, productId: item.productId || "", name: item.name, image: item.configuration.custom_selectedImage || product?.image || "/images/reales/puerta-22.jpg", quantity: item.quantity, configuration: { accessories: [], ...item.configuration, measurementsUnknown: item.configuration.measurementsUnknown === true, dimensions: item.configuration.width || item.configuration.height ? { width: item.configuration.width, height: item.configuration.height, unit: "m" } : undefined }, price: { status: "pending" }, createdAt: proposal.createdAt, updatedAt: proposal.updatedAt }; })
             };
             setRequest(restored);
             sessionStorage.setItem(LAST_REQUEST_KEY, JSON.stringify(restored));
@@ -84,7 +84,7 @@ export function ConfirmationScreen({ code }: { code?: string }) {
     await navigator.clipboard?.writeText(request.code);
     setCopied(true);
   };
-  const total = request.pricing.estimatedTotalMinor;
+  const total = request.pricing.status === "ESTIMATED" ? request.pricing.estimatedTotalMinor : null;
   const privateQuery = request.accessToken ? `?token=${encodeURIComponent(request.accessToken)}` : "";
   const summary = request.items.slice(0, 3).map((item) => `${item.quantity}× ${item.name}`).join(", ");
   const whatsappBase = request.pricing?.proposalTerms?.whatsappNumber ? `https://wa.me/${request.pricing.proposalTerms.whatsappNumber}` : siteConfig.social.whatsapp;
@@ -104,7 +104,7 @@ export function ConfirmationScreen({ code }: { code?: string }) {
       <aside className="confirmation-order">
         <small>Resumen de tu proyecto</small><h2>{request.items.reduce((sum, item) => sum + item.quantity, 0)} elementos</h2>
         <div>{request.items.map((item, index) => { const result = request.pricing.items[index]?.result; return <article key={item.id}><span><Image src={item.image} alt="" fill sizes="64px" className="object-cover" /></span><div><b>{item.name}</b><small>Cantidad: {item.quantity}</small></div><strong>{result?.status === "ESTIMATED" ? formatPublicPrice(result.totalMinor) : "Evaluación"}</strong></article>; })}</div>
-        <footer><span>Total estimado</span><b>{total !== null ? formatPublicPrice(total) : "Requiere evaluación"}</b></footer>
+        <footer><span>{total !== null ? "Total estimado" : "Estado"}</span><b>{total !== null ? formatPublicPrice(total) : "Pendiente de cotización"}</b></footer>
       </aside>
       <section className="confirmation-next"><h2>¿Qué sucede ahora?</h2><div><article><b>01</b><h3>Revisamos tu propuesta</h3><p>El equipo analiza configuración y condiciones.</p></article><article><b>02</b><h3>Validamos contigo</h3><p>Coordinamos medidas, materiales y alcance final.</p></article><article><b>03</b><h3>Versión comercial</h3><p>Si hay cambios, IRP emitirá una nueva versión sin alterar esta propuesta.</p></article></div></section>
     </div>

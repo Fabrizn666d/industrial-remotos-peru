@@ -6,6 +6,8 @@ export type ImportedDoorModel = {
   id: string;
   name: string;
   image: string;
+  thumbnail?: string;
+  gallery?: string[];
   published?: boolean;
   order?: number;
   subtype?: string;
@@ -14,6 +16,12 @@ export type ImportedDoorModel = {
   finishImages?: Record<string, string>;
   included?: string[];
   thicknessOptionsMm?: number[];
+  leafOptions?: string[];
+  priceMode?: "INHERIT" | "FIXED" | "AREA" | "LINEAR" | "EVALUATION";
+  fixedPriceMinor?: number;
+  unitPriceMinor?: number;
+  minimumBillable?: number;
+  commercialStatus?: "REFERENCE" | "VALIDATED" | "PENDING";
   variants: Array<{
     id: string;
     label: string;
@@ -81,18 +89,37 @@ const garageDoorRule: NonNullable<PublishedPricingDefinition["custom"]> = {
     { upToM2: 8, unitPriceMinor: 45_000 },
     { upToM2: null, unitPriceMinor: 43_000 }
   ],
-  finishPercentBps: { "Blanco texturado": 0, "Gris grafito": 800, "Nogal oscuro": 1_500 },
+  finishPercentBps: { "Blanco texturado": 0, "Negro mate": 600, "Gris grafito": 800, "Nogal oscuro": 1_500 },
   automationPrices: {},
   accessoryPrices: { "Control adicional": 6_500, "Sensor de seguridad adicional": 18_000, "Batería de respaldo": 35_000 },
   installationMinor: 35_000,
   installationIncludedInRate: false
 };
 
-const serviceImages = "/NUEVO/IRP-imagenes-por-servicio";
+const serviceImages = "/images/configurator/catalog";
 const entryClientImages = `${serviceImages}/01_Puertas_principales_a_medida/Basadas_en_fotos_cliente`;
+const entryProposalImages = `${serviceImages}/01_Puertas_principales_a_medida/Propuestas`;
 const garageClientImages = `${serviceImages}/03_Puertas_de_garaje/Basadas_en_fotos_cliente`;
 const importedColorImages = `${serviceImages}/02_Puertas_importadas/Colores_propuestos`;
+const importedReferenceImages = `${serviceImages}/02_Puertas_importadas/Referencias_y_variantes_propuestas`;
 const contraplacadaImages = `${serviceImages}/11_Puertas_contraplacadas/Propuestas`;
+
+const draftModel = (id: string, name: string, image: string, order: number, openingSystem?: string, subtype?: string): ImportedDoorModel => ({
+  id,
+  name,
+  image: image.replace(/\.png$/i, ".webp"),
+  thumbnail: image.replace(/\.png$/i, "-thumb.webp"),
+  published: false,
+  order,
+  openingSystem,
+  subtype,
+  priceMode: "EVALUATION",
+  commercialStatus: "PENDING",
+  allowedFinishes: [],
+  variants: [],
+  automation: [],
+  accessories: [],
+});
 
 const entryModels: ImportedDoorModel[] = [
   ["bloques-madera", "Bloques de madera", "puerta-bloques-madera.png"],
@@ -112,7 +139,8 @@ const entryModels: ImportedDoorModel[] = [
 ].map(([id, name, file], order) => ({
   id: `principal-${id}`,
   name,
-  image: `${entryClientImages}/${file}`,
+  image: `${entryClientImages}/${file.replace(/\.png$/i, ".webp")}`,
+  thumbnail: `${entryClientImages}/${file.replace(/\.png$/i, "-thumb.webp")}`,
   published: true,
   order,
   openingSystem: "Batiente",
@@ -127,6 +155,20 @@ const entryModels: ImportedDoorModel[] = [
   ],
 }));
 
+const entryDraftSpecs: Array<[string, string, string, string?]> = [
+  ["doble-batiente-grafito", "Doble batiente grafito", `${entryProposalImages}/doble-batiente-grafito.png`, "Batiente"],
+  ["pivotante-grafito", "Pivotante grafito", `${entryProposalImages}/pivotante-grafito.png`, "Pivotante"],
+  ["portada-principal-grafito", "Portada principal grafito", `${entryProposalImages}/portada-principal-grafito.png`],
+  ["batiente-diagonal-grafito", "Batiente diagonal grafito", `${entryProposalImages}/Batientes/diagonal-grafito.png`, "Batiente"],
+  ["batiente-doble-chevron", "Batiente doble chevron", `${entryProposalImages}/Batientes/doble-chevron.png`, "Batiente"],
+  ["batiente-geometrica-grafito", "Batiente geométrica grafito", `${entryProposalImages}/Batientes/geometrica-grafito.png`, "Batiente"],
+  ["batiente-roble", "Batiente roble", `${entryProposalImages}/Batientes/roble.png`, "Batiente"],
+  ["pivotante-grafito-facetas", "Pivotante grafito facetas", `${entryProposalImages}/Pivotantes/grafito-facetas.png`, "Pivotante"],
+  ["pivotante-marfil", "Pivotante marfil", `${entryProposalImages}/Pivotantes/marfil.png`, "Pivotante"],
+  ["pivotante-nogal", "Pivotante nogal", `${entryProposalImages}/Pivotantes/nogal.png`, "Pivotante"],
+];
+const entryDraftModels: ImportedDoorModel[] = entryDraftSpecs.map(([id, name, image, openingSystem], index) => draftModel(`principal-propuesta-${id}`, name, image, entryModels.length + index, openingSystem));
+
 const garageModels: ImportedDoorModel[] = [
   ["blanco-horizontal", "Horizontal blanco", "garaje-blanco-horizontal.png", "Puertas que se levantan", "Seccional"],
   ["miel-horizontal", "Horizontal miel", "garaje-miel-horizontal.png", "Puertas que se levantan", "Seccional"],
@@ -137,13 +179,16 @@ const garageModels: ImportedDoorModel[] = [
 ].map(([id, name, file, subtype, openingSystem], order) => ({
   id: `garaje-${id}`,
   name,
-  image: `${garageClientImages}/${file}`,
+  image: `${garageClientImages}/${file.replace(/\.png$/i, ".webp")}`,
+  thumbnail: `${garageClientImages}/${file.replace(/\.png$/i, "-thumb.webp")}`,
   published: true,
   order,
   subtype,
   openingSystem,
   allowedFinishes: ["Blanco texturado", "Gris grafito", "Negro mate", "Nogal oscuro"],
   included: ["Automatización", "Instalación"],
+  leafOptions: subtype === "Corredizas" ? ["Una hoja", "Dos hojas"] : [],
+  priceMode: "INHERIT",
   variants: [],
   automation: [],
   accessories: [
@@ -153,20 +198,41 @@ const garageModels: ImportedDoorModel[] = [
   ],
 }));
 
+const garageDraftSpecs: Array<[string, string, string, string?, string?]> = [
+  ["batiente-doble", "Batiente doble", "batiente-doble.png", "Batiente", "Batientes"],
+  ["blanco", "Garaje blanco", "blanco.png", undefined, undefined],
+  ["corrediza", "Corrediza", "corrediza.png", "Corrediza", "Corredizas"],
+  ["grafito", "Garaje grafito", "grafito.png", undefined, undefined],
+  ["gris-texturizado", "Garaje gris texturizado", "gris-texturizado.png", undefined, undefined],
+  ["levadiza-abierta", "Levadiza abierta", "levadiza-abierta.png", "Levadiza", "Puertas que se levantan"],
+  ["madera-clara", "Garaje madera clara", "madera-clara.png", undefined, undefined],
+  ["madera-horizontal-01", "Madera horizontal 01", "madera-horizontal-01.png", undefined, undefined],
+  ["madera-horizontal-02", "Madera horizontal 02", "madera-horizontal-02.png", undefined, undefined],
+  ["miel", "Garaje miel", "miel.png", undefined, undefined],
+  ["nogal", "Garaje nogal", "nogal.png", undefined, undefined],
+  ["portada-grafito", "Portada grafito", "portada-grafito.png", undefined, undefined],
+  ["corrediza-doble-lamas", "Corrediza doble lamas", "Corredizas/doble-lamas.png", "Corrediza", "Corredizas"],
+  ["corrediza-grafito-franja", "Corrediza grafito franja", "Corredizas/grafito-franja.png", "Corrediza", "Corredizas"],
+  ["levadiza-grafito-diagonal", "Levadiza grafito diagonal", "Levadizas/grafito-diagonal.png", "Levadiza", "Puertas que se levantan"],
+  ["levadiza-madera", "Levadiza madera", "Levadizas/madera.png", "Levadiza", "Puertas que se levantan"],
+];
+const garageDraftModels: ImportedDoorModel[] = garageDraftSpecs.map(([id, name, file, openingSystem, subtype], index) => draftModel(`garaje-propuesta-${id}`, name, `${serviceImages}/03_Puertas_de_garaje/Propuestas/${file}`, garageModels.length + index, openingSystem, subtype));
+
 const importedDoorModel: ImportedDoorModel = {
   id: "puerta-importada-horizontal",
   name: "Puerta importada horizontal",
-  image: `${importedColorImages}/nogal.png`,
+  image: `${importedColorImages}/nogal.webp`,
+  thumbnail: `${importedColorImages}/nogal-thumb.webp`,
   published: true,
   order: 0,
   openingSystem: "Batiente",
   allowedFinishes: ["Blanco", "Grafito", "Miel", "Negro", "Nogal"],
   finishImages: {
-    Blanco: `${importedColorImages}/blanco.png`,
-    Grafito: `${importedColorImages}/grafito.png`,
-    Miel: `${importedColorImages}/miel.png`,
-    Negro: `${importedColorImages}/negro.png`,
-    Nogal: `${importedColorImages}/nogal.png`,
+    Blanco: `${importedColorImages}/blanco.webp`,
+    Grafito: `${importedColorImages}/grafito.webp`,
+    Miel: `${importedColorImages}/miel.webp`,
+    Negro: `${importedColorImages}/negro.webp`,
+    Nogal: `${importedColorImages}/nogal.webp`,
   },
   variants: [
     { id: "importada-090-210", label: "0.90 × 2.10 m", widthM: .9, heightM: 2.1, allowedFinishes: ["Blanco", "Grafito", "Miel", "Negro", "Nogal"], priceMinorByFinish: { Blanco: 165_000, Grafito: 172_000, Miel: 180_000, Negro: 172_000, Nogal: 180_000 } },
@@ -175,14 +241,27 @@ const importedDoorModel: ImportedDoorModel = {
   automation: [],
   accessories: [],
   included: ["Suministro", "Instalación"],
+  priceMode: "FIXED",
 };
+
+const importedDraftModels: ImportedDoorModel[] = [
+  ["blanco-horizontal", "Blanco horizontal"],
+  ["gris-texturizado", "Gris texturizado"],
+  ["madera-horizontal-01", "Madera horizontal 01"],
+  ["madera-horizontal-02", "Madera horizontal 02"],
+  ["madera-horizontal-03", "Madera horizontal 03"],
+  ["madera-lisa", "Madera lisa"],
+  ["miel-horizontal", "Miel horizontal"],
+  ["negro-horizontal", "Negro horizontal"],
+  ["nogal-horizontal", "Nogal horizontal"],
+].map(([id, name], index) => draftModel(`importada-propuesta-${id}`, name, `${importedReferenceImages}/${id}.png`, index + 1, "Batiente"));
 
 const contraplacadaDraftModels: ImportedDoorModel[] = [
   ["contraplacada-batiente-blanco", "Batiente blanco", `${contraplacadaImages}/Batientes/blanco.png`, "Batiente"],
   ["contraplacada-batiente-singapur", "Batiente Singapur", `${contraplacadaImages}/Batientes/singapur.png`, "Batiente"],
   ["contraplacada-pivotante-grafito", "Pivotante grafito", `${contraplacadaImages}/Pivotantes/grafito.png`, "Pivotante"],
   ["contraplacada-pivotante-madera", "Pivotante madera", `${contraplacadaImages}/Pivotantes/madera.png`, "Pivotante"],
-].map(([id, name, image, openingSystem], order) => ({ id, name, image, openingSystem, subtype: openingSystem, published: false, order, allowedFinishes: [], variants: [], automation: [], accessories: [] }));
+].map(([id, name, image, openingSystem], order) => ({ id, name, image: image.replace(/\.png$/i, ".webp"), thumbnail: image.replace(/\.png$/i, "-thumb.webp"), openingSystem, subtype: openingSystem, published: false, order, priceMode: "EVALUATION" as const, allowedFinishes: [], variants: [], automation: [], accessories: [] }));
 
 const entryDoorRule: NonNullable<PublishedPricingDefinition["custom"]> = {
   minWidthM: .8,
@@ -208,10 +287,10 @@ export const publishedPricingCatalog: PublishedPricingDefinition[] = [
     demo: true,
     installationMinor: 22_000,
     installationIncludedInRate: false,
-    importedModels: [importedDoorModel]
+    importedModels: [importedDoorModel, ...importedDraftModels]
   },
-  { productId: "seccionales", classification: "MADE_TO_MEASURE", demo: true, custom: garageDoorRule, importedModels: garageModels },
-  { productId: "puertas-a-medida", classification: "MADE_TO_MEASURE", demo: true, custom: entryDoorRule, importedModels: entryModels },
+  { productId: "seccionales", classification: "MADE_TO_MEASURE", demo: true, custom: garageDoorRule, importedModels: [...garageModels, ...garageDraftModels] },
+  { productId: "puertas-a-medida", classification: "MADE_TO_MEASURE", demo: true, custom: entryDoorRule, importedModels: [...entryModels, ...entryDraftModels] },
   { productId: "puertas-contraplacadas", classification: "MADE_TO_MEASURE", demo: true, custom: entryDoorRule, importedModels: contraplacadaDraftModels },
   { productId: "levadizas", classification: "MADE_TO_MEASURE", demo: true, custom: garageDoorRule },
   { productId: "corredizas", classification: "MADE_TO_MEASURE", demo: true, custom: garageDoorRule },

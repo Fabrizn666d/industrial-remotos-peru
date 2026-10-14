@@ -59,12 +59,16 @@ export class JsonRequestRepository implements RequestRepository {
       const existing = state.requests.find((request) => request.clientSubmissionId === input.clientSubmissionId);
 
       if (existing) {
+        const accessToken = randomBytes(32).toString("base64url");
+        existing.publicTokenHash = hashToken(accessToken);
+        existing.updatedAt = new Date().toISOString();
+        await this.writeState(state);
         return {
           ...PublicRequestCreatedSchema.parse({
             id: existing.id,
             code: existing.code,
             createdAt: existing.createdAt,
-            accessToken: null,
+            accessToken,
             pricing: existing.pricingSnapshot ?? await calculateSubmissionPrice(existing.originalPayload),
             replayed: true
           }),

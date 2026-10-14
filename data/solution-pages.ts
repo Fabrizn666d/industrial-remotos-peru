@@ -24,6 +24,15 @@ const dimensions = [
 
 export const solutionPages: SolutionPage[] = [
   {
+    slug: "puertas-contraplacadas", title: "Puertas contraplacadas", shortTitle: "Contraplacadas", eyebrow: "Modelos por confirmar",
+    summary: "Puertas contraplacadas batientes o pivotantes configuradas por dimensiones y características confirmadas.", description: "Las imágenes disponibles son referencias pendientes de aprobación comercial. Registramos apertura, dimensiones en milímetros y acabado para preparar una evaluación sin anunciar una ficha no confirmada.",
+    heroImage: "/NUEVO/IRP-imagenes-por-servicio/11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel.png", gallery: ["/NUEVO/IRP-imagenes-por-servicio/11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel.png"], detailGallery: ["/NUEVO/IRP-imagenes-por-servicio/11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel.png"], verifiedReal: false,
+    benefits: ["Batiente o pivotante", "Dimensiones en milímetros", "Espesor solo si está confirmado", "Evaluación comercial"], uses: ["Viviendas", "Oficinas", "Ambientes interiores", "Proyectos a medida"], quoteProduct: "puertas-contraplacadas",
+    options: [{ title: "Batiente", description: "Referencia sujeta a ficha y disponibilidad confirmadas.", image: "/NUEVO/IRP-imagenes-por-servicio/11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel.png", quoteProduct: "puertas-contraplacadas", features: ["Medidas por confirmar", "Evaluación"] }, { title: "Pivotante", description: "Alternativa sujeta a mecanismo y ficha confirmados.", image: "/NUEVO/IRP-imagenes-por-servicio/11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel.png", quoteProduct: "puertas-contraplacadas", features: ["Mecanismo por confirmar", "Evaluación"] }],
+    miniFields: [{ key: "openingSystem", label: "Apertura", type: "select", options: ["Batiente", "Pivotante"] }, { key: "width", label: "Ancho aproximado (mm)", type: "number" }, { key: "height", label: "Alto aproximado (mm)", type: "number" }, { key: "finish", label: "Acabado de referencia", type: "text" }],
+    faqs: [{ question: "¿Los modelos están disponibles?", answer: "Las propuestas actuales se muestran como referencias hasta que administración publique un modelo con ficha confirmada." }, { question: "¿Se puede cotizar sin medidas?", answer: "Sí. La solicitud queda pendiente de medición y no muestra un total definitivo." }]
+  },
+  {
     slug: "puertas-a-medida", title: "Puertas principales a medida", shortTitle: "Principales a medida", eyebrow: "Fabricación personalizada",
     summary: "Puertas principales diseñadas y fabricadas según tu ingreso, fachada y estilo.", description: "Partimos de las dimensiones del vano, el sistema de apertura, el diseño, el material y el acabado para fabricar un ingreso principal desde cero; no reutilizamos variantes ni precios de puertas importadas.",
     heroImage: "/images/reales/puerta-22.jpg", gallery: ["/images/reales/puerta-22.jpg", "/images/reales/puerta-17.jpg", "/images/reales/puerta-23.jpg"], detailGallery: ["/images/reales/puerta-27.jpg", "/images/reales/puerta-31.jpg", "/images/reales/puerta-25.jpg"], verifiedReal: true,
@@ -82,6 +91,6 @@ export const solutionPages: SolutionPage[] = [
 ];
 
 export const oldProductToSolution: Record<string, string> = Object.fromEntries(solutionPages.map((item) => [item.quoteProduct, item.slug]));
-Object.assign(oldProductToSolution, { levadizas: "puertas-automatizacion", corredizas: "puertas-automatizacion", batientes: "puertas-automatizacion", peatonales: "puertas-principales", automatizacion: "puertas-automatizacion", "puertas-a-medida": "puertas-a-medida" });
+Object.assign(oldProductToSolution, { levadizas: "puertas-automatizacion", corredizas: "puertas-automatizacion", batientes: "puertas-automatizacion", peatonales: "puertas-principales", automatizacion: "puertas-automatizacion", "puertas-a-medida": "puertas-a-medida", "puertas-contraplacadas": "puertas-contraplacadas" });
 
 export function findSolutionPage(slug: string) { return solutionPages.find((solution) => solution.slug === slug); }

@@ -49,6 +49,7 @@ export function calculateItemPrice(item: PriceRequestItem, catalog?: PublishedPr
   if (definition.classification === "IMPORTED") {
     const model = definition.importedModels?.find((entry) => entry.id === config.model && entry.published !== false);
     if (!model) return requiresEvaluation("IMPORTED", "Selecciona uno de los modelos importados publicados.", ["modelo"]);
+    if (model.commercialStatus === "PENDING") return requiresEvaluation("IMPORTED", "Este modelo está pendiente de confirmación comercial.", ["validación comercial del modelo"]);
     const variant = model.variants.find((entry) => entry.id === config.variant);
     if (!variant) return requiresEvaluation("IMPORTED", "La medida debe corresponder a una variante publicada para el modelo.", ["medida disponible"]);
     if (!config.finish || !variant.allowedFinishes.includes(config.finish)) return requiresEvaluation("IMPORTED", "El acabado elegido no está habilitado para esta variante.", ["acabado compatible"]);
@@ -112,22 +113,33 @@ export function calculateItemPrice(item: PriceRequestItem, catalog?: PublishedPr
   if (definition.custom) {
     const rule = definition.custom;
     const model = definition.importedModels?.find((entry) => entry.id === config.model && entry.published !== false);
+    if (item.productId === "puertas-contraplacadas" && !definition.importedModels?.some((entry) => entry.published !== false)) return requiresEvaluation("MADE_TO_MEASURE", "Los modelos mostrados son referencias pendientes de aprobación; esta solicitud requiere evaluación comercial.", ["modelo y ficha técnica confirmados"]);
     if (definition.importedModels?.some((entry) => entry.published !== false) && !model) return requiresEvaluation("MADE_TO_MEASURE", "Selecciona un modelo publicado para esta solución.", ["modelo"]);
     if (model?.subtype && config.subtype !== model.subtype) return requiresEvaluation("MADE_TO_MEASURE", "El modelo no corresponde a la familia seleccionada.", ["modelo compatible"]);
     if (model?.openingSystem && config.openingSystem !== model.openingSystem) return requiresEvaluation("MADE_TO_MEASURE", "La apertura debe corresponder al modelo seleccionado.", ["apertura compatible"]);
     if (model?.allowedFinishes?.length && (!config.finish || !model.allowedFinishes.includes(config.finish))) return requiresEvaluation("MADE_TO_MEASURE", "Selecciona un acabado compatible con el modelo.", ["acabado compatible"]);
+    if (model?.commercialStatus === "PENDING") return requiresEvaluation("MADE_TO_MEASURE", "Este modelo está pendiente de confirmación comercial.", ["validación comercial del modelo"]);
+    if (model?.priceMode === "EVALUATION") return requiresEvaluation("MADE_TO_MEASURE", "Este modelo está publicado como referencia y requiere evaluación comercial.", ["tarifa del modelo"]);
     if (width < rule.minWidthM || width > rule.maxWidthM || height < rule.minHeightM || height > rule.maxHeightM) {
       return requiresEvaluation("MADE_TO_MEASURE", `Las medidas publicadas admiten ancho de ${rule.minWidthM} a ${rule.maxWidthM} m y alto de ${rule.minHeightM} a ${rule.maxHeightM} m.`, ["medidas dentro del rango"]);
     }
     if (!config.finish || !(config.finish in rule.finishPercentBps)) return requiresEvaluation("MADE_TO_MEASURE", "Selecciona un acabado publicado para la regla de fabricación.", ["acabado"]);
     const areaM2 = Math.round(width * height * 10_000) / 10_000;
-    const billableAreaM2 = Math.max(areaM2, rule.minimumAreaM2);
+    const billableAreaM2 = Math.max(areaM2, model?.minimumBillable ?? rule.minimumAreaM2);
     const rate = rule.areaRates.find((entry) => entry.upToM2 === null || billableAreaM2 <= entry.upToM2);
     if (!rate) return requiresEvaluation("MADE_TO_MEASURE", "No existe una tarifa válida para esta área.", ["tarifa de área"]);
-    const baseMinor = Math.round(billableAreaM2 * rate.unitPriceMinor * item.quantity);
+    const modelMode = model?.priceMode ?? "INHERIT";
+    const unitPriceMinor = model?.unitPriceMinor ?? rate.unitPriceMinor;
+    if (modelMode === "FIXED" && !model?.fixedPriceMinor) return requiresEvaluation("MADE_TO_MEASURE", "El modelo no tiene una tarifa fija publicada.", ["tarifa del modelo"]);
+    if ((modelMode === "AREA" || modelMode === "LINEAR") && !model?.unitPriceMinor) return requiresEvaluation("MADE_TO_MEASURE", "El modelo no tiene una tarifa unitaria publicada.", ["tarifa del modelo"]);
+    const baseMinor = modelMode === "FIXED"
+      ? multiplyMinor(model!.fixedPriceMinor!, item.quantity)
+      : modelMode === "LINEAR"
+        ? Math.round(Math.max(width, model?.minimumBillable ?? 1) * unitPriceMinor * item.quantity)
+        : Math.round(billableAreaM2 * unitPriceMinor * item.quantity);
     const finishMinor = Math.round(baseMinor * rule.finishPercentBps[config.finish] / 10_000);
     const breakdown: PriceBreakdownLine[] = [
-      { key: "base", label: `${billableAreaM2.toFixed(2)} m² facturables × S/ ${(rate.unitPriceMinor / 100).toFixed(2)}`, amountMinor: baseMinor }
+      { key: "base", label: modelMode === "FIXED" ? `Tarifa fija · ${model?.name ?? "modelo"}` : modelMode === "LINEAR" ? `${Math.max(width, model?.minimumBillable ?? 1).toFixed(2)} m lineales × S/ ${(unitPriceMinor / 100).toFixed(2)}` : `${billableAreaM2.toFixed(2)} m² facturables × S/ ${(unitPriceMinor / 100).toFixed(2)}`, amountMinor: baseMinor }
     ];
     if (finishMinor) breakdown.push({ key: "finish", label: `Acabado ${config.finish}`, amountMinor: finishMinor });
     const automationMinor = rule.automationPrices[config.automation || ""];
@@ -162,7 +174,7 @@ export function calculateProjectPrice(items: PriceRequestItem[], location: strin
   const estimated = pricedItems.filter((item) => item.result.status === "ESTIMATED");
   const pending = pricedItems.length - estimated.length;
   const proposalCharges: PriceBreakdownLine[] = [];
-  if (estimated.length && /villa\s+el\s+salvador/i.test(location)) proposalCharges.push({ key: "transport:ves", label: "Transporte demo · Villa El Salvador", amountMinor: 10_000 });
+  void location;
   const total = estimated.reduce((sum, item) => sum + (item.result.status === "ESTIMATED" ? item.result.totalMinor : 0), 0) + proposalCharges.reduce((sum, line) => sum + line.amountMinor, 0);
   return ProjectPricingSchema.parse({
     catalogVersion,

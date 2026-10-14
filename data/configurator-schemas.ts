@@ -130,7 +130,10 @@ export const configuratorSchemas: Record<ConfiguratorFamily, ConfiguratorSchema>
       choice("access-status", "Acceso", "Selecciona el acceso existente", "subtype", ["Puerta de garaje existente", "Portón existente", "Puerta peatonal existente"]),
       choice("door-type", "Puerta", "Indica el tipo de puerta", "openingSystem", ["Seccional", "Levadiza", "Corrediza", "Batiente", "Pivotante"]),
       choice("intervention", "Intervención", "Selecciona la intervención", "automation", ["Automatización nueva", "Revisión o reemplazo", "Mantenimiento o soporte"]),
-      choice("equipment", "Equipo", "Selecciona el equipo de referencia", "material", ["Motor para puerta seccional", "Motor para puerta corrediza", "Motor para puerta batiente", "Diagnóstico del equipo existente"]),
+      choice("equipment-sectional", "Equipo", "Selecciona un equipo compatible", "material", ["Motor para puerta seccional", "Diagnóstico del equipo existente"], { visibleWhen: { key: "openingSystem", values: ["Seccional"] } }),
+      choice("equipment-sliding", "Equipo", "Selecciona un equipo compatible", "material", ["Motor para puerta corrediza", "Diagnóstico del equipo existente"], { visibleWhen: { key: "openingSystem", values: ["Corrediza"] } }),
+      choice("equipment-swing", "Equipo", "Selecciona un equipo compatible", "material", ["Motor para puerta batiente", "Diagnóstico del equipo existente"], { visibleWhen: { key: "openingSystem", values: ["Batiente"] } }),
+      choice("equipment-review", "Equipo", "La compatibilidad requiere revisión del acceso", "material", ["Diagnóstico del equipo existente"], { visibleWhen: { key: "openingSystem", values: ["Levadiza", "Pivotante"] } }),
       multi("automation-accessories", "Accesorios", "Selecciona controles y accesorios", ["Control remoto", "Control desde celular", "Sensor de seguridad", "Batería de respaldo"]),
       notesStep,
     ],
@@ -178,6 +181,7 @@ export const configuratorSchemas: Record<ConfiguratorFamily, ConfiguratorSchema>
       dimensionsStep("Indica la longitud", "Longitud (m)", "", { required: true, hideHeight: true, visibleWhen: { key: "subtype", values: ["Pasamanos", "Complemento metálico"] } }),
       choice("steel-material", "Material", "Selecciona el material", "material", ["Acero inoxidable", "Acero al carbono", "Aluminio"]),
       finishStep,
+      multi("steel-accessories", "Adicionales", "Selecciona adicionales compatibles", ["Vidrio templado", "Anclaje especial", "Pasamanos complementario"]),
       notesStep,
     ],
   },
@@ -326,7 +330,7 @@ export function getConfiguratorSchema(productGroup: ProductGroup, productId?: st
       version: 3,
       steps: [
         solutionStep,
-        choice("model", "Modelo", "Selecciona el modelo disponible", "model", models.map((model) => model.id)),
+        ...(models.length > 1 ? [choice("model", "Modelo", "Selecciona el modelo disponible", "model", models.map((model) => model.id))] : []),
         { ...finishStep, title: "Selecciona un color disponible", description: "La imagen cambia con el color cuando existe una referencia aprobada." },
         choice("variant", "Medida", "Selecciona una medida disponible", "variant", models.flatMap((model) => model.variants.map((variant) => variant.id))),
         ...(accessories.length ? [multi("imported-accessories", "Complementos", "Selecciona complementos compatibles", accessories.map((option) => option.id))] : []),
@@ -356,6 +360,7 @@ export function getConfiguratorSchema(productGroup: ProductGroup, productId?: st
       choice("garage-family", "Familia", "Elige la familia de puerta de garaje", "subtype", ["Corredizas", "Puertas que se levantan"]),
       choice("model", "Diseño", "Elige un diseño compatible", "model", publishedModels.map((model) => model.id)),
       dimensionsStep("Ingresa las medidas aproximadas del garaje", "Ancho (m)", "Alto (m)", { required: true }),
+      ...(publishedModels.some((model) => model.leafOptions?.length) ? [choice("garage-leaves", "Hojas", "Selecciona la configuración de hojas disponible", "panel", publishedModels.flatMap((model) => model.leafOptions ?? []).filter((value, index, all) => all.indexOf(value) === index), { visibleWhen: { key: "model", values: publishedModels.filter((model) => model.leafOptions?.length).map((model) => model.id) } })] : []),
       finishStep,
       ...(publishedModels.some((model) => model.accessories.length) ? [multi("garage-accessories", "Adicionales", "La automatización está incluida; elige solo adicionales", publishedModels.flatMap((model) => model.accessories.map((option) => option.id)).filter((value, index, all) => all.indexOf(value) === index))] : []),
       notesStep,
@@ -368,8 +373,8 @@ export function getConfiguratorSchema(productGroup: ProductGroup, productId?: st
     steps: [
       solutionStep,
       choice("contraplacada-opening", "Apertura", "Elige el tipo de apertura", "openingSystem", ["Batiente", "Pivotante"]),
-      choice("model", "Modelo", "Elige un modelo compatible", "model", publishedModels.map((model) => model.id)),
-      dimensionsStep("Ingresa las dimensiones de la puerta", "Ancho (m)", "Alto (m)", { required: true }),
+      ...(publishedModels.length ? [choice("model", "Modelo", "Elige un modelo compatible", "model", publishedModels.map((model) => model.id))] : []),
+      dimensionsStep("Ingresa las dimensiones de la puerta", "Ancho (mm)", "Alto (mm)", { required: true }),
       ...(publishedModels.some((model) => model.thicknessOptionsMm?.length) ? [choice("contraplacada-thickness", "Espesor", "Selecciona el espesor disponible", "panel", publishedModels.flatMap((model) => model.thicknessOptionsMm ?? []).filter((value, index, all) => all.indexOf(value) === index).map((value) => `${value} mm`))] : []),
       finishStep,
       notesStep,
@@ -397,6 +402,10 @@ export function validateConfiguratorCompatibility(productId: string, answers: Co
     const value = answers[key];
     if (!value) continue;
     const step = visibleSteps.find((candidate): candidate is Extract<ConfiguratorStep, { kind: "choice" }> => candidate.kind === "choice" && candidate.answerKey === key);
+    if (!step && key === "model") {
+      const publishedModels = definition?.importedModels?.filter((model) => model.published !== false) ?? [];
+      if (publishedModels.length === 1 && publishedModels[0].id === value) continue;
+    }
     if (!step && key === "openingSystem" && selectedModel?.openingSystem === value) continue;
     if (!step) return `La respuesta “${value}” no corresponde al flujo de esta solución.`;
     if (!step.options.some((option) => option.value === value)) return `La opción “${value}” no es compatible con esta solución.`;

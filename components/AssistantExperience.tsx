@@ -10,6 +10,7 @@ const intents = [
   { label: "Puerta de garaje", product: "seccionales" },
   { label: "Puerta principal a medida", product: "puertas-a-medida" },
   { label: "Puerta principal importada", product: "puertas-principales" },
+  { label: "Puerta contraplacada", product: "puertas-contraplacadas" },
   { label: "Techo o sol y sombra", product: "techos-coberturas" },
   { label: "Ventana, mampara o división", product: "ventanas-mamparas" },
   { label: "Baranda o pasamanos", product: "acero-barandas" },

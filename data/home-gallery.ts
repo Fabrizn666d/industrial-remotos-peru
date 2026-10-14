@@ -7,7 +7,7 @@ const vertical = [
 ] as const;
 
 function items(files: readonly string[], label: string) {
-  return files.map((name,index)=>({src:`${base}/${encodeURIComponent(name)}`,alt:`${label} de Industrial Remotos Perú ${String(index+1).padStart(2,"0")}`,position:"center" as const}));
+  return files.map((name,index)=>({src:`${base}/${encodeURIComponent(name.replace(/\.jpg$/i, ".webp"))}`,alt:`${label} de Industrial Remotos Perú ${String(index+1).padStart(2,"0")}`,position:"center" as const}));
 }
 export const defaultHomeTopGallery = items(horizontal,"Proyecto horizontal");
 export const defaultHomeBottomGallery = items(vertical,"Proyecto vertical");

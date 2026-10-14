@@ -1,12 +1,15 @@
 "use client";
 
 import { Plus, Trash2 } from "lucide-react";
-import { configuratorSchemas } from "@/data/configurator-schemas";
+import { getConfiguratorSchema } from "@/data/configurator-schemas";
+import { products } from "@/data/products";
+import type { PublishedPricingDefinition } from "@/lib/pricing/catalog";
 import type { ConfiguratorChoiceKey, ConfiguratorFamily, ConfiguratorOption, ConfiguratorStep, ConfiguratorStepOverride } from "@/types/configurator";
 import styles from "./ConfiguratorFlowManager.module.css";
 
 type Props = {
   overrides: ConfiguratorStepOverride[];
+  definitions: PublishedPricingDefinition[];
   onChange: (overrides: ConfiguratorStepOverride[]) => void;
 };
 
@@ -15,7 +18,9 @@ function optionsFor(step: ConfiguratorStep, override?: ConfiguratorStepOverride)
   return override?.options ?? step.options;
 }
 
-export function ConfiguratorFlowManager({ overrides, onChange }: Props) {
+export function ConfiguratorFlowManager({ overrides, definitions, onChange }: Props) {
+  const publicProductIds = new Set(["puertas-a-medida", "seccionales", "puertas-principales", "puertas-contraplacadas", "automatizacion", "techos-coberturas", "ventanas-mamparas", "acero-barandas", "estructuras-especiales", "cerco-electrico", "drywall-cielorrasos"]);
+  const effectiveSchemas = products.filter((product) => publicProductIds.has(product.id)).map((product) => ({ product, schema: getConfiguratorSchema(product.group, product.id, definitions, []) }));
   function update(family: ConfiguratorFamily, stepId: string, patch: Partial<ConfiguratorStepOverride>) {
     const current = overrides.find((entry) => entry.family === family && entry.stepId === stepId) ?? { family, stepId };
     onChange([...overrides.filter((entry) => entry.family !== family || entry.stepId !== stepId), { ...current, ...patch }]);
@@ -26,9 +31,11 @@ export function ConfiguratorFlowManager({ overrides, onChange }: Props) {
   }
 
   return <div className={styles.groups}>
-    {(Object.entries(configuratorSchemas) as [ConfiguratorFamily, (typeof configuratorSchemas)[ConfiguratorFamily]][]).map(([family, schema]) => (
-      <details className={styles.group} key={family} open={family === "puertas-medida"}>
-        <summary><b>{family}</b><span>{schema.steps.length - 1} preguntas configurables</span></summary>
+    {effectiveSchemas.map(({ product, schema }) => {
+      const family = schema.family;
+      return (
+      <details className={styles.group} key={product.id} open={product.id === "puertas-a-medida"}>
+        <summary><b>{product.name}</b><span>{schema.steps.length - 1} preguntas efectivas</span></summary>
         <div className={styles.steps}>
           {schema.steps.filter((step) => step.kind !== "product").map((step) => {
             const override = overrides.find((entry) => entry.family === family && entry.stepId === step.id);
@@ -53,6 +60,6 @@ export function ConfiguratorFlowManager({ overrides, onChange }: Props) {
           })}
         </div>
       </details>
-    ))}
+    );})}
   </div>;
 }

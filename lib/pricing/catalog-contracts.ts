@@ -8,6 +8,8 @@ const importedModel = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
   image: z.string().min(1),
+  thumbnail: z.string().min(1).optional(),
+  gallery: z.array(z.string().min(1)).default([]),
   published: z.boolean().default(true),
   order: z.number().int().min(0).default(0),
   subtype: z.string().min(1).optional(),
@@ -16,6 +18,12 @@ const importedModel = z.object({
   finishImages: z.record(z.string(), z.string().min(1)).default({}),
   included: z.array(z.string().min(1)).default([]),
   thicknessOptionsMm: z.array(z.number().positive()).default([]),
+  leafOptions: z.array(z.string().min(1)).default([]),
+  priceMode: z.enum(["INHERIT", "FIXED", "AREA", "LINEAR", "EVALUATION"]).default("INHERIT"),
+  fixedPriceMinor: money.optional(),
+  unitPriceMinor: money.optional(),
+  minimumBillable: z.number().positive().optional(),
+  commercialStatus: z.enum(["REFERENCE", "VALIDATED", "PENDING"]).default("REFERENCE"),
   variants: z.array(importedVariant).default([]),
   automation: z.array(pricedOption).default([]),
   accessories: z.array(pricedOption).default([])
@@ -45,6 +53,9 @@ const configuratorStepOverride = z.object({
 export const PublishedPricingDefinitionSchema = z.object({ productId: z.string().min(1), classification: DoorClassificationSchema, demo: z.boolean(), installationMinor: money.default(0), installationIncludedInRate: z.boolean().default(false), importedModels: z.array(importedModel).optional(), custom: customRule.optional(), simpleArea: simpleArea.optional(), formula: formula.optional() }).strict().superRefine((value, context) => {
   if (value.classification === "IMPORTED" && !value.importedModels?.some((model) => model.published !== false && model.variants.length)) context.addIssue({ code: "custom", path: ["importedModels"], message: "Una puerta importada requiere al menos un modelo publicado con medidas" });
   value.importedModels?.forEach((model, modelIndex) => {
+    if (model.published && !model.openingSystem) context.addIssue({ code: "custom", path: ["importedModels", modelIndex, "openingSystem"], message: "Un modelo publicado debe indicar su apertura compatible" });
+    if (model.published && model.priceMode === "FIXED" && !model.fixedPriceMinor && value.classification !== "IMPORTED") context.addIssue({ code: "custom", path: ["importedModels", modelIndex, "fixedPriceMinor"], message: "Falta la tarifa fija del modelo" });
+    if (model.published && (model.priceMode === "AREA" || model.priceMode === "LINEAR") && !model.unitPriceMinor) context.addIssue({ code: "custom", path: ["importedModels", modelIndex, "unitPriceMinor"], message: "Falta la tarifa unitaria del modelo" });
     model.variants.forEach((variant, variantIndex) => {
       const missingPrice = variant.allowedFinishes.find(
         (finish) => variant.priceMinorByFinish[finish] === undefined

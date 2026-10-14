@@ -56,6 +56,14 @@ const editorialSolutions: readonly EditorialSolution[] = [
   },
   {
     number: "04",
+    id: "puertas-contraplacadas",
+    title: "Puertas contraplacadas",
+    description: "Puertas batientes o pivotantes que se registran como referencia y se confirman técnicamente antes de cotizar.",
+    image: "/images/configurator/catalog/11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel.webp",
+    layout: "stacked"
+  },
+  {
+    number: "05",
     id: "techos-coberturas",
     title: "Techos y coberturas",
     description: "Soluciones en pérgolas, techos y coberturas que crean espacios más funcionales, cómodos y protegidos.",
@@ -64,7 +72,7 @@ const editorialSolutions: readonly EditorialSolution[] = [
     layout: "panorama"
   },
   {
-    number: "05",
+    number: "06",
     id: "ventanas-mamparas",
     title: "Mamparas y ventanas",
     description: "Sistemas de vidrio y carpintería que conectan ambientes con más luz, amplitud y diseño.",
@@ -73,7 +81,7 @@ const editorialSolutions: readonly EditorialSolution[] = [
     layout: "half"
   },
   {
-    number: "06",
+    number: "07",
     id: "acero-barandas",
     title: "Barandas y pasamanos",
     description: "Barandas y pasamanos de presencia limpia, moderna y durable para cada recorrido.",
@@ -81,7 +89,7 @@ const editorialSolutions: readonly EditorialSolution[] = [
     layout: "half"
   },
   {
-    number: "07",
+    number: "08",
     id: "estructuras-metalicas",
     title: "Estructuras metálicas",
     description: "Diseño y montaje de estructuras metálicas para necesidades específicas de cada proyecto.",
@@ -89,7 +97,7 @@ const editorialSolutions: readonly EditorialSolution[] = [
     layout: "third"
   },
   {
-    number: "08",
+    number: "09",
     id: "cerco-electrico",
     title: "Cerco eléctrico",
     description: "Protección perimetral configurada según el inmueble, el recorrido y sus accesos.",
@@ -97,7 +105,7 @@ const editorialSolutions: readonly EditorialSolution[] = [
     layout: "third"
   },
   {
-    number: "09",
+    number: "10",
     id: "drywall-cielorrasos",
     title: "Drywall y cielorrasos",
     description: "Divisiones, cielorrasos y revestimientos que aportan confort, orden y versatilidad.",

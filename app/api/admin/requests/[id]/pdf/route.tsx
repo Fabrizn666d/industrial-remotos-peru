@@ -2,7 +2,7 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { z } from "zod";
 import { getAdminSession } from "@/lib/backend/auth";
 import { getRequestRepository } from "@/lib/backend/repository";
-import { PublicProposalPdfDocument } from "@/lib/pricing/PublicProposalPdfDocument";
+import { PublicProposalPdfDocument, resolveProposalImages } from "@/lib/pricing/PublicProposalPdfDocument";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,7 +13,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   if (!parsedId.success) return Response.json({ error: "Identificador inválido" }, { status: 400 });
   const proposal = await getRequestRepository().findById(parsedId.data);
   if (!proposal) return Response.json({ error: "Solicitud no encontrada" }, { status: 404 });
-  const buffer = await renderToBuffer(<PublicProposalPdfDocument request={proposal} />);
+  const resolvedImages = await resolveProposalImages(proposal);
+  const buffer = await renderToBuffer(<PublicProposalPdfDocument request={proposal} resolvedImages={resolvedImages} />);
   const download = new URL(request.url).searchParams.get("download") === "1";
   return new Response(new Uint8Array(buffer), { headers: {
     "Content-Type": "application/pdf",

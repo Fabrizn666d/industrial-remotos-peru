@@ -88,6 +88,9 @@ function normalizeDoorTaxonomy<K extends CmsKey>(key: K, content: CmsContentMap[
     if (home.integrated.services.some((item) => legacyIntegrated.has(item.title))) {
       home.integrated.services = structuredClone(defaultCmsContent.home.integrated.services);
     }
+    const galleryWebp = (source: string) => source.includes("/NUEVO/0244%20_%20Industrial%20Remotos%20Per%C3%BA/") ? source.replace(/\.jpg$/i, ".webp") : source;
+    home.projects.topGallery = home.projects.topGallery.map((item) => ({ ...item, src: galleryWebp(item.src) }));
+    home.projects.bottomGallery = home.projects.bottomGallery.map((item) => ({ ...item, src: galleryWebp(item.src) }));
     return home as CmsContentMap[K];
   }
   if (key === "services") {
@@ -98,6 +101,9 @@ function normalizeDoorTaxonomy<K extends CmsKey>(key: K, content: CmsContentMap[
       const replacement = defaultCmsContent.services.items.find((candidate) => candidate.slug === item.slug);
       return replacement ? { ...replacement, heroImage: { ...item.heroImage, alt: replacement.heroImage.alt } } : item;
     });
+    for (const defaultItem of defaultCmsContent.services.items) {
+      if (!services.items.some((item) => item.slug === defaultItem.slug)) services.items.push(structuredClone(defaultItem));
+    }
     return services as CmsContentMap[K];
   }
   if (key === "about") {

@@ -4,6 +4,7 @@ export type ConfiguratorVisualMatch = {
   subtype?: string;
   design?: string;
   finish?: string;
+  openingSystem?: string;
 };
 
 export type ConfiguratorVisualSlot = {
@@ -30,6 +31,8 @@ export type ConfiguratorVisualOverride = {
 
 const image = (name: string) => `/images/configurator/${name}.webp`;
 const thumb = (name: string) => `/images/configurator/${name}-thumb.webp`;
+const catalogImage = (relativePath: string) => `/images/configurator/catalog/${relativePath.replace(/\.png$/i, ".webp")}`;
+const catalogThumb = (relativePath: string) => `/images/configurator/catalog/${relativePath.replace(/\.png$/i, "-thumb.webp")}`;
 
 function slot(
   id: string,
@@ -45,7 +48,7 @@ function slot(
 }
 
 export const defaultConfiguratorVisuals: ConfiguratorVisualSlot[] = [
-  { ...slot("solution-principal", "puertas-a-medida", "solution", "Imagen de la solución", "principal-una-hoja-gris-grafito", "Puerta principal a medida basada en trabajo del cliente"), imageSrc: "/NUEVO/IRP-imagenes-por-servicio/01_Puertas_principales_a_medida/Basadas_en_fotos_cliente/puerta-bloques-madera.png", thumbnailSrc: "/NUEVO/IRP-imagenes-por-servicio/01_Puertas_principales_a_medida/Basadas_en_fotos_cliente/puerta-bloques-madera.png", referenceLabel: "Referencia del cliente" },
+  { ...slot("solution-principal", "puertas-a-medida", "solution", "Imagen de la solución", "principal-una-hoja-gris-grafito", "Puerta principal a medida basada en trabajo del cliente"), imageSrc: catalogImage("01_Puertas_principales_a_medida/Basadas_en_fotos_cliente/puerta-bloques-madera.png"), thumbnailSrc: catalogThumb("01_Puertas_principales_a_medida/Basadas_en_fotos_cliente/puerta-bloques-madera.png"), referenceLabel: "Referencia del cliente" },
   slot("principal-una-hoja", "puertas-a-medida", "type", "Tipo · Una hoja", "principal-una-hoja-gris-grafito", "Puerta principal de una hoja en gris grafito", { subtype: "Una hoja" }),
   slot("principal-doble-hoja", "puertas-a-medida", "type", "Tipo · Doble hoja", "principal-doble-hoja-negro-mate", "Puerta principal de doble hoja en negro mate", { subtype: "Doble hoja" }),
   slot("principal-pivotante", "puertas-a-medida", "type", "Tipo · Pivotante", "principal-pivotante-gris-grafito", "Puerta principal pivotante en gris grafito", { subtype: "Pivotante" }),
@@ -59,7 +62,7 @@ export const defaultConfiguratorVisuals: ConfiguratorVisualSlot[] = [
   slot("principal-una-hoja-castano", "puertas-a-medida", "finish", "Una hoja · Castaño", "principal-una-hoja-castano", "Puerta principal de una hoja con acabado castaño", { subtype: "Una hoja", finish: "Castaño" }),
   slot("principal-una-hoja-sin-pintar", "puertas-a-medida", "finish", "Una hoja · Metal sin pintar", "principal-una-hoja-sin-pintar", "Puerta principal de una hoja en acero galvanizado satinado", { subtype: "Una hoja", finish: "Sin pintar" }),
 
-  { ...slot("solution-garaje", "seccionales", "solution", "Imagen de la solución", "garaje-seccional-gris-grafito", "Puerta de garaje basada en trabajo del cliente"), imageSrc: "/NUEVO/IRP-imagenes-por-servicio/03_Puertas_de_garaje/Basadas_en_fotos_cliente/garaje-blanco-horizontal.png", thumbnailSrc: "/NUEVO/IRP-imagenes-por-servicio/03_Puertas_de_garaje/Basadas_en_fotos_cliente/garaje-blanco-horizontal.png", referenceLabel: "Referencia del cliente" },
+  { ...slot("solution-garaje", "seccionales", "solution", "Imagen de la solución", "garaje-seccional-gris-grafito", "Puerta de garaje basada en trabajo del cliente"), imageSrc: catalogImage("03_Puertas_de_garaje/Basadas_en_fotos_cliente/garaje-blanco-horizontal.png"), thumbnailSrc: catalogThumb("03_Puertas_de_garaje/Basadas_en_fotos_cliente/garaje-blanco-horizontal.png"), referenceLabel: "Referencia del cliente" },
   slot("garaje-seccional", "seccionales", "type", "Tipo · Seccional", "garaje-seccional-gris-grafito", "Puerta seccional de garaje en gris grafito", { subtype: "Seccional" }),
   slot("garaje-levadiza", "seccionales", "type", "Tipo · Levadiza", "garaje-levadiza", "Puerta levadiza de garaje en gris grafito", { subtype: "Levadiza" }),
   slot("garaje-corrediza", "seccionales", "type", "Tipo · Corrediza", "garaje-corrediza", "Portón corredizo de acero antracita", { subtype: "Corrediza" }),
@@ -74,31 +77,31 @@ export const defaultConfiguratorVisuals: ConfiguratorVisualSlot[] = [
   slot("garaje-seccional-castano", "seccionales", "finish", "Seccional · Castaño", "garaje-seccional-castano", "Puerta seccional de garaje con acabado castaño", { subtype: "Seccional", finish: "Castaño" }),
   slot("garaje-seccional-sin-pintar", "seccionales", "finish", "Seccional · Metal sin pintar", "garaje-seccional-sin-pintar", "Puerta seccional de garaje en acero galvanizado sin pintar", { subtype: "Seccional", finish: "Sin pintar" }),
 
-  { ...slot("solution-importadas", "puertas-principales", "solution", "Imagen del modelo disponible", "puertas-importadas-categoria", "Puerta importada horizontal en color nogal"), imageSrc: "/NUEVO/IRP-imagenes-por-servicio/02_Puertas_importadas/Colores_propuestos/nogal.png", thumbnailSrc: "/NUEVO/IRP-imagenes-por-servicio/02_Puertas_importadas/Colores_propuestos/nogal.png" },
-  { ...slot("solution-contraplacadas", "puertas-contraplacadas", "solution", "Referencia pendiente", "puertas-importadas-categoria", "Referencia de puerta contraplacada pendiente de ficha"), imageSrc: "/NUEVO/IRP-imagenes-por-servicio/11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel.png", thumbnailSrc: "/NUEVO/IRP-imagenes-por-servicio/11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel.png", referenceLabel: "Ficha por confirmar" },
-  slot("solution-automatizacion", "automatizacion", "solution", "Imagen de la solución", "automatizacion-garaje-seccional", "Motor instalado en una puerta seccional de garaje"),
-  { ...slot("solution-techos", "techos-coberturas", "solution", "Imagen de la solución", "techo-translucido-negro-mate", "Pérgola modular basada en trabajo del cliente"), imageSrc: "/NUEVO/IRP-imagenes-por-servicio/04_Pergolas_y_techos/Basadas_en_fotos_cliente/pergola-modular.png", thumbnailSrc: "/NUEVO/IRP-imagenes-por-servicio/04_Pergolas_y_techos/Basadas_en_fotos_cliente/pergola-modular.png", referenceLabel: "Referencia del cliente" },
+  { ...slot("solution-importadas", "puertas-principales", "solution", "Imagen del modelo disponible", "puertas-importadas-categoria", "Puerta importada horizontal en color nogal"), imageSrc: catalogImage("02_Puertas_importadas/Colores_propuestos/nogal.png"), thumbnailSrc: catalogThumb("02_Puertas_importadas/Colores_propuestos/nogal.png") },
+  { ...slot("solution-contraplacadas", "puertas-contraplacadas", "solution", "Referencia pendiente", "puertas-importadas-categoria", "Referencia de puerta contraplacada pendiente de ficha"), imageSrc: catalogImage("11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel.png"), thumbnailSrc: catalogThumb("11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel.png"), referenceLabel: "Ficha por confirmar" },
+  { ...slot("solution-automatizacion", "automatizacion", "solution", "Imagen de la solución", "automatizacion-garaje-seccional", "Motor instalado en una puerta seccional de garaje"), imageSrc: catalogImage("03_Puertas_de_garaje/Automatizacion/motor-interior.png"), thumbnailSrc: catalogThumb("03_Puertas_de_garaje/Automatizacion/motor-interior.png") },
+  { ...slot("solution-techos", "techos-coberturas", "solution", "Imagen de la solución", "techo-translucido-negro-mate", "Pérgola modular basada en trabajo del cliente"), imageSrc: catalogImage("04_Pergolas_y_techos/Basadas_en_fotos_cliente/pergola-modular.png"), thumbnailSrc: catalogThumb("04_Pergolas_y_techos/Basadas_en_fotos_cliente/pergola-modular.png"), referenceLabel: "Referencia del cliente" },
   slot("techo-cobertura", "techos-coberturas", "type", "Tipo · Techo o cobertura", "techo-translucido-negro-mate", "Techo de acero con cubierta translúcida", { subtype: "Techo o cobertura" }),
   slot("techo-sol-sombra", "techos-coberturas", "type", "Tipo · Sol y sombra", "techo-sol-sombra-negro-mate", "Pérgola de lamas en negro mate", { subtype: "Sol y sombra" }),
   slot("techo-cobertura-blanco", "techos-coberturas", "finish", "Techo o cobertura · Blanco texturado", "techo-estructura-blanco-texturado", "Estructura de techo con acabado blanco texturado", { subtype: "Techo o cobertura", finish: "Blanco texturado" }),
   slot("techo-cobertura-negro", "techos-coberturas", "finish", "Techo o cobertura · Negro mate", "techo-estructura-negro-mate", "Estructura de techo con acabado negro mate", { subtype: "Techo o cobertura", finish: "Negro mate" }),
 
-  { ...slot("solution-mamparas", "ventanas-mamparas", "solution", "Imagen de la solución", "mampara-corredera", "Cerramiento de vidrio basado en trabajo del cliente"), imageSrc: "/NUEVO/IRP-imagenes-por-servicio/05_Mamparas_y_ventanas/Basadas_en_fotos_cliente/cerramiento-vidrio.png", thumbnailSrc: "/NUEVO/IRP-imagenes-por-servicio/05_Mamparas_y_ventanas/Basadas_en_fotos_cliente/cerramiento-vidrio.png", referenceLabel: "Referencia del cliente" },
-  slot("mampara-proyectante", "ventanas-mamparas", "type", "Ventana · Proyectante", "mampara-ventana-proyectante-gris-grafito", "Ventana proyectante con perfilería gris grafito", { subtype: "Ventana", design: "Proyectante" }),
+  { ...slot("solution-mamparas", "ventanas-mamparas", "solution", "Imagen de la solución", "mampara-corredera", "Cerramiento de vidrio basado en trabajo del cliente"), imageSrc: catalogImage("05_Mamparas_y_ventanas/Basadas_en_fotos_cliente/cerramiento-vidrio.png"), thumbnailSrc: catalogThumb("05_Mamparas_y_ventanas/Basadas_en_fotos_cliente/cerramiento-vidrio.png"), referenceLabel: "Referencia del cliente" },
+  { ...slot("mampara-proyectante", "ventanas-mamparas", "type", "Ventana · Proyectante", "mampara-ventana-proyectante-gris-grafito", "Ventana proyectante con perfilería gris grafito", { subtype: "Ventana", openingSystem: "Proyectante" }), imageSrc: catalogImage("05_Mamparas_y_ventanas/Propuestas/ventana-proyectante.png"), thumbnailSrc: catalogThumb("05_Mamparas_y_ventanas/Propuestas/ventana-proyectante.png"), referenceLabel: "Propuesta referencial" },
   slot("mampara-grafito", "ventanas-mamparas", "finish", "Mampara · Gris grafito", "mampara-gris-grafito", "Mampara de vidrio con perfilería gris grafito", { subtype: "Mampara", finish: "Gris grafito" }),
   slot("mampara-corrediza-blanco", "ventanas-mamparas", "finish", "Corrediza · Blanco texturado", "mampara-blanco-texturado", "Ventanas y correderas con perfilería blanca", { design: "Corrediza", finish: "Blanco texturado" }),
   slot("mampara-corrediza-negro", "ventanas-mamparas", "finish", "Corrediza · Negro mate", "mampara-negro-mate", "Ventanas y correderas con perfilería negra", { design: "Corrediza", finish: "Negro mate" }),
 
-  { ...slot("solution-acero", "acero-barandas", "solution", "Imagen de la solución", "baranda-acero-inoxidable", "Baranda de vidrio basada en trabajo del cliente"), imageSrc: "/NUEVO/IRP-imagenes-por-servicio/06_Barandas_y_pasamanos/Basadas_en_fotos_cliente/baranda-vidrio.png", thumbnailSrc: "/NUEVO/IRP-imagenes-por-servicio/06_Barandas_y_pasamanos/Basadas_en_fotos_cliente/baranda-vidrio.png", referenceLabel: "Referencia del cliente" },
+  { ...slot("solution-acero", "acero-barandas", "solution", "Imagen de la solución", "baranda-acero-inoxidable", "Baranda de vidrio basada en trabajo del cliente"), imageSrc: catalogImage("06_Barandas_y_pasamanos/Basadas_en_fotos_cliente/baranda-vidrio.png"), thumbnailSrc: catalogThumb("06_Barandas_y_pasamanos/Basadas_en_fotos_cliente/baranda-vidrio.png"), referenceLabel: "Referencia del cliente" },
   slot("acero-pasamanos", "acero-barandas", "type", "Tipo · Pasamanos", "pasamanos-acero-inoxidable", "Pasamanos de acero inoxidable sobre escalera", { subtype: "Pasamanos" }),
   slot("baranda-grafito", "acero-barandas", "finish", "Baranda · Gris grafito", "baranda-gris-grafito", "Baranda con acabado gris grafito", { subtype: "Baranda", finish: "Gris grafito" }),
   slot("baranda-negro", "acero-barandas", "finish", "Baranda · Negro mate", "baranda-negro-mate", "Baranda arquitectónica con acabado negro mate", { subtype: "Baranda", finish: "Negro mate" }),
 
-  slot("solution-estructuras", "estructuras-especiales", "solution", "Imagen de la solución", "estructura-especial-gris-grafito", "Estructura de acero para taller"),
+  { ...slot("solution-estructuras", "estructuras-especiales", "solution", "Imagen de la solución", "estructura-especial-gris-grafito", "Estructura de acero para taller"), imageSrc: catalogImage("07_Estructuras_metalicas/Propuestas/estructura-negra.png"), thumbnailSrc: catalogThumb("07_Estructuras_metalicas/Propuestas/estructura-negra.png"), referenceLabel: "Propuesta referencial" },
   slot("estructura-blanco", "estructuras-especiales", "finish", "Estructura · Blanco texturado", "estructura-especial-blanco-texturado", "Estructura metálica con acabado blanco texturado", { finish: "Blanco texturado" }),
   slot("estructura-negro", "estructuras-especiales", "finish", "Estructura · Negro mate", "estructura-especial-negro-mate", "Estructura metálica con acabado negro mate", { finish: "Negro mate" }),
-  slot("solution-cerco", "cerco-electrico", "solution", "Imagen de la solución", "cerco-electrico", "Cerco eléctrico moderno sobre muro perimetral"),
-  slot("solution-drywall", "drywall-cielorrasos", "solution", "Imagen de la solución", "drywall-revestimiento", "Detalle de pared de yeso laminado")
+  { ...slot("solution-cerco", "cerco-electrico", "solution", "Imagen de la solución", "cerco-electrico", "Cerco eléctrico moderno sobre muro perimetral"), imageSrc: catalogImage("08_Cerco_electrico/Propuestas/cerco-exterior.png"), thumbnailSrc: catalogThumb("08_Cerco_electrico/Propuestas/cerco-exterior.png"), referenceLabel: "Propuesta referencial" },
+  { ...slot("solution-drywall", "drywall-cielorrasos", "solution", "Imagen de la solución", "drywall-revestimiento", "Detalle de pared de yeso laminado"), imageSrc: catalogImage("09_Drywall/Propuestas/ambiente-drywall.png"), thumbnailSrc: catalogThumb("09_Drywall/Propuestas/ambiente-drywall.png"), referenceLabel: "Propuesta referencial" }
 ];
 
 export function mergeConfiguratorVisuals(overrides: ConfiguratorVisualOverride[] = []) {
@@ -108,7 +111,7 @@ export function mergeConfiguratorVisuals(overrides: ConfiguratorVisualOverride[]
 
 export function resolveConfiguratorVisual(
   productId: string,
-  answers: Partial<{ subtype: string; design: string; finish: string }>,
+  answers: Partial<{ subtype: string; design: string; finish: string; openingSystem: string }>,
   overrides: ConfiguratorVisualOverride[] = []
 ) {
   const candidates = mergeConfiguratorVisuals(overrides).filter((visual) => visual.productId === productId);
@@ -127,9 +130,9 @@ export function resolveConfiguratorVisual(
 
 export function visualForOption(
   productId: string,
-  answerKey: "subtype" | "design" | "finish",
+  answerKey: "subtype" | "design" | "finish" | "openingSystem",
   value: string,
-  answers: Partial<{ subtype: string; design: string; finish: string }>,
+  answers: Partial<{ subtype: string; design: string; finish: string; openingSystem: string }>,
   overrides: ConfiguratorVisualOverride[] = []
 ) {
   const merged = mergeConfiguratorVisuals(overrides);

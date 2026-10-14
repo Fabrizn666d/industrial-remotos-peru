@@ -84,7 +84,7 @@ const verticalFiles = [
 
 function createGalleryItems(files: readonly string[], rowLabel: string): GalleryItem[] {
   return files.map((fileName, index) => ({
-    src: `${galleryBasePath}/${encodeURIComponent(fileName)}`,
+    src: `${galleryBasePath}/${encodeURIComponent(fileName.replace(/\.jpg$/i, ".webp"))}`,
     alt: `${rowLabel} de Industrial Remotos Perú ${String(index + 1).padStart(2, "0")}`
   }));
 }

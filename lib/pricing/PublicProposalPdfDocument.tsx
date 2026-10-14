@@ -1,9 +1,11 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import sharp from "sharp";
 import { Document, Image, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import type { QuoteRequest } from "@/lib/backend/contracts";
 import { formatPublicPrice } from "@/lib/pricing/engine";
 import { DEFAULT_PROPOSAL_TERMS } from "@/lib/pricing/contracts";
+import { readCmsMediaFile } from "@/lib/cms/media-repository";
 
 const logo = `data:image/png;base64,${readFileSync(path.join(process.cwd(), "public", "NUEVO", "LOGO.png")).toString("base64")}`;
 const publicRoot = path.resolve(process.cwd(), "public");
@@ -19,6 +21,40 @@ function publicImageData(source: unknown) {
     const mime = extension === ".png" ? "image/png" : "image/jpeg";
     return `data:${mime};base64,${readFileSync(absolute).toString("base64")}`;
   } catch { return null; }
+}
+
+async function proposalImageData(source: string) {
+  try {
+    let buffer: Buffer;
+    let mime = "";
+    const mediaMatch = source.match(/^\/api\/media\/([0-9a-f-]{36})(?:\?.*)?$/i);
+    if (mediaMatch) {
+      const media = await readCmsMediaFile(mediaMatch[1]);
+      if (!media || !media.item.mimeType.startsWith("image/")) return null;
+      buffer = media.buffer;
+      mime = media.item.mimeType;
+    } else {
+      if (!source.startsWith("/")) return null;
+      const clean = decodeURIComponent(source.split("?")[0]);
+      const absolute = path.resolve(publicRoot, `.${clean}`);
+      if (!absolute.startsWith(`${publicRoot}${path.sep}`)) return null;
+      buffer = readFileSync(absolute);
+      const extension = path.extname(absolute).toLowerCase();
+      mime = extension === ".png" ? "image/png" : extension === ".jpg" || extension === ".jpeg" ? "image/jpeg" : extension === ".webp" ? "image/webp" : extension === ".avif" ? "image/avif" : "";
+    }
+    if (!mime) return null;
+    if (mime === "image/webp" || mime === "image/avif") {
+      buffer = await sharp(buffer).png().toBuffer();
+      mime = "image/png";
+    }
+    return `data:${mime};base64,${buffer.toString("base64")}`;
+  } catch { return null; }
+}
+
+export async function resolveProposalImages(request: QuoteRequest) {
+  const sources = [...new Set(request.items.map((item) => item.configuration.custom_selectedImage).filter((source): source is string => typeof source === "string"))];
+  const entries = await Promise.all(sources.map(async (source) => [source, await proposalImageData(source)] as const));
+  return Object.fromEntries(entries.filter((entry): entry is readonly [string, string] => Boolean(entry[1])));
 }
 const styles = StyleSheet.create({
   page: { padding: 38, paddingBottom: 56, fontFamily: "Helvetica", fontSize: 9, color: "#07164b" },
@@ -52,7 +88,14 @@ function visibleConfiguration([key, value]: [string, unknown]) {
   return !Array.isArray(value) || value.length > 0;
 }
 
-export function PublicProposalPdfDocument({ request }: { request: QuoteRequest }) {
+function configurationValue(productId: string | undefined, key: string, value: unknown) {
+  if (key === "measurementsUnknown") return "Pendientes de medición";
+  if (productId === "puertas-contraplacadas" && (key === "width" || key === "height")) return `${Math.round(Number(value) * 1000)} mm`;
+  if (productId === "puertas-contraplacadas" && key === "unit") return "mm";
+  return Array.isArray(value) ? value.join(", ") : String(value);
+}
+
+export function PublicProposalPdfDocument({ request, resolvedImages = {} }: { request: QuoteRequest; resolvedImages?: Record<string, string> }) {
   const pricing = request.pricingSnapshot;
   const terms = pricing?.proposalTerms ?? DEFAULT_PROPOSAL_TERMS;
   const validUntil = new Date(request.createdAt);
@@ -73,13 +116,14 @@ export function PublicProposalPdfDocument({ request }: { request: QuoteRequest }
       {request.items.map((item, index) => {
         const itemPrice = pricing?.items[index]?.result;
         const imported = item.productId === "puertas-principales";
-        const selectedImage = publicImageData(item.configuration.custom_selectedImage);
+        const selectedSource = item.configuration.custom_selectedImage;
+        const selectedImage = typeof selectedSource === "string" ? resolvedImages[selectedSource] ?? publicImageData(selectedSource) : null;
         const hasModelSnapshot = typeof item.configuration.custom_modelLabel === "string";
         const hasVariantSnapshot = typeof item.configuration.custom_variantLabel === "string";
         return <View key={item.id} style={styles.item} wrap={false}>
           <View style={styles.itemHead}><Text style={styles.itemName}>{item.quantity} × {item.name}</Text><Text>{itemPrice?.status === "ESTIMATED" ? formatPublicPrice(itemPrice.totalMinor) : "Requiere evaluación"}</Text></View>
           <View style={styles.itemBody}>{selectedImage ? <Image src={selectedImage} style={styles.itemImage}/> : null}<View style={styles.itemDetails}>
-            {Object.entries(item.configuration).filter(([key, value]) => visibleConfiguration([key, value]) && !(key === "model" && hasModelSnapshot) && !(key === "variant" && hasVariantSnapshot)).map(([key, value]) => <View style={styles.row} key={key}><Text>{readable(key)}</Text><Text>{key === "measurementsUnknown" ? "Pendientes de medición" : Array.isArray(value) ? value.join(", ") : String(value)}</Text></View>)}
+            {Object.entries(item.configuration).filter(([key, value]) => visibleConfiguration([key, value]) && !(key === "model" && hasModelSnapshot) && !(key === "variant" && hasVariantSnapshot)).map(([key, value]) => <View style={styles.row} key={key}><Text>{readable(key)}</Text><Text>{configurationValue(item.productId, key, value)}</Text></View>)}
             <View style={styles.row}><Text>Alcance incluido</Text><Text>{imported ? "Suministro e instalación" : item.productId === "seccionales" ? "Fabricación, automatización e instalación" : "Ejecución e instalación"}</Text></View>
             {itemPrice?.status === "ESTIMATED" ? itemPrice.breakdown.map((line) => <View style={styles.row} key={line.key}><Text>{line.label}</Text><Text>{line.amountMinor ? formatPublicPrice(line.amountMinor) : "Incluida"}</Text></View>) : <Text style={styles.notice}>{itemPrice?.reason ?? "Partida pendiente de evaluación."}</Text>}
           </View></View>

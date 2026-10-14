@@ -475,7 +475,25 @@ export const solutionEditorialProfiles: Record<string, SolutionEditorialProfile>
   }
 };
 
+solutionEditorialProfiles["puertas-contraplacadas"] = {
+  ...solutionEditorialProfiles["puertas-a-medida"],
+  heroHeading: "Referencias para tu puerta contraplacada.",
+  heroDescription: "Registra apertura y dimensiones; los modelos y fichas se confirman antes de publicar una tarifa.",
+  ctaTitle: "Solicita la evaluación de tu puerta.",
+  ctaDescription: "Puedes continuar aunque aún no conozcas las medidas definitivas."
+};
+
 export const solutionFinishPresentations: Record<string, SolutionFinishPresentation> = {
+  "puertas-contraplacadas": {
+    eyebrow: "Modelos y terminaciones",
+    title: "Referencias sujetas a validación comercial.",
+    description: "Las propuestas visuales sirven para registrar la preferencia. Materiales, espesores, acabados y precio se confirman antes de emitir la cotización.",
+    options: [
+      { name: "Blanco", color: "#ecece8", description: "Referencia clara pendiente de ficha técnica y tarifa publicadas." },
+      { name: "Grafito", color: "#343b42", description: "Referencia oscura pendiente de compatibilidad con el modelo." },
+      { name: "Tipo madera", color: "#8b5232", description: "Tono referencial que se confirma durante la evaluación." }
+    ]
+  },
   "puertas-a-medida": {
     eyebrow: "Materiales y acabados",
     title: "El diseño también vive en la superficie.",

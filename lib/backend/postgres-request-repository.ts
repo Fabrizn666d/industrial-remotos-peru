@@ -161,6 +161,9 @@ export class PostgresRequestRepository implements RequestRepository {
 
       const existing = await loadRequestBy(client, "client_submission_id", input.clientSubmissionId);
       if (existing) {
+        const accessToken = randomBytes(32).toString("base64url");
+        const publicTokenHash = tokenHash(accessToken);
+        await client.query("UPDATE irp_quote_requests SET public_token_hash = $1, updated_at = NOW() WHERE id = $2::uuid", [publicTokenHash, existing.id]);
         await client.query("COMMIT");
         transactionOpen = false;
         return {
@@ -168,11 +171,11 @@ export class PostgresRequestRepository implements RequestRepository {
             id: existing.id,
             code: existing.code,
             createdAt: existing.createdAt,
-            accessToken: null,
+            accessToken,
             pricing: existing.pricingSnapshot ?? await calculateSubmissionPrice(existing.originalPayload),
             replayed: true
           }),
-          request: existing
+          request: { ...existing, publicTokenHash }
         };
       }
 

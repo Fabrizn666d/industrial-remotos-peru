@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import styles from "./PrivacyRuntime.module.css";
+import { useHomeIntro } from "@/components/HomeIntroController";
 
 const CONSENT_KEY = "irp_cookie_consent_v1";
 const UTM_KEY = "irp_utm_v1";
@@ -30,6 +31,7 @@ function loadAnalytics() {
 }
 
 export function PrivacyRuntime() {
+  const { status: introStatus } = useHomeIntro();
   const [preferences, setPreferences] = useState<Preferences | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [configuring, setConfiguring] = useState(false);
@@ -112,10 +114,11 @@ export function PrivacyRuntime() {
   }
 
   if (!hydrated) return null;
+  const canShowConsent = introStatus === "completed" || introStatus === "skipped" || introStatus === "failed";
   return (
     <>
-      {!preferences && !configuring && <section className={styles.banner} aria-labelledby="cookie-title"><div><h2 id="cookie-title">Tu privacidad, bajo control</h2><p>Usamos almacenamiento necesario para que el sitio funcione. Las cookies analíticas son opcionales y solo se activan con tu permiso.</p></div><div className={styles.actions}><button type="button" onClick={() => save(false, false)}>Rechazar no esenciales</button><button type="button" onClick={() => { openerRef.current = document.activeElement as HTMLElement; setConfiguring(true); }}>Configurar</button><button className={styles.primary} type="button" onClick={() => save(true, true)}>Aceptar todas</button></div></section>}
-      {configuring && <div className={styles.backdrop} onMouseDown={(event) => event.target === event.currentTarget && setConfiguring(false)}><div ref={dialogRef} className={styles.modal} role="dialog" aria-modal="true" aria-labelledby="cookie-settings-title"><button className={styles.close} type="button" aria-label="Cerrar preferencias" onClick={() => setConfiguring(false)}><X size={19} /></button><h2 id="cookie-settings-title">Preferencias de privacidad</h2><p>Elige qué categorías deseas permitir. Puedes volver a esta pantalla desde el footer.</p><div className={styles.preference}><div><strong>Necesarias</strong><p>Permiten recordar tu proyecto, seguridad y preferencias esenciales. Siempre activas.</p></div><input type="checkbox" checked disabled aria-label="Cookies necesarias activas" /></div><label className={styles.preference}><div><strong>Analíticas</strong><p>Ayudan a entender el uso del sitio con datos agregados. No incluyen documentos, reclamos ni datos del formulario.</p></div><input type="checkbox" checked={draft.analytics} onChange={(e) => setDraft((value) => ({ ...value, analytics: e.target.checked }))} /></label><label className={styles.preference}><div><strong>Opcionales</strong><p>Reservadas para futuras integraciones no esenciales. Actualmente no se carga ninguna.</p></div><input type="checkbox" checked={draft.optional} onChange={(e) => setDraft((value) => ({ ...value, optional: e.target.checked }))} /></label><button className={styles.save} type="button" onClick={() => save(draft.analytics, draft.optional)}>Guardar preferencia</button></div></div>}
+      {canShowConsent && !preferences && !configuring && <section className={styles.banner} aria-labelledby="cookie-title"><div><h2 id="cookie-title">Tu privacidad, bajo control</h2><p>Usamos almacenamiento necesario para que el sitio funcione. Las cookies analíticas son opcionales y solo se activan con tu permiso.</p></div><div className={styles.actions}><button type="button" onClick={() => save(false, false)}>Rechazar no esenciales</button><button type="button" onClick={() => { openerRef.current = document.activeElement as HTMLElement; setConfiguring(true); }}>Configurar</button><button className={styles.primary} type="button" onClick={() => save(true, true)}>Aceptar todas</button></div></section>}
+      {canShowConsent && configuring && <div className={styles.backdrop} onMouseDown={(event) => event.target === event.currentTarget && setConfiguring(false)}><div ref={dialogRef} className={styles.modal} role="dialog" aria-modal="true" aria-labelledby="cookie-settings-title"><button className={styles.close} type="button" aria-label="Cerrar preferencias" onClick={() => setConfiguring(false)}><X size={19} /></button><h2 id="cookie-settings-title">Preferencias de privacidad</h2><p>Elige qué categorías deseas permitir. Puedes volver a esta pantalla desde el footer.</p><div className={styles.preference}><div><strong>Necesarias</strong><p>Permiten recordar tu proyecto, seguridad y preferencias esenciales. Siempre activas.</p></div><input type="checkbox" checked disabled aria-label="Cookies necesarias activas" /></div><label className={styles.preference}><div><strong>Analíticas</strong><p>Ayudan a entender el uso del sitio con datos agregados. No incluyen documentos, reclamos ni datos del formulario.</p></div><input type="checkbox" checked={draft.analytics} onChange={(e) => setDraft((value) => ({ ...value, analytics: e.target.checked }))} /></label><label className={styles.preference}><div><strong>Opcionales</strong><p>Reservadas para futuras integraciones no esenciales. Actualmente no se carga ninguna.</p></div><input type="checkbox" checked={draft.optional} onChange={(e) => setDraft((value) => ({ ...value, optional: e.target.checked }))} /></label><button className={styles.save} type="button" onClick={() => save(draft.analytics, draft.optional)}>Guardar preferencia</button></div></div>}
     </>
   );
 }

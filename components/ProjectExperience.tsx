@@ -18,10 +18,8 @@ const quickReplies = [
   { label: "Techo o cobertura", product: "techos-coberturas" },
   { label: "Mampara o ventana", product: "ventanas-mamparas" },
   { label: "Baranda o acero", product: "acero-barandas" },
-  { label: "Estructura metálica", product: "estructuras-especiales" },
   { label: "Puerta principal a medida", product: "puertas-a-medida" },
-  { label: "Drywall o cielorraso", product: "drywall-cielorrasos" },
-  { label: "No sé qué solución necesito", product: "estructuras-especiales" }
+  { label: "Drywall o cielorraso", product: "drywall-cielorrasos" }
 ];
 
 const assistantIcon = "/NUEVO/COTIZADORES/Robot sonriente en insignia circular-3.png";
@@ -65,7 +63,7 @@ export function ProjectExperience() {
     return () => window.removeEventListener("keydown", onKey);
   }, [setDrawerOpen]);
 
-  const selectedProduct = quickReplies.find((reply) => reply.label === selected)?.product ?? "estructuras-especiales";
+  const selectedProduct = quickReplies.find((reply) => reply.label === selected)?.product ?? "puertas-a-medida";
   const recommendation = products.find((product) => product.id === selectedProduct) || products[0];
   const projectPricing = calculateProjectPrice(items.map((item) => ({ productId: item.productId, quantity: item.quantity, configuration: { width: item.configuration.dimensions?.width, height: item.configuration.dimensions?.height, subtype: item.configuration.subtype, model: item.configuration.model, variant: item.configuration.variant, openingSystem: item.configuration.openingSystem, design: item.configuration.design, material: item.configuration.material, finish: item.configuration.finish, automation: item.configuration.automation, accessories: item.configuration.accessories } })), "", publicCatalog.definitions, `v${publicCatalog.version}`, publicCatalog.proposalSettings, publicCatalog.configuratorStepOverrides);
 

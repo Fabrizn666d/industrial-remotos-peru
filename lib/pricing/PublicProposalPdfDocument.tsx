@@ -6,6 +6,7 @@ import type { QuoteRequest } from "@/lib/backend/contracts";
 import { formatPublicPrice } from "@/lib/pricing/engine";
 import { DEFAULT_PROPOSAL_TERMS } from "@/lib/pricing/contracts";
 import { readCmsMediaFile } from "@/lib/cms/media-repository";
+import { readRequestAttachmentFile } from "@/lib/backend/request-attachment-repository";
 
 const logo = `data:image/png;base64,${readFileSync(path.join(process.cwd(), "public", "NUEVO", "LOGO.png")).toString("base64")}`;
 const publicRoot = path.resolve(process.cwd(), "public");
@@ -27,8 +28,14 @@ async function proposalImageData(source: string) {
   try {
     let buffer: Buffer;
     let mime = "";
+    const requestAttachmentMatch = source.match(/^\/api\/request-attachments\/([0-9a-f-]{36})(?:\?.*)?$/i);
     const mediaMatch = source.match(/^\/api\/media\/([0-9a-f-]{36})(?:\?.*)?$/i);
-    if (mediaMatch) {
+    if (requestAttachmentMatch) {
+      const media = await readRequestAttachmentFile(requestAttachmentMatch[1]);
+      if (!media || !media.item.mimeType.startsWith("image/")) return null;
+      buffer = media.buffer;
+      mime = media.item.mimeType;
+    } else if (mediaMatch) {
       const media = await readCmsMediaFile(mediaMatch[1]);
       if (!media || !media.item.mimeType.startsWith("image/")) return null;
       buffer = media.buffer;

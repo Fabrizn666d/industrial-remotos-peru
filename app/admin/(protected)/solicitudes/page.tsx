@@ -55,13 +55,13 @@ export default async function AdminRequestsPage({ searchParams }: { searchParams
         {result.items.length ? <div className={styles.tableWrap}><table className={styles.table}>
           <thead><tr><th>Código</th><th>Cliente</th><th>Proyecto</th><th>Estado</th><th>Origen</th><th>Fecha</th><th /></tr></thead>
           <tbody>{result.items.map((request) => <tr key={request.id}>
-            <td><b>{request.code}</b></td>
-            <td><strong>{request.contact.name}</strong><small>{request.contact.email}</small></td>
-            <td><span>{request.details.projectType}</span><small>{request.details.location}</small></td>
-            <td><StatusBadge status={request.status} /></td>
-            <td>{request.source === "CONFIGURATOR" ? "Configurador" : request.source === "CONTACT" ? "Contacto" : "Importación"}</td>
-            <td>{formatAdminDate(request.createdAt)}</td>
-            <td><Link className={styles.rowAction} href={`/admin/solicitudes/${request.id}`}><ArrowRight size={16} /></Link></td>
+            <td data-label="Código"><b>{request.code}</b></td>
+            <td data-label="Cliente"><strong>{request.contact.name}</strong><small>{request.contact.email}</small></td>
+            <td data-label="Proyecto"><span>{request.details.projectType}</span><small>{request.details.location}</small></td>
+            <td data-label="Estado"><StatusBadge status={request.status} /></td>
+            <td data-label="Origen">{request.source === "CONFIGURATOR" ? "Configurador" : request.source === "CONTACT" ? "Contacto" : "Importación"}</td>
+            <td data-label="Fecha">{formatAdminDate(request.createdAt)}</td>
+            <td data-action><Link className={styles.rowAction} href={`/admin/solicitudes/${request.id}`}><ArrowRight size={16} /></Link></td>
           </tr>)}</tbody>
         </table></div> : <div className={styles.emptyState}><ClipboardList size={28} /><h2>Sin resultados</h2><p>Ajusta la búsqueda o espera una nueva solicitud.</p></div>}
 

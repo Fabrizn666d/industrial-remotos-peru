@@ -1,7 +1,6 @@
 "use client";
 
 import { HeroSection } from "@/components/home/HeroSection";
-import { HomeVideoIntro } from "@/components/home/HomeVideoIntro";
 import { NeedsSection } from "@/components/home/NeedsSection";
 import { ProjectsShowcase } from "@/components/home/ProjectsShowcase";
 import { ExperienceImpactSection } from "@/components/home/ExperienceImpactSection";
@@ -13,7 +12,6 @@ import type { HomeContent } from "@/lib/cms/content-contracts";
 export function HomeExperience({ content }: { content: HomeContent }) {
   return (
     <>
-      <HomeVideoIntro content={content.hero} />
       <main id="contenido" className="irp-home">
         <HeroSection content={content.hero} />
         <NeedsSection content={content.needs} />

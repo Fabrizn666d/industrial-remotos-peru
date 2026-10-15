@@ -5,11 +5,12 @@ import { ArrowRight, Play, Settings, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
-import { HOME_INTRO_ASSETS, HOME_INTRO_TIMING, useHomeIntro } from "@/components/HomeIntroController";
+import { HOME_INTRO_TIMING, useHomeIntro } from "@/components/HomeIntroController";
 import type { HomeContent } from "@/lib/cms/content-contracts";
+import { HOME_INTRO_SEEN_CLASS } from "@/lib/home-intro-session";
 
 const HERO_ADVISOR_ASSET = "/NUEVO/ChatGPT Image 22 sept 2026%2C 14_56_50.png";
-// One visual clock, in seconds from duration - 5. Adjust choreography here.
+// The video frame clock drives this timeline during its final seconds.
 export const HERO_TIMELINE = {
   overlay: { at: 0, duration: .78 },
   wave: { at: .18, duration: .86, y: 54 },
@@ -39,14 +40,14 @@ function MediaOnlyHero({ content }: { content: HeroContent }) {
     sync(); query.addEventListener("change", sync); motion.addEventListener("change", sync);
     return () => { query.removeEventListener("change", sync); motion.removeEventListener("change", sync); };
   }, [complete]);
-  if (content.mode === "image") return <section className="irp-hero irp-hero--media-only" id="inicio" data-hero-mode="image"><picture style={{ "--hero-position-desktop": content.imageOnly.desktop.position, "--hero-position-mobile": content.imageOnly.mobile.position } as CSSProperties}><source media="(max-width: 767px)" srcSet={content.imageOnly.mobile.src}/><img src={content.imageOnly.desktop.src} alt={content.imageOnly.desktop.alt}/></picture></section>;
+  if (content.mode === "image") return <section className="irp-hero irp-hero--media-only" id="inicio" data-hero-mode="image" data-intro-status="completed"><picture style={{ "--hero-position-desktop": content.imageOnly.desktop.position, "--hero-position-mobile": content.imageOnly.mobile.position } as CSSProperties}><source media="(max-width: 767px)" srcSet={content.imageOnly.mobile.src}/><img src={content.imageOnly.desktop.src} alt={content.imageOnly.desktop.alt}/></picture></section>;
   const video = mobile ? content.videoOnly.mobile : content.videoOnly.desktop;
   const poster = mobile ? content.videoOnly.mobilePoster : content.videoOnly.desktopPoster;
-  return <section className="irp-hero irp-hero--media-only" id="inicio" data-hero-mode="video">{reduced || mobile === null ? <picture><source media="(max-width: 767px)" srcSet={content.videoOnly.mobilePoster.src}/><img src={content.videoOnly.desktopPoster.src} alt={poster.alt}/></picture> : <video key={video.src} src={video.src} poster={poster.src} aria-label={video.alt} style={{ objectPosition: video.position }} autoPlay muted loop playsInline preload="metadata" disablePictureInPicture />}</section>;
+  return <section className="irp-hero irp-hero--media-only" id="inicio" data-hero-mode="video" data-intro-status="completed">{reduced || mobile === null ? <picture><source media="(max-width: 767px)" srcSet={content.videoOnly.mobilePoster.src}/><img src={content.videoOnly.desktopPoster.src} alt={poster.alt}/></picture> : <video key={video.src} src={video.src} poster={poster.src} aria-label={video.alt} style={{ objectPosition: video.position }} autoPlay muted loop playsInline preload="metadata" disablePictureInPicture />}</section>;
 }
 
 function CompositionHero({ content }: { content: HeroContent["composition"] }) {
-  const { logoRef, markPlaying, beginReveal, complete, fail } = useHomeIntro();
+  const { status, markPlaying, beginReveal, complete, fail } = useHomeIntro();
   const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -63,19 +64,11 @@ function CompositionHero({ content }: { content: HeroContent["composition"] }) {
   const actionsRef = useRef<HTMLDivElement>(null);
   const proofRef = useRef<HTMLDivElement>(null);
   const waveRef = useRef<HTMLDivElement>(null);
-  const timelineRef = useRef<gsap.core.Timeline | null>(null);
-  const stopVideoClockRef = useRef<() => void>(() => {});
-  const staticHero = true;
-  const fallback = true;
 
   useLayoutEffect(() => {
     const section = sectionRef.current;
     const video = videoRef.current;
-    if (!section) return;
-    if (staticHero) {
-      section.dataset.heroSettled = "true";
-      return;
-    }
+    if (!section || !video) return;
     const header = document.querySelector<HTMLElement>(".site-header");
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const mobile = window.matchMedia("(max-width: 900px)").matches;
@@ -84,15 +77,20 @@ function CompositionHero({ content }: { content: HeroContent["composition"] }) {
     const lines = mobile ? mobileLines : desktopLines;
     const targets = [header, overlayRef.current, advisorRef.current, kickerRef.current, ...lines,
       descriptionRef.current, actionsRef.current, proofRef.current, waveRef.current].filter(Boolean) as HTMLElement[];
-    let timeline: gsap.core.Timeline;
-    let logoTween: gsap.core.Tween | undefined;
+    const skipIntro = document.documentElement.classList.contains(HOME_INTRO_SEEN_CLASS)
+      && new URLSearchParams(window.location.search).get("intro") !== "1";
+    if (skipIntro) {
+      video.pause();
+      section.dataset.heroSettled = "true";
+      return;
+    }
+    let timeline!: gsap.core.Timeline;
     let didReveal = false;
-    let didFadeLogo = false;
     let didPlay = false;
+    let routeReady = !document.documentElement.hasAttribute("data-irp-route-transition");
     let disposed = false;
     let frameId = 0;
-    let networkFrameId = 0;
-    const videoFrames = Boolean(video && "requestVideoFrameCallback" in video);
+    const videoFrames = "requestVideoFrameCallback" in video;
     const ctx = gsap.context(() => {
       const reveal = (target: gsap.TweenTarget, at: number, duration: number, y = 0) => {
         timeline.fromTo(target, { autoAlpha: 0, y: reduced ? 0 : y }, {
@@ -104,7 +102,6 @@ function CompositionHero({ content }: { content: HeroContent["composition"] }) {
       timeline = gsap.timeline({ paused: true, defaults: { ease: "sine.inOut" },
         onComplete: () => { gsap.set(targets, { clearProps: "willChange" }); section.dataset.heroSettled = "true"; }
       });
-      timelineRef.current = timeline;
       reveal(overlayRef.current, HERO_TIMELINE.overlay.at, HERO_TIMELINE.overlay.duration);
       reveal(waveRef.current, HERO_TIMELINE.wave.at, HERO_TIMELINE.wave.duration, HERO_TIMELINE.wave.y);
       if (header) reveal(header, HERO_TIMELINE.header.at, HERO_TIMELINE.header.duration, HERO_TIMELINE.header.y);
@@ -126,110 +123,97 @@ function CompositionHero({ content }: { content: HeroContent["composition"] }) {
     }, section);
 
     const stopClock = () => {
-      if (videoFrames) video?.cancelVideoFrameCallback(frameId);
+      if (videoFrames) video.cancelVideoFrameCallback(frameId);
       else cancelAnimationFrame(frameId);
     };
-    stopVideoClockRef.current = stopClock;
     const sample = (_now: number, metadata?: VideoFrameCallbackMetadata) => {
-      if (disposed || !video) return;
+      if (disposed) return;
       const time = metadata?.mediaTime ?? video.currentTime;
-      if (!didPlay && time > 0) { didPlay = true; markPlaying(); }
-      if (!didFadeLogo && time >= HOME_INTRO_TIMING.logoFadeAtVideoSeconds) {
-        didFadeLogo = true;
-        if (logoRef.current) {
-          ctx.add(() => {
-            logoTween = gsap.to(logoRef.current, { opacity: 0, duration: HOME_INTRO_TIMING.logoFadeMs / 1000,
-              ease: "power1.inOut", onComplete: () => { gsap.set(logoRef.current, { clearProps: "willChange" }); } });
-          });
+      if (Number.isFinite(video.duration)) {
+        const revealStart = Math.max(0, video.duration - HOME_INTRO_TIMING.revealBeforeEndSeconds);
+        if (time >= revealStart) {
+          if (!didReveal) {
+            didReveal = true;
+            section.dataset.revealVideoTime = String(time);
+            section.dataset.revealStartedAt = String(performance.now());
+            beginReveal();
+          }
+          timeline.time(Math.min(timeline.duration(), Math.max(0, time - revealStart)), false);
         }
       }
-      if (!didReveal && Number.isFinite(video.duration) && time >= video.duration - HOME_INTRO_TIMING.revealBeforeEndSeconds) {
-        didReveal = true;
-        section.dataset.revealVideoTime = String(time);
-        section.dataset.revealStartedAt = String(performance.now());
-        beginReveal();
-        timeline.play();
-      }
-      if (!video.ended && !didReveal) frameId = videoFrames ? video.requestVideoFrameCallback(sample) : requestAnimationFrame(sample);
+      if (!video.ended) frameId = videoFrames ? video.requestVideoFrameCallback(sample) : requestAnimationFrame(sample);
     };
     const onError = () => {
+      if (!video.error && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) return;
       stopClock();
-      if (process.env.NODE_ENV === "development") console.error("[IRP intro] MP4 load/playback failed", video?.error);
+      section.dataset.mediaFailed = "true";
+      if (process.env.NODE_ENV === "development") console.error("[IRP intro] MP4 load/playback failed", video.error);
       fail();
+      timeline.progress(1);
+      section.dataset.heroSettled = "true";
     };
-    const onEnded = () => { stopClock(); complete(); };
-    const watchNetwork = () => {
-      if (!video || disposed || didPlay) return;
-      if (video.currentSrc && video.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
-        onError();
-        return;
-      }
-      networkFrameId = requestAnimationFrame(watchNetwork);
+    const onEnded = () => {
+      stopClock();
+      timeline.progress(1, false);
+      section.dataset.heroSettled = "true";
+      complete();
+    };
+    const onPlaying = () => {
+      if (didPlay) return;
+      didPlay = true;
+      delete section.dataset.mediaFailed;
+      section.dataset.videoPlaying = "true";
+      markPlaying();
     };
     const start = () => {
-      if (!video || disposed || video.ended || didPlay) return;
+      if (disposed || !routeReady || video.ended || didPlay) return;
       video.playbackRate = video.defaultPlaybackRate = HOME_INTRO_TIMING.playbackRate;
       void video.play().catch((error: unknown) => {
         if (disposed || (error instanceof DOMException && error.name === "AbortError")) return;
         onError();
       });
     };
-    if (video) {
-      const sources = Array.from(video.querySelectorAll("source"));
-      video.addEventListener("canplay", start);
-      video.addEventListener("error", onError);
-      video.addEventListener("ended", onEnded);
-      sources.forEach((source) => source.addEventListener("error", onError));
-      if (video.error) onError();
-      else {
-        if (video.readyState >= 2) start();
-        frameId = videoFrames ? video.requestVideoFrameCallback(sample) : requestAnimationFrame(sample);
-        networkFrameId = requestAnimationFrame(watchNetwork);
-      }
+    const onRouteReady = () => {
+      routeReady = true;
+      start();
+    };
+    video.addEventListener("canplay", start);
+    video.addEventListener("playing", onPlaying);
+    video.addEventListener("error", onError);
+    video.addEventListener("ended", onEnded);
+    if (!routeReady) window.addEventListener("irp:route-transition-complete", onRouteReady, { once: true });
+
+    if (video.error) {
+      onError();
+    } else {
+      if (video.readyState >= 2) start();
+      frameId = videoFrames ? video.requestVideoFrameCallback(sample) : requestAnimationFrame(sample);
     }
     return () => {
       disposed = true;
       stopClock();
-      cancelAnimationFrame(networkFrameId);
-      video?.removeEventListener("canplay", start);
-      video?.removeEventListener("error", onError);
-      video?.removeEventListener("ended", onEnded);
-      video?.querySelectorAll("source").forEach((source) => source.removeEventListener("error", onError));
-      logoTween?.kill();
+      window.removeEventListener("irp:route-transition-complete", onRouteReady);
+      video.removeEventListener("canplay", start);
+      video.removeEventListener("playing", onPlaying);
+      video.removeEventListener("error", onError);
+      video.removeEventListener("ended", onEnded);
       timeline.kill();
       ctx.revert();
-      timelineRef.current = null;
     };
-  }, [beginReveal, complete, fail, fallback, logoRef, markPlaying]);
-
-  useLayoutEffect(() => {
-    if (staticHero) return;
-    if (!fallback) return;
-    stopVideoClockRef.current();
-    const reveal = () => timelineRef.current?.timeScale(1.6).restart();
-    timelineRef.current?.progress(0).pause();
-    if (document.documentElement.hasAttribute("data-irp-route-transition")) {
-      window.addEventListener("irp:route-transition-complete", reveal, { once: true });
-      return () => window.removeEventListener("irp:route-transition-complete", reveal);
-    }
-    const frame = requestAnimationFrame(reveal);
-    return () => cancelAnimationFrame(frame);
-  }, [fallback]);
+  }, [beginReveal, complete, fail, markPlaying]);
 
   return (
-    <section ref={sectionRef} className="irp-hero irp-hero--static" id="inicio" data-intro-status="completed">
-      <link rel="preload" as="image" href={content.fallbackImage.src} media="(min-width: 768px)" fetchPriority="high" />
-      <link rel="preload" as="image" href={content.mobilePoster.src} media="(max-width: 767px)" fetchPriority="high" />
+    <section ref={sectionRef} className="irp-hero" id="inicio" data-intro-status={status}>
       <div className="irp-hero__media">
-        {fallback ? <picture className="irp-hero__fallback">
-          <source media="(max-width: 767px)" srcSet={content.mobilePoster.src} />
-          <img src={content.fallbackImage.src} alt={content.fallbackImage.alt} width={1920} height={1080} />
-        </picture> :
-          <video ref={videoRef} className="irp-hero__video" preload="auto" autoPlay muted playsInline onError={fail}
-            disablePictureInPicture tabIndex={-1} aria-label={content.desktopVideo.alt}>
-            <source media="(max-width: 767px)" src={content.mobileVideo.src} type="video/mp4" onError={fail} />
-            <source media="(min-width: 768px)" src={content.desktopVideo.src} type="video/mp4" onError={fail} />
-          </video>}
+        <picture className="irp-hero__fallback">
+          <source media="(max-width: 767px)" srcSet="/NUEVO/NUEVO%20LOADER/mobile-intro-last-frame.webp" />
+          <img src="/NUEVO/NUEVO%20LOADER/ChatGPT%20Image%2021%20sept%202026%2C%2011_01_15.png" alt={content.fallbackImage.alt} width={1920} height={1080} />
+        </picture>
+        <video ref={videoRef} className="irp-hero__video" preload="auto" autoPlay muted playsInline
+          disablePictureInPicture tabIndex={-1} aria-label={content.desktopVideo.alt}>
+          <source media="(max-width: 767px)" src={content.mobileVideo.src} type="video/mp4" />
+          <source media="(min-width: 768px)" src={content.desktopVideo.src} type="video/mp4" />
+        </video>
       </div>
       <div ref={overlayRef} className="irp-hero__cinema" aria-hidden="true" />
       <div className="irp-shell irp-hero__layout">

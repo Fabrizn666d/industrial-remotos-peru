@@ -1,30 +1,17 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type RefObject } from "react";
-
-export const HOME_INTRO_ASSETS = {
-  logo: "/NUEVO/LOGO.png",
-  video: "/NUEVO/crear-video-industrial-loader.mp4",
-  mobileVideo: "/NUEVO/crear-video-industrial-loader.mp4",
-  firstFrame: "/NUEVO/crear-video-industrial-first-frame.webp",
-  lastFrame: "/NUEVO/crear-video-industrial-last-frame.webp",
-  mobileFirstFrame: "/NUEVO/crear-video-industrial-first-frame.webp",
-  mobileLastFrame: "/NUEVO/crear-video-industrial-last-frame.webp",
-  exterior: "/NUEVO/ChatGPT Image 21 sept 2026%2C 11_01_15.png"
-} as const;
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { HOME_INTRO_SEEN_CLASS, HOME_INTRO_SESSION_KEY } from "@/lib/home-intro-session";
 
 export const HOME_INTRO_TIMING = {
   playbackRate: 1,
-  revealBeforeEndSeconds: 5,
-  logoFadeAtVideoSeconds: 2.6,
-  logoFadeMs: 850
+  revealBeforeEndSeconds: 4.2
 } as const;
 export type HomeIntroStatus = "checking" | "loading" | "playing" | "revealing" | "completed" | "failed" | "skipped";
 
 type IntroContext = {
   status: HomeIntroStatus;
-  logoRef: RefObject<HTMLDivElement | null>;
   markPlaying: () => void;
   beginReveal: () => void;
   complete: () => void;
@@ -35,15 +22,32 @@ const HomeIntroContext = createContext<IntroContext | null>(null);
 export function HomeIntroProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [status, setStatus] = useState<HomeIntroStatus>(pathname === "/" ? "checking" : "skipped");
-  const logoRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (pathname !== "/") {
+      try {
+        if (sessionStorage.getItem(HOME_INTRO_SESSION_KEY) === "seen") {
+          document.documentElement.classList.add(HOME_INTRO_SEEN_CLASS);
+        }
+      } catch { /* Storage can be unavailable in privacy-restricted contexts. */ }
       setStatus("skipped");
       return;
     }
-    document.documentElement.classList.remove("irp-intro-seen");
-    setStatus((current) => ["checking", "skipped", "completed", "failed"].includes(current) ? "loading" : current);
+    const forced = new URLSearchParams(window.location.search).get("intro") === "1";
+    const firstEntry = document.documentElement.dataset.irpIntroCurrent === "play";
+    let seen = !forced && !firstEntry && document.documentElement.classList.contains(HOME_INTRO_SEEN_CLASS);
+    try {
+      seen ||= !forced && !firstEntry && sessionStorage.getItem(HOME_INTRO_SESSION_KEY) === "seen";
+      if (!seen) sessionStorage.setItem(HOME_INTRO_SESSION_KEY, "seen");
+    } catch { /* The intro still works when storage is unavailable. */ }
+    delete document.documentElement.dataset.irpIntroCurrent;
+    if (seen) {
+      document.documentElement.classList.add(HOME_INTRO_SEEN_CLASS);
+      setStatus("skipped");
+      return;
+    }
+    document.documentElement.classList.remove(HOME_INTRO_SEEN_CLASS);
+    setStatus("loading");
   }, [pathname]);
 
   const markPlaying = useCallback(() => setStatus((current) =>
@@ -61,7 +65,7 @@ export function HomeIntroProvider({ children }: { children: React.ReactNode }) {
     return () => document.body.classList.remove(className);
   }, [pathname, status]);
 
-  const value = useMemo(() => ({ status, logoRef, markPlaying, beginReveal, complete, fail }),
+  const value = useMemo(() => ({ status, markPlaying, beginReveal, complete, fail }),
     [status, markPlaying, beginReveal, complete, fail]);
   return <HomeIntroContext.Provider value={value}>{children}</HomeIntroContext.Provider>;
 }

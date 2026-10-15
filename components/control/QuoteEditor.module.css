@@ -245,3 +245,7 @@
 .productGrid p { font-size: 13px; }
 .productGrid span { font-size: 12.5px; }
 .productGrid strong { font-size: 18px; }
+
+/* Unified admin quote workspace */
+.editor{min-width:0}.editorHeader{min-height:136px;align-items:center;border:1px solid #dbe5ef;border-radius:22px;background:radial-gradient(circle at 92% 10%,rgba(19,127,247,.12),transparent 15rem),linear-gradient(135deg,#fff,#f8fbff);padding:25px 28px;box-shadow:0 16px 38px rgba(17,48,80,.055)}.editorHeader h1{font-weight:690}.editorHeader p{color:#61758b}.headerActions a,.headerActions button,.addProduct,.nextAction{min-height:44px;border-radius:11px}.headerActions button,.addProduct,.nextAction{background:linear-gradient(135deg,#1085fb,#0868df);box-shadow:0 8px 18px rgba(8,113,232,.16)}.steps,.editorCard,.editorFooter{border-color:#dbe5ef;border-radius:17px;box-shadow:0 11px 28px rgba(17,48,80,.04)}.steps button{min-height:72px}.cardHeading{min-height:92px;padding-inline:24px}.formGrid{padding:24px}.field input,.field textarea,.field select,.field output{min-height:44px;border-radius:10px}.itemEditor{border-radius:15px}.totalsCard{top:92px;border-radius:18px}.productModal{border:1px solid #d5e2ef;border-radius:20px}
+@media(max-width:760px){.editorHeader{min-height:0;border-radius:18px;padding:21px 18px}.formGrid{padding:17px}.editorCard,.steps,.editorFooter{border-radius:15px}.productModal{border-radius:18px 18px 0 0}}

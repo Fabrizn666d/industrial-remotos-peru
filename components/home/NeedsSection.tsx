@@ -21,16 +21,23 @@ const services = [
   {
     name: "Puertas principales a medida",
     description: "Diseñadas y fabricadas para tu ingreso, fachada y estilo.",
-    image: "/images/reales/puerta-22.jpg",
+    image: "/NUEVO/IRP-imagenes-por-servicio/01_Puertas_principales_a_medida/Propuestas/portada-principal-grafito.png",
     href: "/soluciones/puertas-a-medida",
     icon: "entry"
   },
   {
     name: "Puertas principales importadas",
     description: "Elige un modelo, una medida disponible y el color.",
-    image: "/images/placeholders/puerta-contraplacada-temporal.png",
+    image: "/images/configurator/catalog/02_Puertas_importadas/Colores_propuestos/nogal.webp",
     href: "/soluciones/puertas-principales",
     icon: "customDoor"
+  },
+  {
+    name: "Puertas contraplacadas",
+    description: "Modelos batientes y pivotantes para cada ambiente.",
+    image: "/NUEVO/IRP-imagenes-por-servicio/11_Puertas_contraplacadas/Propuestas/Batientes/singapur.png",
+    href: "/soluciones/puertas-contraplacadas",
+    icon: "contraplacada"
   },
   {
     name: "Acero inoxidable y barandas",
@@ -52,13 +59,6 @@ const services = [
     image: "/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_53 (4).png",
     href: "/soluciones/techos-coberturas",
     icon: "pergola"
-  },
-  {
-    name: "Drywall y cielorrasos",
-    description: "Espacios versátiles y acabados de alto nivel.",
-    image: "/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_53 (6).png",
-    href: "/soluciones/drywall-cielorrasos",
-    icon: "wall"
   }
 ] as const;
 
@@ -197,6 +197,9 @@ function ServiceIcon({ type }: { type: string }) {
   }
   if (type === "customDoor") {
     return <svg viewBox="0 0 32 32"><path d="M6 27V6h20v21M10 27V10h12v17M18 18h1M4 27h24" /><path d="M7 4h18M7 2v4M25 2v4" /></svg>;
+  }
+  if (type === "contraplacada") {
+    return <svg viewBox="0 0 32 32"><path d="M7 27V5h18v22M11 27V9h10v18M12 13h8M12 17h8M12 21h8M18 24h1M4 27h24" /></svg>;
   }
   return <svg viewBox="0 0 32 32"><path d="M5 27V7h22v20M12 7v20M20 7v20M5 22h22" /></svg>;
 }

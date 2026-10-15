@@ -152,7 +152,7 @@ export function CheckoutExperience() {
         quantity: item.quantity,
         configuration: compactConfiguration(item.configuration)
       })),
-      attachmentNames: [],
+      attachmentNames: [...new Set(items.map((item) => item.configuration.customFields?.attachmentName).filter((name): name is string => Boolean(name)))],
       ...(attribution ? { attribution } : {}),
       source: items.some((item) => item.configuration.customFields?.source === "ASSISTANT") ? "ASSISTANT" as const : "CONFIGURATOR" as const
     };

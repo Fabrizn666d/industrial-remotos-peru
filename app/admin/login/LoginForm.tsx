@@ -3,6 +3,7 @@
 import { ArrowRight, Eye, EyeOff, LockKeyhole } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import { Logo } from "@/components/Logo";
 import styles from "../admin.module.css";
 
 export function LoginForm({ destination }: { destination: string }) {
@@ -40,10 +41,10 @@ export function LoginForm({ destination }: { destination: string }) {
 
   return (
     <form className={styles.loginForm} onSubmit={submit}>
-      <div className={styles.loginIcon}><LockKeyhole size={22} /></div>
+      <div className={styles.loginBrand}><Logo compact priority /><div><b>Industrial Remotos Perú</b><small>Administración segura</small></div><span><LockKeyhole size={18} /></span></div>
       <span>Acceso privado</span>
-      <h1>Industrial Remotos Control</h1>
-      <p>Ingresa con las credenciales administrativas configuradas en el servidor.</p>
+      <h1>Bienvenido al panel</h1>
+      <p>Gestiona el contenido, el cotizador y la operación comercial desde un solo lugar.</p>
       <label>Correo electrónico<input name="email" type="email" autoComplete="username" required maxLength={254} /></label>
       <label>Contraseña<span className={styles.passwordField}><input name="password" type={passwordVisible ? "text" : "password"} autoComplete="current-password" required minLength={1} maxLength={128} /><button type="button" onClick={() => setPasswordVisible((value) => !value)} aria-label={passwordVisible ? "Ocultar contraseña" : "Mostrar contraseña"}>{passwordVisible ? <EyeOff size={17} /> : <Eye size={17} />}</button></span></label>
       {error && <div className={styles.loginError} role="alert">{error}</div>}

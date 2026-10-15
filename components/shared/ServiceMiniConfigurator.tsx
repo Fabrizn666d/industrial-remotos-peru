@@ -5,6 +5,7 @@ import type { SolutionPage } from "@/data/solution-pages";
 import styles from "./ServiceMiniConfigurator.module.css";
 
 export function ServiceMiniConfigurator({ solution }: { solution: SolutionPage }) {
+  if (solution.quoteProduct === "estructuras-especiales") return null;
   return (
     <section className={styles.section} aria-labelledby="mini-configurator-title">
       <div className={styles.panel}>

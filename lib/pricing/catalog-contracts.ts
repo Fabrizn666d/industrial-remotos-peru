@@ -4,6 +4,27 @@ import { DEFAULT_PROPOSAL_TERMS, DoorClassificationSchema, ProposalTermsSchema }
 const money = z.number().int().min(0).max(1_000_000_000);
 const importedVariant = z.object({ id: z.string().min(1), label: z.string().min(1), widthM: z.number().positive(), heightM: z.number().positive(), allowedFinishes: z.array(z.string().min(1)).min(1), priceMinorByFinish: z.record(z.string(), money) }).strict();
 const pricedOption = z.object({ id: z.string().min(1), label: z.string().min(1), priceMinor: money }).strict();
+const measurementBand = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1).max(120),
+  minWidthM: z.number().positive(),
+  maxWidthM: z.number().positive(),
+  minHeightM: z.number().positive(),
+  maxHeightM: z.number().positive(),
+  priceMinor: money,
+}).strict();
+const catalogType = z.object({
+  id: z.string().min(1).max(120),
+  value: z.string().min(1).max(120),
+  label: z.string().min(1).max(120),
+  description: z.string().max(280).default(""),
+  image: z.string().min(1).max(500),
+  thumbnail: z.string().min(1).max(500).optional(),
+  published: z.boolean().default(true),
+  archived: z.boolean().default(false),
+  order: z.number().int().min(0).default(0),
+  allowCustomDesign: z.boolean().default(true),
+}).strict();
 const importedModel = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
@@ -11,18 +32,23 @@ const importedModel = z.object({
   thumbnail: z.string().min(1).optional(),
   gallery: z.array(z.string().min(1)).default([]),
   published: z.boolean().default(true),
+  archived: z.boolean().default(false),
   order: z.number().int().min(0).default(0),
+  catalogTypeId: z.string().min(1).max(120).optional(),
   subtype: z.string().min(1).optional(),
   openingSystem: z.string().min(1).optional(),
+  openingStatus: z.literal("CONFIRMED").default("CONFIRMED"),
+  origin: z.enum(["CLIENT_REFERENCE", "DESIGN_PROPOSAL"]).default("CLIENT_REFERENCE"),
   allowedFinishes: z.array(z.string().min(1)).default([]),
   finishImages: z.record(z.string(), z.string().min(1)).default({}),
   included: z.array(z.string().min(1)).default([]),
   thicknessOptionsMm: z.array(z.number().positive()).default([]),
   leafOptions: z.array(z.string().min(1)).default([]),
-  priceMode: z.enum(["INHERIT", "FIXED", "AREA", "LINEAR", "EVALUATION"]).default("INHERIT"),
+  priceMode: z.enum(["INHERIT", "FIXED", "AREA", "LINEAR", "MEASUREMENT_BANDS", "EVALUATION"]).default("INHERIT"),
   fixedPriceMinor: money.optional(),
   unitPriceMinor: money.optional(),
   minimumBillable: z.number().positive().optional(),
+  measurementBands: z.array(measurementBand).default([]),
   commercialStatus: z.enum(["REFERENCE", "VALIDATED", "PENDING"]).default("REFERENCE"),
   variants: z.array(importedVariant).default([]),
   automation: z.array(pricedOption).default([]),
@@ -50,12 +76,32 @@ const configuratorStepOverride = z.object({
   visibleWhen: z.object({ key: z.enum(["subtype", "design", "panel", "automation", "model", "variant", "openingSystem", "material"]), values: z.array(z.string().min(1).max(120)) }).strict().nullable().optional()
 }).strict();
 
-export const PublishedPricingDefinitionSchema = z.object({ productId: z.string().min(1), classification: DoorClassificationSchema, demo: z.boolean(), installationMinor: money.default(0), installationIncludedInRate: z.boolean().default(false), importedModels: z.array(importedModel).optional(), custom: customRule.optional(), simpleArea: simpleArea.optional(), formula: formula.optional() }).strict().superRefine((value, context) => {
-  if (value.classification === "IMPORTED" && !value.importedModels?.some((model) => model.published !== false && model.variants.length)) context.addIssue({ code: "custom", path: ["importedModels"], message: "Una puerta importada requiere al menos un modelo publicado con medidas" });
+export const PublishedPricingDefinitionSchema = z.object({ productId: z.string().min(1), classification: DoorClassificationSchema, demo: z.boolean(), installationMinor: money.default(0), installationIncludedInRate: z.boolean().default(false), catalogTypes: z.array(catalogType).default([]), importedModels: z.array(importedModel).optional(), custom: customRule.optional(), simpleArea: simpleArea.optional(), formula: formula.optional() }).strict().superRefine((value, context) => {
+  if (value.classification === "IMPORTED" && !value.importedModels?.some((model) => !model.archived && model.published !== false && model.variants.length)) context.addIssue({ code: "custom", path: ["importedModels"], message: "Una puerta importada requiere al menos un modelo publicado con medidas" });
+  const typeIds = new Set(value.catalogTypes.map((type) => type.id));
+  const typeValues = new Set<string>();
+  value.catalogTypes.forEach((type, typeIndex) => {
+    if (typeValues.has(type.value.toLocaleLowerCase("es-PE"))) context.addIssue({ code: "custom", path: ["catalogTypes", typeIndex, "value"], message: "No puede haber dos tipos con la misma clave" });
+    typeValues.add(type.value.toLocaleLowerCase("es-PE"));
+  });
   value.importedModels?.forEach((model, modelIndex) => {
-    if (model.published && !model.openingSystem) context.addIssue({ code: "custom", path: ["importedModels", modelIndex, "openingSystem"], message: "Un modelo publicado debe indicar su apertura compatible" });
-    if (model.published && model.priceMode === "FIXED" && !model.fixedPriceMinor && value.classification !== "IMPORTED") context.addIssue({ code: "custom", path: ["importedModels", modelIndex, "fixedPriceMinor"], message: "Falta la tarifa fija del modelo" });
-    if (model.published && (model.priceMode === "AREA" || model.priceMode === "LINEAR") && !model.unitPriceMinor) context.addIssue({ code: "custom", path: ["importedModels", modelIndex, "unitPriceMinor"], message: "Falta la tarifa unitaria del modelo" });
+    if (!model.archived && model.published && !model.openingSystem && (value.classification === "IMPORTED" || ["puertas-a-medida", "puertas-contraplacadas", "seccionales"].includes(value.productId))) context.addIssue({ code: "custom", path: ["importedModels", modelIndex, "openingSystem"], message: "El modelo debe indicar una apertura compatible" });
+    if (!model.archived && model.published && model.catalogTypeId && !typeIds.has(model.catalogTypeId)) context.addIssue({ code: "custom", path: ["importedModels", modelIndex, "catalogTypeId"], message: "El tipo asignado al modelo no existe" });
+    if (!model.archived && model.published && model.priceMode === "FIXED" && !model.fixedPriceMinor && value.classification !== "IMPORTED") context.addIssue({ code: "custom", path: ["importedModels", modelIndex, "fixedPriceMinor"], message: "Falta la tarifa fija del modelo" });
+    if (!model.archived && model.published && (model.priceMode === "AREA" || model.priceMode === "LINEAR") && !model.unitPriceMinor) context.addIssue({ code: "custom", path: ["importedModels", modelIndex, "unitPriceMinor"], message: "Falta la tarifa unitaria del modelo" });
+    if (!model.archived && model.published && model.priceMode === "MEASUREMENT_BANDS" && !model.measurementBands.length) context.addIssue({ code: "custom", path: ["importedModels", modelIndex, "measurementBands"], message: "Agrega al menos un rango de medidas" });
+    model.measurementBands.forEach((band, bandIndex) => {
+      if (band.minWidthM > band.maxWidthM || band.minHeightM > band.maxHeightM) context.addIssue({ code: "custom", path: ["importedModels", modelIndex, "measurementBands", bandIndex], message: "El rango de medidas no es válido" });
+    });
+    for (let left = 0; left < model.measurementBands.length; left += 1) {
+      for (let right = left + 1; right < model.measurementBands.length; right += 1) {
+        const a = model.measurementBands[left];
+        const b = model.measurementBands[right];
+        const widthOverlaps = a.minWidthM <= b.maxWidthM && b.minWidthM <= a.maxWidthM;
+        const heightOverlaps = a.minHeightM <= b.maxHeightM && b.minHeightM <= a.maxHeightM;
+        if (widthOverlaps && heightOverlaps) context.addIssue({ code: "custom", path: ["importedModels", modelIndex, "measurementBands", right], message: `El rango \"${b.label}\" se cruza con \"${a.label}\"` });
+      }
+    }
     model.variants.forEach((variant, variantIndex) => {
       const missingPrice = variant.allowedFinishes.find(
         (finish) => variant.priceMinorByFinish[finish] === undefined

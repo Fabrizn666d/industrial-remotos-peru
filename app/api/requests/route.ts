@@ -5,6 +5,7 @@ import { PublicRequestSubmissionSchema, RequestListQuerySchema } from "@/lib/bac
 import { hasAllowedOrigin, isJsonRequest } from "@/lib/backend/http";
 import { consumeRateLimit, requestClientKey } from "@/lib/backend/rate-limit";
 import { getRequestRepository } from "@/lib/backend/repository";
+import { claimRequestAttachments, RequestAttachmentValidationError, validateRequestAttachments } from "@/lib/backend/request-attachment-repository";
 import { PricingValidationError } from "@/lib/pricing/request-pricing";
 
 export const runtime = "nodejs";
@@ -61,8 +62,25 @@ export async function POST(request: Request) {
   }
 
   try {
-    const input = PublicRequestSubmissionSchema.parse(await readLimitedJson(request));
+    const parsed = PublicRequestSubmissionSchema.parse(await readLimitedJson(request));
+    const input = {
+      ...parsed,
+      items: parsed.items.map((item) => {
+        if (item.productId === "cerco-electrico") return { ...item, configuration: { ...item.configuration, accessories: [] } };
+        if (item.productId === "drywall-cielorrasos") {
+          const { material: _material, design: _design, finish: _finish, notes: _notes, accessories: _accessories, ...configuration } = item.configuration;
+          return { ...item, configuration };
+        }
+        if (["puertas-a-medida", "puertas-contraplacadas", "seccionales"].includes(item.productId ?? "")) {
+          const { subtype: _subtype, design: _design, panel: _panel, finish: _finish, automation: _automation, variant: _variant, material: _material, notes: _notes, accessories: _accessories, ...configuration } = item.configuration;
+          return { ...item, configuration };
+        }
+        return item;
+      })
+    };
+    await validateRequestAttachments(input);
     const created = await getRequestRepository().create(input);
+    await claimRequestAttachments(input, created.id);
     return noStore(NextResponse.json({
       id: created.id,
       code: created.code,
@@ -74,6 +92,7 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof RangeError) return noStore(NextResponse.json({ error: "Solicitud demasiado grande" }, { status: 413 }));
     if (error instanceof PricingValidationError) return noStore(NextResponse.json({ error: error.message }, { status: 400 }));
+    if (error instanceof RequestAttachmentValidationError) return noStore(NextResponse.json({ error: error.message }, { status: 400 }));
     if (error instanceof z.ZodError) {
       return noStore(NextResponse.json({
         error: "Datos de solicitud inválidos",

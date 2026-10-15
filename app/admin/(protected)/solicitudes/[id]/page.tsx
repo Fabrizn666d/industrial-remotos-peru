@@ -19,6 +19,10 @@ function formatConfiguration(value: string | number | boolean | string[] | null)
   return String(value);
 }
 
+function visibleConfiguration(key: string) {
+  return !["custom_attachmentToken", "custom_attachmentId", "custom_attachmentDraftId", "custom_selectedImage"].includes(key);
+}
+
 function activityCopy(metadata: Record<string, string | number | boolean | string[] | null>) {
   const parts: string[] = [];
   if (metadata.previousStatus !== metadata.status && metadata.status) parts.push(`Estado: ${metadata.previousStatus} → ${metadata.status}`);
@@ -60,13 +64,14 @@ export default async function AdminRequestDetailPage({ params }: { params: Promi
 
           <section className={styles.panel}>
             <header className={styles.sectionHeader}><div><FileText size={19} /><h2>Elementos solicitados</h2></div><small>{request.items.length} registros</small></header>
-            <div className={styles.itemList}>{request.items.map((item, index) => <article key={item.id}>
+            <div className={styles.itemList}>{request.items.map((item, index) => { const visitorDesign = typeof item.configuration.custom_selectedImage === "string" && item.configuration.custom_selectedImage.startsWith("/api/request-attachments/") ? item.configuration.custom_selectedImage : null; return <article key={item.id}>
               <span className={styles.itemNumber}>{String(index + 1).padStart(2, "0")}</span>
               <div className={styles.itemBody}><div><h3>{item.name}</h3><b>Cantidad: {item.quantity}</b></div>
-                {Object.keys(item.configuration).length > 0 && <dl>{Object.entries(item.configuration).map(([key, value]) => <div key={key}><dt>{key}</dt><dd>{formatConfiguration(value)}</dd></div>)}</dl>}
+                {visitorDesign && <a className={styles.visitorDesign} href={visitorDesign} target="_blank" rel="noreferrer"><img src={visitorDesign} alt="Diseño original aportado por el cliente"/><span>Abrir diseño original del visitante</span></a>}
+                {Object.keys(item.configuration).length > 0 && <dl>{Object.entries(item.configuration).filter(([key]) => visibleConfiguration(key)).map(([key, value]) => <div key={key}><dt>{key}</dt><dd>{formatConfiguration(value)}</dd></div>)}</dl>}
                 {item.notes && <p>{item.notes}</p>}
               </div>
-            </article>)}</div>
+            </article>; })}</div>
           </section>
 
           {request.pricingSnapshot && <section className={styles.panel}>
@@ -87,7 +92,7 @@ export default async function AdminRequestDetailPage({ params }: { params: Promi
             <div><dt>Origen</dt><dd>{request.source === "CONFIGURATOR" ? "Cotizador inteligente" : request.source === "ASSISTANT" ? "IRP Asistente" : request.source === "CONTACT" ? "Formulario de contacto" : "Importación administrativa"}</dd></div>
             <div><dt>Última actualización</dt><dd>{formatAdminDate(request.updatedAt, true)}</dd></div>
           </dl><RequestOperations requestId={request.id} code={request.code} customerName={request.contact.name} phone={request.contact.whatsapp || request.contact.phone} initialStatus={request.status} initialAssignee={request.assignedTo} statuses={Object.entries(REQUEST_STATUS_LABELS).map(([value, label]) => ({ value: value as keyof typeof REQUEST_STATUS_LABELS, label }))} /></section>
-          <section className={styles.panel}><h2><Paperclip size={18} /> Adjuntos</h2>{request.attachmentNames.length ? <ul className={styles.attachmentList}>{request.attachmentNames.map((name) => <li key={name}>{name}</li>)}</ul> : <p className={styles.muted}>No se registraron nombres de adjuntos.</p>}<p className={styles.pendingNote}>Este contrato no acepta binarios todavía; la integración con Object Storage será independiente.</p></section>
+          <section className={styles.panel}><h2><Paperclip size={18} /> Adjuntos</h2>{request.attachmentNames.length ? <ul className={styles.attachmentList}>{request.attachmentNames.map((name) => <li key={name}>{name}</li>)}</ul> : <p className={styles.muted}>No se registraron adjuntos.</p>}{request.attachmentNames.length > 0 && <p className={styles.pendingNote}>Las imágenes privadas se abren desde el elemento correspondiente de la solicitud.</p>}</section>
           <section className={styles.evidenceCard}><ShieldCheck size={21} /><h2>Evidencia preservada</h2><p>El payload original, los items y el código fueron creados juntos. Los cambios operativos futuros se registrarán aparte.</p></section>
         </aside>
       </div>

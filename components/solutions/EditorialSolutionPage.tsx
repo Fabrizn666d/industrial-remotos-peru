@@ -16,6 +16,7 @@ type Props = { solution: SolutionPage; profile: SolutionEditorialProfile };
 
 export function EditorialSolutionPage({ solution, profile }: Props) {
   const finishPresentation = solutionFinishPresentations[solution.slug];
+  const publicQuoteEnabled = solution.quoteProduct !== "estructuras-especiales";
   const contactHref = `${siteConfig.social.whatsapp}${siteConfig.social.whatsapp.includes("?") ? "&" : "?"}text=${encodeURIComponent(`Hola IRP, quisiera asesoría sobre ${solution.title}.`)}`;
   const quoteProducts = solution.options.map((option) => option.quoteProduct);
   const processImages = [
@@ -135,18 +136,18 @@ export function EditorialSolutionPage({ solution, profile }: Props) {
         <div className={styles.shell}>
           <div className={`${styles.quoteLead} ${profile.visuals.characters.quote.side === "left" ? styles.companionLeft : styles.companionRight}`} data-motion-item data-motion-direction="up">
             <header className={styles.quoteHeader}>
-              <div><span className={styles.kicker}>Cotiza en línea</span><h2 id="quote-title">Hagamos espacio para tu proyecto.</h2></div>
-              <p>Configura esta solución y recibe una propuesta preliminar. El importe final se confirma después de evaluar el proyecto.</p>
+              <div><span className={styles.kicker}>{publicQuoteEnabled ? "Cotiza en línea" : "Evaluación técnica"}</span><h2 id="quote-title">Hagamos espacio para tu proyecto.</h2></div>
+              <p>{publicQuoteEnabled ? "Configura esta solución y recibe una propuesta preliminar. El importe final se confirma después de evaluar el proyecto." : "Las estructuras especiales se atienden mediante evaluación técnica directa para definir correctamente su alcance."}</p>
             </header>
             <ServiceCharacter asset={profile.visuals.characters.quote} placement="quote" />
           </div>
-          <div data-motion-item data-motion-direction="up"><Suspense fallback={<div className={styles.quoteLoading}>Preparando el configurador…</div>}>
+          {publicQuoteEnabled ? <div data-motion-item data-motion-direction="up"><Suspense fallback={<div className={styles.quoteLoading}>Preparando el configurador…</div>}>
             <Configurator embedded initialProductId={solution.quoteProduct} />
-          </Suspense></div>
-          <aside className={styles.specialRequest} aria-label="Solicitud de personalización" data-motion-item data-motion-direction="up">
+          </Suspense></div> : <aside className={styles.specialRequest} data-motion-item data-motion-direction="up"><div><strong>Solicita una evaluación técnica</strong><span>Cuéntanos el uso, las medidas aproximadas y las condiciones del espacio para revisar tu proyecto.</span></div><a href={contactHref} target="_blank" rel="noreferrer">Hablar con un asesor <ArrowRight aria-hidden="true" /></a></aside>}
+          {publicQuoteEnabled && <aside className={styles.specialRequest} aria-label="Solicitud de personalización" data-motion-item data-motion-direction="up">
             <div><strong>¿Necesitas una solución especial?</strong><span>Describe el espacio y tu referencia en el campo Notas. Las configuraciones que no cuentan con reglas suficientes se envían como “Requiere evaluación”.</span></div>
             <a href={contactHref} target="_blank" rel="noreferrer">Solicitar personalización <ArrowRight aria-hidden="true" /></a>
-          </aside>
+          </aside>}
         </div>
       </section>
 

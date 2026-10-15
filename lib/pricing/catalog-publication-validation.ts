@@ -32,7 +32,11 @@ export async function validateCatalogPublication(catalog: PricingCatalogDocument
     if (override.thumbnailSrc) media.set(override.thumbnailSrc, `la miniatura ${override.slotId}`);
   }
   for (const definition of catalog.definitions) {
-    for (const model of definition.importedModels?.filter((entry) => entry.published !== false) ?? []) {
+    for (const type of definition.catalogTypes.filter((entry) => !entry.archived && entry.published !== false)) {
+      media.set(type.image, `la imagen del tipo ${type.label}`);
+      if (type.thumbnail) media.set(type.thumbnail, `la miniatura del tipo ${type.label}`);
+    }
+    for (const model of definition.importedModels?.filter((entry) => !entry.archived && entry.published !== false) ?? []) {
       media.set(model.image, `la imagen principal de ${model.name}`);
       if (model.thumbnail) media.set(model.thumbnail, `la miniatura de ${model.name}`);
       for (const [index, source] of (model.gallery ?? []).entries()) media.set(source, `la vista ${index + 1} de ${model.name}`);

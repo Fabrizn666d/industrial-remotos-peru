@@ -76,10 +76,13 @@ function optionalText(value: unknown) {
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
 
-function normalizeConfiguration(configuration: Partial<QuoteItemConfiguration> = {}): QuoteItemConfiguration {
+function normalizeConfiguration(configuration: Partial<QuoteItemConfiguration> = {}, productId?: string): QuoteItemConfiguration {
   const width = optionalText(configuration.dimensions?.width);
   const height = optionalText(configuration.dimensions?.height);
-  const accessories = Array.from(new Set((configuration.accessories ?? []).map((item) => item.trim()).filter(Boolean)));
+  const simplifiedDrywall = productId === "drywall-cielorrasos";
+  const simplifiedDesignCatalog = productId === "puertas-a-medida" || productId === "puertas-contraplacadas" || productId === "seccionales";
+  const simplifiedConfiguration = simplifiedDrywall || simplifiedDesignCatalog;
+  const accessories = productId === "cerco-electrico" || simplifiedConfiguration ? [] : Array.from(new Set((configuration.accessories ?? []).map((item) => item.trim()).filter(Boolean)));
   const customFields = Object.fromEntries(
     Object.entries(configuration.customFields ?? {})
       .map(([key, value]) => [key.trim().slice(0, 80), value.trim().slice(0, 500)] as const)
@@ -87,19 +90,19 @@ function normalizeConfiguration(configuration: Partial<QuoteItemConfiguration> =
   );
 
   return {
-    ...(optionalText(configuration.subtype) ? { subtype: optionalText(configuration.subtype) } : {}),
+    ...(!simplifiedDesignCatalog && optionalText(configuration.subtype) ? { subtype: optionalText(configuration.subtype) } : {}),
     ...(width || height ? { dimensions: { ...(width ? { width } : {}), ...(height ? { height } : {}), unit: "m" as const } } : {}),
     ...(configuration.measurementsUnknown ? { measurementsUnknown: true } : {}),
-    ...(optionalText(configuration.design) ? { design: optionalText(configuration.design) } : {}),
-    ...(optionalText(configuration.panel) ? { panel: optionalText(configuration.panel) } : {}),
-    ...(optionalText(configuration.finish) ? { finish: optionalText(configuration.finish) } : {}),
-    ...(optionalText(configuration.automation) ? { automation: optionalText(configuration.automation) } : {}),
+    ...(!simplifiedConfiguration && optionalText(configuration.design) ? { design: optionalText(configuration.design) } : {}),
+    ...(!simplifiedDesignCatalog && optionalText(configuration.panel) ? { panel: optionalText(configuration.panel) } : {}),
+    ...(!simplifiedConfiguration && optionalText(configuration.finish) ? { finish: optionalText(configuration.finish) } : {}),
+    ...(!simplifiedDesignCatalog && optionalText(configuration.automation) ? { automation: optionalText(configuration.automation) } : {}),
     ...(optionalText(configuration.model) ? { model: optionalText(configuration.model) } : {}),
-    ...(optionalText(configuration.variant) ? { variant: optionalText(configuration.variant) } : {}),
+    ...(!simplifiedDesignCatalog && optionalText(configuration.variant) ? { variant: optionalText(configuration.variant) } : {}),
     ...(optionalText(configuration.openingSystem) ? { openingSystem: optionalText(configuration.openingSystem) } : {}),
-    ...(optionalText(configuration.material) ? { material: optionalText(configuration.material) } : {}),
+    ...(!simplifiedConfiguration && optionalText(configuration.material) ? { material: optionalText(configuration.material) } : {}),
     accessories,
-    ...(optionalText(configuration.notes) ? { notes: optionalText(configuration.notes) } : {}),
+    ...(!simplifiedConfiguration && optionalText(configuration.notes) ? { notes: optionalText(configuration.notes) } : {}),
     ...(Object.keys(customFields).length ? { customFields } : {})
   };
 }
@@ -144,7 +147,7 @@ function configurationFromUnknown(value: unknown, legacyItem: UnknownRecord): Qu
     customFields: isRecord(stored.customFields)
       ? Object.fromEntries(Object.entries(stored.customFields).filter((entry): entry is [string, string] => typeof entry[1] === "string"))
       : undefined
-  });
+  }, optionalText(legacyItem.productId));
 }
 
 function migrateItem(value: unknown): QuoteItem | null {
@@ -193,7 +196,7 @@ function loadStoredProject(): { items: QuoteItem[]; migrated: boolean } {
       if (current.success) {
         const items = current.data.items.map((item) => ({
           ...item,
-          configuration: normalizeConfiguration(item.configuration)
+          configuration: normalizeConfiguration(item.configuration, item.productId)
         }));
         return { items, migrated: true };
       }
@@ -266,7 +269,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       name: product.name,
       image: selectedImage,
       quantity: 1,
-      configuration: normalizeConfiguration(configuration),
+      configuration: normalizeConfiguration(configuration, product.id),
       price: { status: "pending" as const },
       createdAt: now,
       updatedAt: now
@@ -281,7 +284,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       productId: product.id,
       name: product.name,
       image: selectedImage,
-      configuration: normalizeConfiguration(configuration),
+      configuration: normalizeConfiguration(configuration, product.id),
       price: { status: "pending" as const },
       updatedAt: new Date().toISOString()
     } : item));

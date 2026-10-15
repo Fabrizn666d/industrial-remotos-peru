@@ -3,3 +3,6 @@
 @media(max-width:700px){.upload{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:440px){.grid{grid-template-columns:1fr}}
 .image video{width:100%;height:100%;object-fit:cover}.upload{grid-template-columns:minmax(230px,1fr) auto}
+
+.library{min-width:0}.upload{border-color:#dbe5ef;border-radius:18px;background:linear-gradient(135deg,#fff,#f8fbff);padding:20px;box-shadow:0 12px 30px rgba(18,48,78,.045)}.upload>div>svg{width:44px;height:44px;border-radius:13px}.upload input,.file{min-height:44px;border-radius:11px;background:#fff}.upload>button{min-height:44px;border-radius:11px;background:linear-gradient(135deg,#1085fb,#0868df);box-shadow:0 9px 19px rgba(8,113,232,.16)}.grid{gap:16px}.grid article{border-color:#dbe5ef;border-radius:17px;box-shadow:0 10px 26px rgba(18,48,78,.045);transition:transform .16s ease,box-shadow .16s ease}.grid article:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(18,48,78,.08)}.grid article>div:nth-child(2){padding:14px}.grid footer button{min-height:44px}
+@media(max-width:700px){.upload{padding:15px}.grid{gap:10px}.grid article{border-radius:14px}}

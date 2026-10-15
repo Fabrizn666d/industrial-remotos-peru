@@ -81,3 +81,7 @@
   .productSummary { grid-template-columns: 78px minmax(0,1fr) 22px; }
   .presetGrid { grid-template-columns: 1fr 1fr; }
 }
+
+/* Unified admin catalog theme */
+.manager{min-width:0}.managerBar,.catalogTools,.productCard{border-color:#dbe5ef;border-radius:17px;box-shadow:0 11px 28px rgba(17,48,80,.04)}.managerBar{background:linear-gradient(135deg,#fff,#f8fbff);padding:18px 20px}.managerBar button,.actions button{border-radius:11px;background:linear-gradient(135deg,#1085fb,#0868df);box-shadow:0 8px 18px rgba(8,113,232,.16)}.catalogTools{background:#fff;padding:15px}.searchField{border-radius:11px;background:#fbfdff}.productSummary{min-height:112px}.productSummary:hover{background:#f8fbff}.diagram{border:1px solid #e0e8ef;border-radius:11px}.productForm{background:#f7fafd}.productForm input,.productForm textarea,.productForm select{border-radius:10px}.presetField{border-radius:14px}.presetGrid>button{border-radius:11px}
+@media(max-width:760px){.managerBar{padding:16px}.productSummary{min-height:0}.catalogTools{padding:11px}}

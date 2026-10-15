@@ -17,7 +17,6 @@ const intents = [
   { label: "Drywall o cielorraso", product: "drywall-cielorrasos" },
   { label: "Automatización", product: "automatizacion" },
   { label: "Cerco eléctrico", product: "cerco-electrico" },
-  { label: "Estructura especial", product: "estructuras-especiales" },
 ] as const;
 const uses = [{ label: "Residencial", icon: Home }, { label: "Comercial", icon: Building2 }, { label: "Industrial", icon: Factory }];
 type Intent = (typeof intents)[number];

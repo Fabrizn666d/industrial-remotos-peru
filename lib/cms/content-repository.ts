@@ -59,6 +59,7 @@ function normalizeDoorTaxonomy<K extends CmsKey>(key: K, content: CmsContentMap[
   if (key === "home") {
     const home = structuredClone(content as CmsContentMap["home"]);
     const legacyIntroVideos = new Set([
+      "/NUEVO/crear-video-industrial-loader.mp4",
       "/NUEVO/Garage_door_opening_transition_1080p_20260921110657.mp4",
       "/NUEVO/HERO%20MOPVIL.mp4",
       "/NUEVO/Crear_video_para_empresa_industrial_20261012182532.mp4",
@@ -76,12 +77,18 @@ function normalizeDoorTaxonomy<K extends CmsKey>(key: K, content: CmsContentMap[
       home.hero.videoOnly = structuredClone(defaultHero.videoOnly);
     }
     const legacyNeeds = new Set(["Puertas automáticas / Principales", "Puertas a medida", "Puertas de Garaje y Principales a Medida"]);
-    if (home.needs.services.some((item) => legacyNeeds.has(item.title))) {
+    const expectedNeedsOrder = defaultCmsContent.home.needs.services.map((item) => item.id);
+    const needsRefresh = home.needs.services.some((item) => legacyNeeds.has(item.title) || item.id === "drywall")
+      || !home.needs.services.some((item) => item.id === "contraplacadas")
+      || home.needs.services.some((item) => item.id === "principales-medida" && item.image.src === "/images/reales/puerta-22.jpg")
+      || expectedNeedsOrder.some((id, index) => home.needs.services[index]?.id !== id);
+    if (needsRefresh) {
       const existing = new Map(home.needs.services.map((item) => [item.id, item]));
       const legacyGarage = existing.get("automaticas");
       home.needs.services = defaultCmsContent.home.needs.services.map((item) => {
         const previous = existing.get(item.id) ?? (item.id === "garage" ? legacyGarage : undefined);
-        return previous ? { ...item, image: previous.image } : item;
+        const keepPreviousImage = previous && item.id !== "principales-medida" && item.id !== "contraplacadas";
+        return keepPreviousImage ? { ...item, image: previous.image } : item;
       });
     }
     const legacyIntegrated = new Set(["Puertas automáticas / garaje", "Puertas a medida", "Puertas de Garaje y Principales a Medida"]);

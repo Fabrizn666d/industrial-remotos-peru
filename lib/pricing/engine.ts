@@ -1,4 +1,4 @@
-import { PUBLIC_CATALOG_VERSION, pricingDefinition, type PublishedPricingDefinition } from "@/lib/pricing/catalog";
+import { CUSTOM_ENTRY_DESIGN_ID, PUBLIC_CATALOG_VERSION, pricingDefinition, supportsCustomDesign, type PublishedPricingDefinition } from "@/lib/pricing/catalog";
 import { DEFAULT_PROPOSAL_TERMS, ProjectPricingSchema, type PriceBreakdownLine, type PriceRequestItem, type PricingResult, type ProjectPricing, type ProposalTerms } from "@/lib/pricing/contracts";
 import { validateConfiguratorCompatibility } from "@/data/configurator-schemas";
 import type { ConfiguratorStepOverride } from "@/types/configurator";
@@ -38,6 +38,7 @@ export function calculateItemPrice(item: PriceRequestItem, catalog?: PublishedPr
   const definition = pricingDefinition(item.productId, catalog);
   if (!definition) return requiresEvaluation("NOT_APPLICABLE", "Esta solución todavía no tiene una tarifa publicada y requiere evaluación técnica.", ["tarifa publicada"]);
   const config = item.configuration;
+  const pricedAccessories = item.productId === "cerco-electrico" || item.productId === "drywall-cielorrasos" || supportsCustomDesign(item.productId) ? [] : config.accessories;
   const incompatibility = validateConfiguratorCompatibility(item.productId, config, catalog, stepOverrides);
   if (incompatibility) return requiresEvaluation(definition.classification, incompatibility, ["configuración compatible"]);
   const demoAssumptions = definition.demo ? ["Tarifa referencial editable, pendiente de validación comercial por Industrial Remotos Perú."] : [];
@@ -47,7 +48,7 @@ export function calculateItemPrice(item: PriceRequestItem, catalog?: PublishedPr
   }
 
   if (definition.classification === "IMPORTED") {
-    const model = definition.importedModels?.find((entry) => entry.id === config.model && entry.published !== false);
+    const model = definition.importedModels?.find((entry) => entry.id === config.model && !entry.archived && entry.published !== false);
     if (!model) return requiresEvaluation("IMPORTED", "Selecciona uno de los modelos importados publicados.", ["modelo"]);
     if (model.commercialStatus === "PENDING") return requiresEvaluation("IMPORTED", "Este modelo está pendiente de confirmación comercial.", ["validación comercial del modelo"]);
     const variant = model.variants.find((entry) => entry.id === config.variant);
@@ -56,7 +57,7 @@ export function calculateItemPrice(item: PriceRequestItem, catalog?: PublishedPr
     const breakdown: PriceBreakdownLine[] = [
       { key: "variant", label: `${model.name} · ${variant.label} · ${config.finish}`, amountMinor: multiplyMinor(variant.priceMinorByFinish[config.finish], item.quantity) }
     ];
-    for (const accessory of config.accessories) {
+    for (const accessory of pricedAccessories) {
       const published = model.accessories.find((entry) => entry.id === accessory || entry.label === accessory);
       if (!published) return requiresEvaluation("IMPORTED", `El complemento “${accessory}” no está habilitado para este modelo.`, ["complemento compatible"]);
       breakdown.push({ key: `accessory:${published.id}`, label: published.label, amountMinor: multiplyMinor(published.priceMinor, item.quantity) });
@@ -92,13 +93,14 @@ export function calculateItemPrice(item: PriceRequestItem, catalog?: PublishedPr
       breakdown.push({ key: "quantity", label: `${billable.toFixed(2)} ${unit} × S/ ${(unitPriceMinor / 100).toFixed(2)}`, amountMinor: Math.round(billable * unitPriceMinor * item.quantity) });
       const finishBps = rule.finishPercentBps[config.finish || ""] ?? 0;
       if (finishBps) { const base = breakdown.reduce((sum, line) => sum + line.amountMinor, 0); breakdown.push({ key: "finish", label: `Acabado ${config.finish}`, amountMinor: Math.round(base * finishBps / 10_000) }); }
-      for (const option of [config.openingSystem, config.design, config.material]) {
+      const pricedOptions = item.productId === "drywall-cielorrasos" ? [] : [config.openingSystem, config.design, config.material];
+      for (const option of pricedOptions) {
         if (!option) continue;
         const optionMinor = rule.fixedPriceMinorByOption[option];
         if (optionMinor) breakdown.push({ key: `option:${option}`, label: option, amountMinor: multiplyMinor(optionMinor, item.quantity) });
       }
     }
-    for (const accessory of config.accessories) {
+    for (const accessory of pricedAccessories) {
       const amount = rule.accessoryPrices?.[accessory];
       if (amount === undefined) return requiresEvaluation("NOT_APPLICABLE", `El accesorio “${accessory}” no tiene una tarifa compatible publicada.`, ["accesorio compatible"]);
       breakdown.push({ key: `accessory:${accessory}`, label: accessory, amountMinor: multiplyMinor(amount, item.quantity) });
@@ -112,18 +114,19 @@ export function calculateItemPrice(item: PriceRequestItem, catalog?: PublishedPr
 
   if (definition.custom) {
     const rule = definition.custom;
-    const model = definition.importedModels?.find((entry) => entry.id === config.model && entry.published !== false);
-    if (item.productId === "puertas-contraplacadas" && !definition.importedModels?.some((entry) => entry.published !== false)) return requiresEvaluation("MADE_TO_MEASURE", "Los modelos mostrados son referencias pendientes de aprobación; esta solicitud requiere evaluación comercial.", ["modelo y ficha técnica confirmados"]);
-    if (definition.importedModels?.some((entry) => entry.published !== false) && !model) return requiresEvaluation("MADE_TO_MEASURE", "Selecciona un modelo publicado para esta solución.", ["modelo"]);
+    if (supportsCustomDesign(item.productId) && config.model === CUSTOM_ENTRY_DESIGN_ID) return requiresEvaluation("MADE_TO_MEASURE", "El diseño propio del cliente requiere evaluación técnica y comercial antes de definir el precio.", ["revisión del diseño aportado"]);
+    const model = definition.importedModels?.find((entry) => entry.id === config.model && !entry.archived && entry.published !== false);
+    if (item.productId === "puertas-contraplacadas" && !definition.importedModels?.some((entry) => !entry.archived && entry.published !== false)) return requiresEvaluation("MADE_TO_MEASURE", "Los modelos mostrados son referencias pendientes de aprobación; esta solicitud requiere evaluación comercial.", ["modelo y ficha técnica confirmados"]);
+    if (definition.importedModels?.some((entry) => !entry.archived && entry.published !== false) && !model) return requiresEvaluation("MADE_TO_MEASURE", "Selecciona un modelo publicado para esta solución.", ["modelo"]);
     if (model?.subtype && config.subtype !== model.subtype) return requiresEvaluation("MADE_TO_MEASURE", "El modelo no corresponde a la familia seleccionada.", ["modelo compatible"]);
     if (model?.openingSystem && config.openingSystem !== model.openingSystem) return requiresEvaluation("MADE_TO_MEASURE", "La apertura debe corresponder al modelo seleccionado.", ["apertura compatible"]);
-    if (model?.allowedFinishes?.length && (!config.finish || !model.allowedFinishes.includes(config.finish))) return requiresEvaluation("MADE_TO_MEASURE", "Selecciona un acabado compatible con el modelo.", ["acabado compatible"]);
+    if (!supportsCustomDesign(item.productId) && model?.allowedFinishes?.length && (!config.finish || !model.allowedFinishes.includes(config.finish))) return requiresEvaluation("MADE_TO_MEASURE", "Selecciona un acabado compatible con el modelo.", ["acabado compatible"]);
     if (model?.commercialStatus === "PENDING") return requiresEvaluation("MADE_TO_MEASURE", "Este modelo está pendiente de confirmación comercial.", ["validación comercial del modelo"]);
     if (model?.priceMode === "EVALUATION") return requiresEvaluation("MADE_TO_MEASURE", "Este modelo está publicado como referencia y requiere evaluación comercial.", ["tarifa del modelo"]);
     if (width < rule.minWidthM || width > rule.maxWidthM || height < rule.minHeightM || height > rule.maxHeightM) {
       return requiresEvaluation("MADE_TO_MEASURE", `Las medidas publicadas admiten ancho de ${rule.minWidthM} a ${rule.maxWidthM} m y alto de ${rule.minHeightM} a ${rule.maxHeightM} m.`, ["medidas dentro del rango"]);
     }
-    if (!config.finish || !(config.finish in rule.finishPercentBps)) return requiresEvaluation("MADE_TO_MEASURE", "Selecciona un acabado publicado para la regla de fabricación.", ["acabado"]);
+    if (!supportsCustomDesign(item.productId) && (!config.finish || !(config.finish in rule.finishPercentBps))) return requiresEvaluation("MADE_TO_MEASURE", "Selecciona un acabado publicado para la regla de fabricación.", ["acabado"]);
     const areaM2 = Math.round(width * height * 10_000) / 10_000;
     const billableAreaM2 = Math.max(areaM2, model?.minimumBillable ?? rule.minimumAreaM2);
     const rate = rule.areaRates.find((entry) => entry.upToM2 === null || billableAreaM2 <= entry.upToM2);
@@ -132,20 +135,26 @@ export function calculateItemPrice(item: PriceRequestItem, catalog?: PublishedPr
     const unitPriceMinor = model?.unitPriceMinor ?? rate.unitPriceMinor;
     if (modelMode === "FIXED" && !model?.fixedPriceMinor) return requiresEvaluation("MADE_TO_MEASURE", "El modelo no tiene una tarifa fija publicada.", ["tarifa del modelo"]);
     if ((modelMode === "AREA" || modelMode === "LINEAR") && !model?.unitPriceMinor) return requiresEvaluation("MADE_TO_MEASURE", "El modelo no tiene una tarifa unitaria publicada.", ["tarifa del modelo"]);
-    const baseMinor = modelMode === "FIXED"
+    const measurementBand = modelMode === "MEASUREMENT_BANDS"
+      ? model?.measurementBands?.find((band) => width >= band.minWidthM && width <= band.maxWidthM && height >= band.minHeightM && height <= band.maxHeightM)
+      : undefined;
+    if (modelMode === "MEASUREMENT_BANDS" && !measurementBand) return requiresEvaluation("MADE_TO_MEASURE", "Las medidas ingresadas no pertenecen a un rango tarifado para este modelo.", ["rango de medidas publicado"]);
+    const baseMinor = modelMode === "MEASUREMENT_BANDS"
+      ? multiplyMinor(measurementBand!.priceMinor, item.quantity)
+      : modelMode === "FIXED"
       ? multiplyMinor(model!.fixedPriceMinor!, item.quantity)
       : modelMode === "LINEAR"
         ? Math.round(Math.max(width, model?.minimumBillable ?? 1) * unitPriceMinor * item.quantity)
         : Math.round(billableAreaM2 * unitPriceMinor * item.quantity);
-    const finishMinor = Math.round(baseMinor * rule.finishPercentBps[config.finish] / 10_000);
+    const finishMinor = !supportsCustomDesign(item.productId) && config.finish ? Math.round(baseMinor * (rule.finishPercentBps[config.finish] ?? 0) / 10_000) : 0;
     const breakdown: PriceBreakdownLine[] = [
-      { key: "base", label: modelMode === "FIXED" ? `Tarifa fija · ${model?.name ?? "modelo"}` : modelMode === "LINEAR" ? `${Math.max(width, model?.minimumBillable ?? 1).toFixed(2)} m lineales × S/ ${(unitPriceMinor / 100).toFixed(2)}` : `${billableAreaM2.toFixed(2)} m² facturables × S/ ${(unitPriceMinor / 100).toFixed(2)}`, amountMinor: baseMinor }
+      { key: "base", label: modelMode === "MEASUREMENT_BANDS" ? `${measurementBand!.label} · ${width.toFixed(2)} × ${height.toFixed(2)} m` : modelMode === "FIXED" ? `Tarifa fija · ${model?.name ?? "modelo"}` : modelMode === "LINEAR" ? `${Math.max(width, model?.minimumBillable ?? 1).toFixed(2)} m lineales × S/ ${(unitPriceMinor / 100).toFixed(2)}` : `${billableAreaM2.toFixed(2)} m² facturables × S/ ${(unitPriceMinor / 100).toFixed(2)}`, amountMinor: baseMinor }
     ];
     if (finishMinor) breakdown.push({ key: "finish", label: `Acabado ${config.finish}`, amountMinor: finishMinor });
-    const automationMinor = rule.automationPrices[config.automation || ""];
-    if (automationMinor === undefined && config.automation) return requiresEvaluation("MADE_TO_MEASURE", "La automatización elegida no es compatible con esta regla.", ["automatización compatible"]);
+    const automationMinor = supportsCustomDesign(item.productId) ? 0 : rule.automationPrices[config.automation || ""];
+    if (!supportsCustomDesign(item.productId) && automationMinor === undefined && config.automation) return requiresEvaluation("MADE_TO_MEASURE", "La automatización elegida no es compatible con esta regla.", ["automatización compatible"]);
     if (automationMinor) breakdown.push({ key: "automation", label: config.automation!, amountMinor: multiplyMinor(automationMinor, item.quantity) });
-    for (const accessory of config.accessories) {
+    for (const accessory of pricedAccessories) {
       const modelAccessory = model?.accessories.find((entry) => entry.id === accessory || entry.label === accessory);
       const amount = modelAccessory?.priceMinor ?? rule.accessoryPrices[accessory];
       if (amount === undefined) return requiresEvaluation("MADE_TO_MEASURE", `El accesorio “${accessory}” no está publicado para esta solución.`, ["accesorio compatible"]);

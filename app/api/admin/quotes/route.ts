@@ -1,3 +1,5 @@
+import {logAdminEvent} from "@/lib/admin/store";
+import {getAdminSession} from "@/lib/backend/auth";
 import { QuoteInputSchema, QuoteListQuerySchema, QuoteStatusSchema } from "@/lib/control/quote-contracts";
 import { controlApiError, noStoreJson, readControlJson, requireControlSession } from "@/lib/control/api";
 import { getControlQuoteRepository } from "@/lib/control/repository";
@@ -27,6 +29,7 @@ export async function POST(request: Request) {
   if (!await requireControlSession()) return noStoreJson({ error: "No autorizado" }, { status: 401 });
   try {
     const quote = await getControlQuoteRepository().createQuote(QuoteInputSchema.parse(await readControlJson(request)));
+    await logAdminEvent((await getAdminSession())!.email,"Cotizaciones",`Creó ${quote.code}`);
     return noStoreJson(quote, { status: 201 });
   } catch (error) {
     return controlApiError(error);

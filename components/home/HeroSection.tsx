@@ -10,7 +10,7 @@ import type { HomeContent } from "@/lib/cms/content-contracts";
 import { HOME_INTRO_SEEN_CLASS } from "@/lib/home-intro-session";
 
 const HERO_ADVISOR_ASSET = "/NUEVO/ChatGPT Image 22 sept 2026%2C 14_56_50.png";
-// The video frame clock drives this timeline during its final seconds.
+// The same approved choreography starts only after the intro reaches its real final frame.
 export const HERO_TIMELINE = {
   overlay: { at: 0, duration: .78 },
   wave: { at: .18, duration: .86, y: 54 },
@@ -84,10 +84,16 @@ function CompositionHero({ content }: { content: HeroContent["composition"] }) {
       section.dataset.heroSettled = "true";
       return;
     }
+    // On client-side navigation the route overlay is still covering Home. Keep
+    // native autoplay from consuming the intro behind it; the startup effect
+    // releases playback from frame zero when the overlay finishes opening.
+    if (document.documentElement.hasAttribute("data-irp-route-transition")) {
+      video.pause();
+      video.currentTime = 0;
+    }
     let timeline!: gsap.core.Timeline;
     let didReveal = false;
-    let didPlay = false;
-    let routeReady = !document.documentElement.hasAttribute("data-irp-route-transition");
+    let playbackFailed = false;
     let disposed = false;
     let frameId = 0;
     const videoFrames = "requestVideoFrameCallback" in video;
@@ -100,7 +106,11 @@ function CompositionHero({ content }: { content: HeroContent["composition"] }) {
         }, at);
       };
       timeline = gsap.timeline({ paused: true, defaults: { ease: "sine.inOut" },
-        onComplete: () => { gsap.set(targets, { clearProps: "willChange" }); section.dataset.heroSettled = "true"; }
+        onComplete: () => {
+          gsap.set(targets, { clearProps: "willChange" });
+          section.dataset.heroSettled = "true";
+          if (!playbackFailed) complete();
+        }
       });
       reveal(overlayRef.current, HERO_TIMELINE.overlay.at, HERO_TIMELINE.overlay.duration);
       reveal(waveRef.current, HERO_TIMELINE.wave.at, HERO_TIMELINE.wave.duration, HERO_TIMELINE.wave.y);
@@ -129,7 +139,7 @@ function CompositionHero({ content }: { content: HeroContent["composition"] }) {
     const sample = (_now: number, metadata?: VideoFrameCallbackMetadata) => {
       if (disposed) return;
       const time = metadata?.mediaTime ?? video.currentTime;
-      if (Number.isFinite(video.duration)) {
+      if (HOME_INTRO_TIMING.revealBeforeEndSeconds > 0 && Number.isFinite(video.duration)) {
         const revealStart = Math.max(0, video.duration - HOME_INTRO_TIMING.revealBeforeEndSeconds);
         if (time >= revealStart) {
           if (!didReveal) {
@@ -145,6 +155,7 @@ function CompositionHero({ content }: { content: HeroContent["composition"] }) {
     };
     const onError = () => {
       if (!video.error && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) return;
+      playbackFailed = true;
       stopClock();
       section.dataset.mediaFailed = "true";
       if (process.env.NODE_ENV === "development") console.error("[IRP intro] MP4 load/playback failed", video.error);
@@ -154,53 +165,121 @@ function CompositionHero({ content }: { content: HeroContent["composition"] }) {
     };
     const onEnded = () => {
       stopClock();
-      timeline.progress(1, false);
-      section.dataset.heroSettled = "true";
-      complete();
+      if (!didReveal) {
+        didReveal = true;
+        section.dataset.revealVideoTime = String(video.currentTime);
+        section.dataset.revealStartedAt = String(performance.now());
+        beginReveal();
+      }
+      timeline.play(0);
     };
-    const onPlaying = () => {
-      if (didPlay) return;
-      didPlay = true;
-      delete section.dataset.mediaFailed;
-      section.dataset.videoPlaying = "true";
-      markPlaying();
-    };
-    const start = () => {
-      if (disposed || !routeReady || video.ended || didPlay) return;
-      video.playbackRate = video.defaultPlaybackRate = HOME_INTRO_TIMING.playbackRate;
-      void video.play().catch((error: unknown) => {
-        if (disposed || (error instanceof DOMException && error.name === "AbortError")) return;
-        onError();
-      });
-    };
-    const onRouteReady = () => {
-      routeReady = true;
-      start();
-    };
-    video.addEventListener("canplay", start);
-    video.addEventListener("playing", onPlaying);
     video.addEventListener("error", onError);
     video.addEventListener("ended", onEnded);
-    if (!routeReady) window.addEventListener("irp:route-transition-complete", onRouteReady, { once: true });
 
     if (video.error) {
       onError();
+    } else if (video.ended) {
+      onEnded();
     } else {
-      if (video.readyState >= 2) start();
       frameId = videoFrames ? video.requestVideoFrameCallback(sample) : requestAnimationFrame(sample);
     }
     return () => {
       disposed = true;
       stopClock();
-      window.removeEventListener("irp:route-transition-complete", onRouteReady);
-      video.removeEventListener("canplay", start);
-      video.removeEventListener("playing", onPlaying);
       video.removeEventListener("error", onError);
       video.removeEventListener("ended", onEnded);
       timeline.kill();
       ctx.revert();
     };
-  }, [beginReveal, complete, fail, markPlaying]);
+  }, [beginReveal, complete, fail]);
+
+  useEffect(() => {
+    if (status !== "loading") return;
+    const video = videoRef.current;
+    if (!video) return;
+    let active = true;
+    let requested = false;
+    let firstVideoFrameId: number | null = null;
+    let firstAnimationFrameId: number | null = null;
+    let secondAnimationFrameId: number | null = null;
+    let networkProbeId: number | null = null;
+
+    const confirmFirstPresentedFrame = () => {
+      if (!active || !video.isConnected || video.paused || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) return;
+      const section = sectionRef.current;
+      if (!section) return;
+      delete section.dataset.mediaFailed;
+      section.dataset.videoPlaying = "true";
+      if (networkProbeId !== null) window.clearInterval(networkProbeId);
+      markPlaying();
+    };
+
+    const waitForFirstPresentedFrame = () => {
+      if (!active) return;
+      if ("requestVideoFrameCallback" in video) {
+        const onPresentedFrame = (_now: number, metadata: VideoFrameCallbackMetadata) => {
+          if (!active) return;
+          if (metadata.presentedFrames < 1) {
+            firstVideoFrameId = video.requestVideoFrameCallback(onPresentedFrame);
+            return;
+          }
+          confirmFirstPresentedFrame();
+        };
+        firstVideoFrameId = video.requestVideoFrameCallback(onPresentedFrame);
+        return;
+      }
+      firstAnimationFrameId = requestAnimationFrame(() => {
+        secondAnimationFrameId = requestAnimationFrame(confirmFirstPresentedFrame);
+      });
+    };
+
+    const failStartup = (error?: unknown) => {
+      if (!active) return;
+      active = false;
+      video.pause();
+      const section = sectionRef.current;
+      if (section) section.dataset.mediaFailed = "true";
+      if (networkProbeId !== null) window.clearInterval(networkProbeId);
+      if (process.env.NODE_ENV === "development" && error) console.error("[IRP intro] MP4 startup failed", error);
+      fail();
+    };
+
+    const start = (restartFromBeginning = false) => {
+      if (!active || requested || video.ended) return;
+      requested = true;
+      if (restartFromBeginning) {
+        video.pause();
+        video.currentTime = 0;
+      }
+      video.defaultPlaybackRate = HOME_INTRO_TIMING.playbackRate;
+      video.playbackRate = HOME_INTRO_TIMING.playbackRate;
+      void video.play().then(() => {
+        if (!active || !video.isConnected || video.paused) return;
+        waitForFirstPresentedFrame();
+      }).catch((error: unknown) => {
+        if (!active || (error instanceof DOMException && error.name === "AbortError")) return;
+        failStartup(error);
+      });
+    };
+    const onRouteReady = () => start(true);
+    const routeTransitionActive = document.documentElement.hasAttribute("data-irp-route-transition");
+    if (routeTransitionActive) window.addEventListener("irp:route-transition-complete", onRouteReady, { once: true });
+    else start();
+    networkProbeId = window.setInterval(() => {
+      if (active && requested && video.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
+        failStartup(new Error("No hay una fuente de video reproducible disponible."));
+      }
+    }, 250);
+
+    return () => {
+      active = false;
+      if (networkProbeId !== null) window.clearInterval(networkProbeId);
+      if (firstVideoFrameId !== null) video.cancelVideoFrameCallback(firstVideoFrameId);
+      if (firstAnimationFrameId !== null) cancelAnimationFrame(firstAnimationFrameId);
+      if (secondAnimationFrameId !== null) cancelAnimationFrame(secondAnimationFrameId);
+      window.removeEventListener("irp:route-transition-complete", onRouteReady);
+    };
+  }, [fail, markPlaying, status]);
 
   return (
     <section ref={sectionRef} className="irp-hero" id="inicio" data-intro-status={status}>

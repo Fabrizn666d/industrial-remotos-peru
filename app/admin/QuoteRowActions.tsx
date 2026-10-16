@@ -34,14 +34,16 @@ export function QuoteRowActions({ id, code, status }: { id: string; code: string
     }
   }
 
+  async function deleteDraft(){if(!confirm(`¿Eliminar el borrador ${code}?`))return;setPending(true);try{const r=await fetch(`/api/admin/quotes/${id}`,{method:'DELETE'}),b=await r.json();if(!r.ok)throw Error(b.error);router.refresh()}catch(e){alert((e as Error).message)}finally{setPending(false);setOpen(false)}}
   return (
-    <div className={styles.quoteActions}>
+    <div className={styles.quoteActions}><Link href={`/admin/cotizaciones/${id}`} aria-label={`Editar ${code}`}><Pencil size={17}/></Link>
       <button type="button" onClick={() => setOpen((value) => !value)} aria-label={`Acciones de ${code}`}><MoreHorizontal size={17} /></button>
       {open && <div className={styles.quoteActionsMenu}>
         <Link href={`/admin/cotizaciones/${id}`}><Pencil size={14} />{status === "DRAFT" ? "Abrir y editar" : "Abrir"}</Link>
         <a href={`/api/admin/quotes/${id}/pdf`} target="_blank" rel="noreferrer"><Eye size={14} />Vista previa</a>
         <a href={`/api/admin/quotes/${id}/pdf?download=1`}><Download size={14} />Descargar PDF</a>
         <button type="button" onClick={() => action("duplicate")} disabled={pending}><Copy size={14} />Duplicar</button>
+        {status === "DRAFT" && <button className={styles.dangerAction} disabled={pending} onClick={()=>void deleteDraft()}>Eliminar borrador</button>}
         {status !== "VOID" && <button className={styles.dangerAction} type="button" onClick={() => action("void")} disabled={pending}><XCircle size={14} />Anular</button>}
       </div>}
     </div>

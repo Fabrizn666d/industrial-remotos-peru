@@ -11,7 +11,7 @@ import styles from "../../admin.module.css";
 
 export const dynamic = "force-dynamic";
 
-type SearchParams = { query?: string | string[]; status?: string | string[] };
+type SearchParams = { query?: string | string[]; status?: string | string[]; page?:string; from?:string; to?:string };
 
 function single(value: string | string[] | undefined) {
   return typeof value === "string" ? value : undefined;
@@ -29,7 +29,7 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
   const query = (single(values.query) || "").trim().slice(0, 120);
   const parsedStatus = QuoteStatusSchema.safeParse(single(values.status));
   const status = parsedStatus.success ? parsedStatus.data : undefined;
-  const result = await getControlQuoteRepository().listQuotes({ query: query || undefined, status, limit: 100, offset: 0 });
+  const from=single(values.from)||'',to=single(values.to)||'';const all=[];const repo=getControlQuoteRepository();for(let offset=0;;offset+=100){const p=await repo.listQuotes({query:query||undefined,status,limit:100,offset});all.push(...p.items);if(offset+p.items.length>=p.total||!p.items.length)break}const filtered=all.filter(q=>(!from||q.issueDate>=from)&&(!to||q.issueDate<=to));const lastPage=Math.max(1,Math.ceil(filtered.length/25));const page=Math.min(lastPage,Math.max(1,Math.floor(Number(values.page)||1)));const result={items:filtered.slice((page-1)*25,page*25),total:filtered.length};const href=(p:number)=>'/admin/cotizaciones?'+new URLSearchParams({query,status:status||'',from,to,page:String(p)});
 
   return (
     <>
@@ -44,7 +44,7 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
             <option value="">Todos los estados</option>
             {QuoteStatusSchema.options.map((value) => <option value={value} key={value}>{labels[value]}</option>)}
           </select>
-          <button type="submit">Filtrar</button>
+          <label>Desde <input type="date" name="from" defaultValue={from}/></label><label>Hasta <input type="date" name="to" defaultValue={to}/></label><button type="submit">Filtrar</button>
           {(query || status) && <Link href="/admin/cotizaciones">Limpiar</Link>}
         </form>
         <div className={styles.resultCount}><b>{result.total}</b> cotizaciones encontradas</div>
@@ -60,6 +60,7 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
             <td><QuoteRowActions id={quote.id} code={quote.code} status={quote.status} /></td>
           </tr>)}</tbody>
         </table></div> : <div className={styles.emptyState}><FileText size={30} /><h2>Aún no hay cotizaciones</h2><p>Crea el primer borrador y agrega un producto del catálogo de cotización.</p><Link className={styles.primaryAction} href="/admin/cotizaciones/nueva"><Plus size={16} /> Nueva cotización</Link></div>}
+        <nav className={styles.pagination} aria-label="Paginación">{page>1?<Link href={href(page-1)}>Anterior</Link>:<span/>}<small>Página {page} de {lastPage}</small>{page<lastPage?<Link href={href(page+1)}>Siguiente</Link>:<span/>}</nav>
       </section>
     </>
   );

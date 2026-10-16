@@ -27,16 +27,32 @@ const defaultCatalogTypes: Record<string, Array<{
     { id: "puertas-a-medida-pivotante", value: "Pivotante", label: "Pivotante", description: "Puerta protagonista con eje de giro desplazado.", image: "/images/configurator/cotri/option-3.webp", thumbnail: "/images/configurator/cotri/option-3-thumb.webp", published: true, archived: false, order: 1, allowCustomDesign: true },
   ],
   seccionales: [
-    { id: "seccionales-seccional", value: "Seccional", label: "Seccional", description: "Paneles articulados que se recogen bajo el techo.", image: "/images/configurator/cotri/option-2.webp", thumbnail: "/images/configurator/cotri/option-2-thumb.webp", published: true, archived: false, order: 0, allowCustomDesign: true },
-    { id: "seccionales-levadiza", value: "Levadiza", label: "Levadiza", description: "Una hoja que se eleva y queda suspendida.", image: "/images/configurator/cotri/option-4.webp", thumbnail: "/images/configurator/cotri/option-4-thumb.webp", published: true, archived: false, order: 1, allowCustomDesign: true },
-    { id: "seccionales-corrediza", value: "Corrediza", label: "Corrediza", description: "Apertura lateral sobre guía para accesos amplios.", image: "/images/configurator/cotri/option-5.webp", thumbnail: "/images/configurator/cotri/option-5-thumb.webp", published: true, archived: false, order: 2, allowCustomDesign: true },
+    { id: "seccionales-seccional", value: "Seccional", label: "Seccional", description: "Paneles articulados que se recogen bajo el techo.", image: "/images/configurator/door-types/garage-seccional.webp", thumbnail: "/images/configurator/door-types/garage-seccional-thumb.webp", published: true, archived: false, order: 0, allowCustomDesign: true },
+    { id: "seccionales-levadiza", value: "Levadiza", label: "Levadiza", description: "Una hoja que se eleva y queda suspendida.", image: "/images/configurator/cotri/option-4.webp", thumbnail: "/images/configurator/cotri/option-4-thumb.webp", published: false, archived: true, order: 1, allowCustomDesign: true },
+    { id: "seccionales-corrediza", value: "Corrediza", label: "Corrediza", description: "Apertura lateral sobre guía para accesos amplios.", image: "/images/configurator/door-types/garage-corrediza.webp", thumbnail: "/images/configurator/door-types/garage-corrediza-thumb.webp", published: true, archived: false, order: 2, allowCustomDesign: true },
     { id: "seccionales-batiente", value: "Batiente", label: "Batiente", description: "Dos hojas con apertura lateral tradicional.", image: "/images/configurator/cotri/option-6.webp", thumbnail: "/images/configurator/cotri/option-6-thumb.webp", published: true, archived: false, order: 3, allowCustomDesign: true },
   ],
   "puertas-contraplacadas": [
-    { id: "puertas-contraplacadas-batiente", value: "Batiente", label: "Batiente", description: "Apertura convencional para interiores y accesos.", image: "/images/configurator/cotri/option-12.webp", thumbnail: "/images/configurator/cotri/option-12-thumb.webp", published: true, archived: false, order: 0, allowCustomDesign: true },
-    { id: "puertas-contraplacadas-pivotante", value: "Pivotante", label: "Pivotante", description: "Apertura de eje desplazado para una presencia contemporánea.", image: "/images/configurator/cotri/option-13.webp", thumbnail: "/images/configurator/cotri/option-13-thumb.webp", published: true, archived: false, order: 1, allowCustomDesign: true },
+    { id: "puertas-contraplacadas-batiente", value: "Batiente", label: "Batiente", description: "Apertura convencional para interiores y accesos.", image: "/images/configurator/door-types/contraplacada-batiente.webp", thumbnail: "/images/configurator/door-types/contraplacada-batiente-thumb.webp", published: true, archived: false, order: 0, allowCustomDesign: true },
+    { id: "puertas-contraplacadas-pivotante", value: "Pivotante", label: "Pivotante", description: "Apertura de eje desplazado para una presencia contemporánea.", image: "/images/configurator/door-types/contraplacada-pivotante.webp", thumbnail: "/images/configurator/door-types/contraplacada-pivotante-thumb.webp", published: true, archived: false, order: 1, allowCustomDesign: true },
   ],
 };
+
+const correctedDoorTypeAssets: Record<string, { image: string; thumbnail: string }> = {
+  "seccionales-seccional": { image: "/images/configurator/door-types/garage-seccional.webp", thumbnail: "/images/configurator/door-types/garage-seccional-thumb.webp" },
+  "seccionales-corrediza": { image: "/images/configurator/door-types/garage-corrediza.webp", thumbnail: "/images/configurator/door-types/garage-corrediza-thumb.webp" },
+  "puertas-contraplacadas-batiente": { image: "/images/configurator/door-types/contraplacada-batiente.webp", thumbnail: "/images/configurator/door-types/contraplacada-batiente-thumb.webp" },
+  "puertas-contraplacadas-pivotante": { image: "/images/configurator/door-types/contraplacada-pivotante.webp", thumbnail: "/images/configurator/door-types/contraplacada-pivotante-thumb.webp" },
+};
+
+function normalizeCatalogTypes(types: PricingCatalogDocument["definitions"][number]["catalogTypes"]) {
+  return types.map((type) => {
+    if (type.id === "seccionales-levadiza") return { ...type, published: false, archived: true };
+    const corrected = correctedDoorTypeAssets[type.id];
+    const usesLegacyAsset = type.image.includes("/images/configurator/cotri/option-") || (type.thumbnail ?? "").includes("/images/configurator/cotri/option-");
+    return corrected && usesLegacyAsset ? { ...type, ...corrected } : type;
+  });
+}
 
 function attachCatalogTaxonomy<T extends { openingSystem?: string; archived?: boolean; catalogTypeId?: string }>(productId: string, models: T[]) {
   const types = defaultCatalogTypes[productId] ?? [];
@@ -74,7 +90,7 @@ function normalizeDoorTaxonomy(input: unknown): PricingCatalogDocument {
     const seededTypes = defaultCatalogTypes[definition.productId] ?? [];
     const hasPersistedTypes = Object.prototype.hasOwnProperty.call(definition, "catalogTypes");
     const hasPersistedModels = Object.prototype.hasOwnProperty.call(definition, "importedModels");
-    const existingTypes = hasPersistedTypes ? (definition.catalogTypes ?? []) : seededTypes;
+    const existingTypes = normalizeCatalogTypes(hasPersistedTypes ? (definition.catalogTypes ?? []) : seededTypes);
     const correctedCustom = (definition.productId === "puertas-a-medida" || definition.productId === "puertas-contraplacadas") && hasLegacyGarageLimits(definition) && fallback?.custom
       ? structuredClone(fallback.custom)
       : definition.custom;

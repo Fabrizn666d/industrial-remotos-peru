@@ -63,7 +63,10 @@ function normalizeDoorTaxonomy<K extends CmsKey>(key: K, content: CmsContentMap[
       "/NUEVO/Garage_door_opening_transition_1080p_20260921110657.mp4",
       "/NUEVO/HERO%20MOPVIL.mp4",
       "/NUEVO/Crear_video_para_empresa_industrial_20261012182532.mp4",
-      "/NUEVO/crear-video-industrial-web.mp4"
+      "/NUEVO/crear-video-industrial-web.mp4",
+      "/NUEVO/NUEVO%20LOADER/PC%20.mp4",
+      "/NUEVO/NUEVO%20LOADER/nuevopc.mp4",
+      "/NUEVO/NUEVO%20LOADER/CELULAR.mp4"
     ]);
     const defaultHero = defaultCmsContent.home.hero;
     if (legacyIntroVideos.has(home.hero.composition.desktopVideo.src) || legacyIntroVideos.has(home.hero.composition.mobileVideo.src)) {
@@ -228,7 +231,7 @@ async function savePostgresDocument<K extends CmsKey>(key: K, content: CmsConten
   }
 }
 
-export async function getCmsDocument<K extends CmsKey>(key: K): Promise<CmsDocument<K>> {
+export async function getPublishedCmsDocument<K extends CmsKey>(key: K): Promise<CmsDocument<K>> {
   if (driver() === "json" && process.env.NODE_ENV !== "production") return getJsonDocument(key);
   if (driver() === "postgres") return getPostgresDocument(key);
   throw new Error("Configura IRP_REPOSITORY_DRIVER para consultar el contenido");
@@ -255,3 +258,5 @@ export async function listCmsActivity(limit = 100): Promise<CmsActivity[]> {
   }
   throw new Error("Configura IRP_REPOSITORY_DRIVER para consultar la actividad");
 }
+
+export async function getCmsDocument<K extends CmsKey>(key:K):Promise<CmsDocument<K>>{const published=await getPublishedCmsDocument(key);try{const {draftMode}=await import('next/headers');if((await draftMode()).isEnabled){const {getAdminSession}=await import('@/lib/backend/auth');const session=await getAdminSession();if(session&&session.role!=='COMMERCIAL'){const {getAdminRecord}=await import('@/lib/admin/store');const state=await getAdminRecord<{draft:CmsDocument|null}>(`content:${key}`,{draft:null});return (state.value.draft??published) as CmsDocument<K>}}}catch{}return published}

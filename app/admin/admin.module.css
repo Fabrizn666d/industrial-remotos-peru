@@ -1,15 +1,15 @@
-:global(body:has(.adminBoundary)) {
+:global(body):has(.adminBoundary) {
   overflow: auto !important;
   background: #f2f5f8;
   color: #0a1a2d;
 }
 
-:global(body:has(.adminBoundary) .site-header),
-:global(body:has(.adminBoundary) .site-footer),
-:global(body:has(.adminBoundary) .quote-assistant),
-:global(body:has(.adminBoundary) .assistant-panel),
-:global(body:has(.adminBoundary) .project-overlay),
-:global(body:has(.adminBoundary) .irp-ibex-loader) {
+:global(body):has(.adminBoundary) :global(.site-header),
+:global(body):has(.adminBoundary) :global(.site-footer),
+:global(body):has(.adminBoundary) :global(.quote-assistant),
+:global(body):has(.adminBoundary) :global(.assistant-panel),
+:global(body):has(.adminBoundary) :global(.project-overlay),
+:global(body):has(.adminBoundary) :global(.irp-ibex-loader) {
   display: none !important;
 }
 
@@ -339,7 +339,7 @@
 .passwordField button:hover { background: #edf4ff; color: #075fcf; }
 
 /* Admin workspace v2 ------------------------------------------------------ */
-:global(body:has(.adminBoundary)) {
+:global(body):has(.adminBoundary) {
   background:
     radial-gradient(circle at 82% 0%, rgba(38, 137, 255, .08), transparent 28rem),
     #f4f7fb;
@@ -462,6 +462,7 @@
 }
 .topbar > .topbarStart,.topbar > .topbarActions { display: flex; align-items: center; gap: 11px; }
 .collapseButton,.mobileMenu { display: grid; width: 40px; height: 40px; flex: 0 0 auto; place-items: center; border: 1px solid #d5e1ec; border-radius: 11px; background: #fff; color: #52677d; box-shadow: 0 5px 14px rgba(18,52,86,.05); }
+.mobileMenu { display: none; }
 .collapseButton:hover,.mobileMenu:hover { border-color: #9dc8f3; background: #edf6ff; color: #086edc; }
 .breadcrumb { display: grid; gap: 1px; margin-left: 2px; }
 .breadcrumb small { color: #7a8b9e; font-size: 9px !important; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
@@ -662,3 +663,7 @@
   .commandInput { margin-inline: 12px; }
   .commandResults { padding-inline: 8px; }
 }
+
+.adminBoundary{background:radial-gradient(ellipse at 90% 0%,#e3eeff 0%,transparent 45%),#f3f6fc}.sidebar{background:linear-gradient(170deg,#071e3d,#0b2c55);border-right:1px solid #29466b}.navSection{margin-bottom:16px}.navItem small{display:none}.panel{border-radius:18px;box-shadow:0 5px 22px #173c6710}.adminBoundary :is(button,a,input,select,textarea):focus-visible{outline:3px solid #83b4ff;outline-offset:3px}.pageHeading{flex-wrap:wrap}.filters{flex-wrap:wrap}.metricGrid{gap:16px}@media(max-width:640px){.metricGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.pageHeading h1{font-size:26px}.filters>*{flex:1;min-width:130px}.quickGrid{grid-template-columns:1fr}.tableWrap,.quoteTableWrap{overflow:auto}}
+
+.navigation>div{margin-bottom:15px}.navCopy small{display:none}.navigation a{min-height:43px}

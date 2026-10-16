@@ -222,6 +222,7 @@ export class PostgresControlQuoteRepository implements ControlQuoteRepository {
     });
   }
 
+  async deleteDraft(id:string){const result=await this.poolFactory().query("DELETE FROM irp_control_quotes WHERE id=$1::uuid AND status='DRAFT' RETURNING id",[id]);if(result.rowCount)return true;if(await this.findQuote(id))throw new QuoteStateError('Solo se pueden eliminar borradores.');return false}
   async findQuote(id: string) {
     return loadQuote(this.poolFactory(), id);
   }

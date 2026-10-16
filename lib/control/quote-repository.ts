@@ -28,6 +28,7 @@ export interface ControlQuoteRepository {
   createProduct(input: QuoteProductTemplateInput): Promise<QuoteProductTemplate>;
   updateProduct(id: string, input: QuoteProductTemplateInput): Promise<QuoteProductTemplate | null>;
   listQuotes(query: QuoteListQuery): Promise<QuoteListResult>;
+  deleteDraft(id:string):Promise<boolean>;
   findQuote(id: string): Promise<Quote | null>;
   createQuote(input: QuoteInput): Promise<Quote>;
   updateQuote(id: string, input: QuoteUpdateInput): Promise<Quote | null>;

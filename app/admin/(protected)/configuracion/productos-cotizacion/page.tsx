@@ -1,3 +1,4 @@
+import {adminAccess} from "@/lib/admin/http";
 import { Package } from "lucide-react";
 import { redirect } from "next/navigation";
 import { ProductTemplateManager } from "@/components/control/ProductTemplateManager";
@@ -8,7 +9,7 @@ import styles from "../../../admin.module.css";
 
 export const dynamic = "force-dynamic";
 
-export default async function QuoteProductsPage() {
+export default async function QuoteProductsPage() { await adminAccess(undefined,"editor");
   if (!await getAdminSession()) redirect("/admin/login");
   const products = await getControlQuoteRepository().listProducts(true);
   return (

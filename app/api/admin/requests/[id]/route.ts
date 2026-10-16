@@ -1,3 +1,4 @@
+import {logAdminEvent} from "@/lib/admin/store";
 import { z } from "zod";
 import { getAdminSession } from "@/lib/backend/auth";
 import { RequestOperationInputSchema } from "@/lib/backend/contracts";
@@ -17,6 +18,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   try {
     const input = RequestOperationInputSchema.parse(await request.json());
     const updated = await getRequestRepository().updateOperations(parsedId.data, input, session.email);
+    if(updated)await logAdminEvent(session.email,"Solicitudes",`Actualizó ${updated.code}`);
     return updated
       ? Response.json({ request: updated }, { headers: { "Cache-Control": "no-store" } })
       : Response.json({ error: "Solicitud no encontrada" }, { status: 404 });

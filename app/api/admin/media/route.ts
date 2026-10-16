@@ -1,3 +1,4 @@
+import {logAdminEvent} from "@/lib/admin/store";
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/backend/auth";
 import { hasAllowedOrigin } from "@/lib/backend/http";
@@ -17,6 +18,7 @@ export async function POST(request: Request) {
     const alt = String(form.get("alt") || "Archivo de Industrial Remotos Perú");
     const items = [];
     for (const file of files) items.push(await createCmsMedia(file, alt));
+    await logAdminEvent((await getAdminSession())!.email,"Biblioteca",`Subió ${items.length} archivos`);
     return NextResponse.json({ items }, { status: 201 });
   } catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : "No se pudieron subir los archivos" }, { status: 400 }); }
 }

@@ -1,3 +1,4 @@
+import {getAdminSession} from "@/lib/backend/auth";
 import { z } from "zod";
 import { QuoteProductTemplateInputSchema } from "@/lib/control/quote-contracts";
 import { controlApiError, noStoreJson, readControlJson, requireControlSession } from "@/lib/control/api";
@@ -7,6 +8,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  if ((await getAdminSession())?.role === "COMMERCIAL") return noStoreJson({error:"No autorizado"},{status:403});
   if (!await requireControlSession()) return noStoreJson({ error: "No autorizado" }, { status: 401 });
   try {
     const id = z.string().uuid().parse((await params).id);

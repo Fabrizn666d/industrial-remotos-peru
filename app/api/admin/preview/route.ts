@@ -1,0 +1,3 @@
+import {draftMode} from 'next/headers';import {NextResponse} from 'next/server';import {adminAccess,adminError} from '@/lib/admin/http';
+const routes:Record<string,string>={home:'/',about:'/nosotros',services:'/soluciones',projects:'/proyectos',contact:'/contacto',company:'/contacto',footer:'/'};
+export async function GET(request:Request){try{await adminAccess(undefined,'editor');const u=new URL(request.url),mode=await draftMode();if(u.searchParams.get('exit'))mode.disable();else mode.enable();return NextResponse.redirect(new URL(routes[u.searchParams.get('key')||'home']||'/',request.url))}catch(e){return adminError(e)}}

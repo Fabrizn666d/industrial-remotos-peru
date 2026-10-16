@@ -4,6 +4,7 @@ import "./globals.css";
 import { NavigationTransition } from "@/components/NavigationTransition";
 import { siteConfig } from "@/data/site";
 import { defaultCmsContent } from "@/lib/cms/content-defaults";
+import { HOME_INTRO_SEEN_CLASS, HOME_INTRO_SESSION_KEY } from "@/lib/home-intro-session";
 
 const plusJakartaSans = localFont({
   src: "../Plus_Jakarta_Sans/PlusJakartaSans-VariableFont_wght.ttf",
@@ -45,9 +46,16 @@ export const viewport: Viewport = {
   themeColor: "#000A13"
 };
 
+const introPreflight = `try{const h=document.documentElement,k="${HOME_INTRO_SESSION_KEY}",c="${HOME_INTRO_SEEN_CLASS}";if(location.pathname!=="/"){if(sessionStorage.getItem(k)==="seen")h.classList.add(c)}else if(new URLSearchParams(location.search).get("intro")==="1"){h.dataset.irpIntroCurrent="play"}else if(sessionStorage.getItem(k)==="seen"){h.classList.add(c)}else{h.dataset.irpIntroCurrent="play"}}catch{}`;
+const introFirstPaintCss = `html[data-irp-intro-current="play"],html[data-irp-intro-current="play"] body{background:#000a13!important}`;
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="es-PE" data-scroll-behavior="smooth" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: introPreflight }} />
+        <style dangerouslySetInnerHTML={{ __html: introFirstPaintCss }} />
+      </head>
       <body className={plusJakartaSans.variable}>
         <a className="skip-link" href="#contenido">Saltar al contenido</a>
         <NavigationTransition config={defaultCmsContent.company.routeTransition} />

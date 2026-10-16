@@ -138,6 +138,7 @@ export class JsonControlQuoteRepository implements ControlQuoteRepository {
     });
   }
 
+  async deleteDraft(id:string){return this.withWriteLock(async()=>{const state=await this.readState();const old=state.quotes.find(q=>q.id===id);if(!old)return false;if(old.status!=='DRAFT')throw new QuoteStateError('Solo se pueden eliminar borradores.');state.quotes=state.quotes.filter(q=>q.id!==id);await this.writeState(state);return true})}
   async findQuote(id: string) {
     const state = await this.readState();
     return state.quotes.find((quote) => quote.id === id) ?? null;

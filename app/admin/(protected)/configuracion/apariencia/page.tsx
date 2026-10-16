@@ -1,10 +1,11 @@
+import {adminAccess} from "@/lib/admin/http";
 import { ContentEditor } from "@/components/admin/ContentEditor";
 import { getCmsDocument } from "@/lib/cms/content-repository";
 import styles from "../../../admin.module.css";
 
 export const dynamic = "force-dynamic";
 
-export default async function AppearanceAdminPage() {
+export default async function AppearanceAdminPage() { await adminAccess(undefined,"editor");
   const document = await getCmsDocument("company");
   return <>
     <section className={styles.pageHeading}>

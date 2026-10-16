@@ -1,0 +1,1 @@
+export function PreviewBanner(){return <aside style={{position:'fixed',bottom:20,left:'50%',transform:'translateX(-50%)',zIndex:99999,background:'#06254e',color:'white',padding:'14px 24px',borderRadius:14,boxShadow:'0 10px 35px #0004',fontSize:13}}>Vista previa del borrador · <a style={{color:'#90c8ff'}} href="/api/admin/preview?exit=1">Salir de la vista previa</a></aside>}

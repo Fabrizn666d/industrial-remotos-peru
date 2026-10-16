@@ -1,11 +1,12 @@
 import "server-only";
+import {getAdminRecord} from "@/lib/admin/store";
 
 import { randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { getPostgresPool } from "@/lib/backend/postgres-client";
 import { getPricingCatalogRepository } from "@/lib/pricing/catalog-repository";
-import { getCmsDocument } from "@/lib/cms/content-repository";
+import { getPublishedCmsDocument } from "@/lib/cms/content-repository";
 import type { CmsKey } from "@/lib/cms/content-contracts";
 
 export type CmsMedia = { id: string; name: string; mimeType: string; byteSize: number; alt: string; createdAt: string; src: string };
@@ -32,8 +33,9 @@ async function writeJson(items: StoredMedia[]) { const file = jsonPath(); await 
 async function postgresRows(): Promise<StoredMedia[]> { const result = await getPostgresPool().query<{ id: string; name: string; mimeType: string; byteSize: number; alt: string; storageName: string; createdAt: Date | string }>(`SELECT id, original_name AS name, mime_type AS "mimeType", byte_size AS "byteSize", alt, storage_name AS "storageName", created_at AS "createdAt" FROM irp_media_assets ORDER BY created_at DESC`); return result.rows.map((item) => ({ ...item, createdAt: new Date(item.createdAt).toISOString() })); }
 
 export async function listCmsMedia(): Promise<CmsMedia[]> {
-  if (driver() === "json" && process.env.NODE_ENV !== "production") return (await readJson()).sort((a, b) => b.createdAt.localeCompare(a.createdAt)).map(publicMedia);
-  if (driver() === "postgres") return (await postgresRows()).map(publicMedia);
+  const meta=(await getAdminRecord<Record<string,{name?:string;alt?:string}>>("media-meta",{})).value;const decorate=(items:CmsMedia[])=>items.map(i=>({...i,name:meta[i.id]?.name??i.name,alt:meta[i.id]?.alt??i.alt}));
+  if (driver() === "json" && process.env.NODE_ENV !== "production") return decorate((await readJson()).sort((a, b) => b.createdAt.localeCompare(a.createdAt)).map(publicMedia));
+  if (driver() === "postgres") return decorate((await postgresRows()).map(publicMedia));
   throw new Error("Configura IRP_REPOSITORY_DRIVER para consultar medios");
 }
 
@@ -70,7 +72,9 @@ export async function readCmsMediaFile(id: string) {
 export async function deleteCmsMedia(id: string) {
   const item = await storedById(id); if (!item) return false;
   const src = `/api/media/${id}`;
-  const documents = await Promise.all(keys.map((key) => getCmsDocument(key)));
+  const workspaces=await Promise.all(keys.map(key=>getAdminRecord(`content:${key}`,{})));
+  if(workspaces.some(w=>JSON.stringify(w.value).includes(src)))throw Error("Este archivo está en uso en un borrador o versión guardada.");
+  const documents = await Promise.all(keys.map((key) => getPublishedCmsDocument(key)));
   const pricingRepository = getPricingCatalogRepository();
   const pricingDocuments = await Promise.all([pricingRepository.getDraft(), pricingRepository.getPublished()]);
   if (documents.some((document) => JSON.stringify(document.content).includes(src)) || pricingDocuments.some((document) => JSON.stringify(document).includes(src))) throw new Error("Esta imagen está en uso. Reemplázala en el contenido antes de quitarla.");

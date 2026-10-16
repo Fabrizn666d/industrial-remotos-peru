@@ -1,0 +1,2 @@
+import {adminAccess} from '@/lib/admin/http';import {UsersManager} from '@/components/admin/UsersManager';import styles from '../../admin.module.css';
+export const dynamic='force-dynamic';export default async function Page(){await adminAccess(undefined,'owner');return <><section className={styles.pageHeading}><div><span>Sistema</span><h1>Usuarios y permisos</h1><p>Administra el acceso de tu equipo.</p></div></section><UsersManager/></>}

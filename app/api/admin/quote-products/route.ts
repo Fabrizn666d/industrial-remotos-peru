@@ -1,3 +1,4 @@
+import {getAdminSession} from "@/lib/backend/auth";
 import { QuoteProductTemplateInputSchema } from "@/lib/control/quote-contracts";
 import { controlApiError, noStoreJson, readControlJson, requireControlSession } from "@/lib/control/api";
 import { getControlQuoteRepository } from "@/lib/control/repository";
@@ -16,6 +17,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  if ((await getAdminSession())?.role === "COMMERCIAL") return noStoreJson({error:"No autorizado"},{status:403});
   if (!await requireControlSession()) return noStoreJson({ error: "No autorizado" }, { status: 401 });
   try {
     const product = await getControlQuoteRepository().createProduct(

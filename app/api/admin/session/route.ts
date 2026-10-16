@@ -6,7 +6,7 @@ import {
   adminSessionCookieOptions,
   createAdminSessionToken,
   getAdminSession,
-  verifyAdminCredentials
+  verifyManagedAdminCredentials
 } from "@/lib/backend/auth";
 import { hasAllowedOrigin, isJsonRequest } from "@/lib/backend/http";
 import { consumeRateLimit, requestClientKey } from "@/lib/backend/rate-limit";
@@ -70,7 +70,7 @@ export async function POST(request: Request) {
 
   try {
     const credentials = CredentialsSchema.parse(await readCredentials(request));
-    const identity = verifyAdminCredentials(credentials.email, credentials.password);
+    const identity = await verifyManagedAdminCredentials(credentials.email, credentials.password);
     if (!identity) return noStore(NextResponse.json({ error: "Credenciales inválidas" }, { status: 401 }));
 
     const response = NextResponse.json({ authenticated: true, user: identity });

@@ -1,13 +1,14 @@
 "use client";
 
 import { ArrowUpRight, MapPin, Phone, X } from "lucide-react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type CSSProperties } from "react";
 import { ContactExperience } from "@/components/ContactExperience";
 import type { CompanyContent, ContactContent } from "@/lib/cms/content-contracts";
 import { googleMapsEmbedUrl, safeGoogleMapsHref } from "@/lib/maps";
+import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import styles from "./ContactDialog.module.css";
 
 type ContactDialogContextValue = { openContact: (trigger?: HTMLElement | null, origin?: string) => void; closeContact: () => void; open: boolean };
@@ -31,7 +32,7 @@ export function ContactDialogProvider({ content, company, services, children }: 
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = usePrefersReducedMotion();
   const [originPage, setOriginPage] = useState("/");
   const panelRef = useRef<HTMLElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);

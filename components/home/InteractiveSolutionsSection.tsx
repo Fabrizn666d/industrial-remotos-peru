@@ -164,7 +164,7 @@ export function InteractiveSolutionsSection({ content }: { content: HomeContent[
             {content.title} <span>{content.titleAccent}</span>
           </h2>
           <p>{content.description}</p>
-          <Link className={styles.primaryCta} href={content.cta.href}>
+          <Link className={styles.primaryCta} href={content.cta.href} data-magnetic>
             {content.cta.label} <ArrowRight aria-hidden="true" />
           </Link>
 

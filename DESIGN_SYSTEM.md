@@ -8,7 +8,7 @@ Referencia visual compartida para Web, Cotiza y Control.
 - La fotografía y el proyecto construido son protagonistas.
 - Una escena principal por sección; evitar mosaicos de tarjetas equivalentes.
 - Jerarquía clara, aire editorial y densidad funcional en Control.
-- Movimiento breve y con propósito. `prefers-reduced-motion` siempre prevalece.
+- Movimiento editorial, fluido y con propósito. Cada escena debe ayudar a leer la jerarquía; `prefers-reduced-motion` siempre prevalece.
 
 ## Tokens base
 
@@ -30,13 +30,30 @@ Referencia visual compartida para Web, Cotiza y Control.
 - Texto: peso 400–520, altura de línea 1.55–1.75.
 - Eyebrows: 10–12 px, mayúsculas y tracking `0.10em–0.14em`.
 
-## Forma y elevación
+## Profundidad, forma y elevación
 
 - Radios funcionales: 12–18 px.
 - Contenedores protagonistas: 22–30 px.
 - Botones principales tipo píldora solo cuando ayudan a reconocer la acción.
-- Sombras difusas, con poco contraste; los bordes separan superficies antes que la sombra.
-- No usar glassmorphism como lenguaje dominante.
+- Combinar bordes finos con sombras en dos capas: una cercana para separar y otra amplia, azulada y de baja opacidad para dar profundidad.
+- Las secciones extensas pueden usar degradados suaves entre navy, azul intermedio, azul de acción y fondos marfil; evitar grandes superficies visualmente planas.
+- Se permiten hasta tres luces difusas de baja opacidad por escena. Deben permanecer detrás del contenido y nunca reducir el contraste.
+- El vidrio esmerilado se reserva para navegación, controles o tarjetas puntuales sobre fotografía o color. No se aplica indiscriminadamente.
+- En fondos oscuros puede existir una textura o grano casi imperceptible para evitar una apariencia digital plana.
+- Las transiciones entre secciones usan degradados, velos o formas suaves; no dependen de franjas vacías ni cortes abruptos.
+
+## Sistema de movimiento
+
+- Entrada estándar: `520–720 ms`, curva `[0.16, 1, 0.3, 1]`, opacidad `0 → 1`, desenfoque máximo de `8 px` y recorrido de `24–48 px`.
+- En móvil: recorridos de `14–24 px`, duraciones de `420–560 ms` y sin efectos que dependan del cursor.
+- Grupos: escalonado de `60–90 ms`; no retrasar más de seis elementos ni bloquear contenido esencial.
+- Títulos protagonistas pueden revelarse por línea o palabra. Cuerpo, formularios y datos legales aparecen como bloques completos para conservar legibilidad.
+- Parallax: desplazamiento máximo de `12–28 px` y solo en imágenes o decoración. Nunca altera el flujo ni la posición accesible del contenido.
+- Hover en escritorio: elevación de `2–6 px`, escala máxima `1.015` y sombra progresiva. No usar rebotes, giros o zoom agresivo.
+- Animar principalmente `transform` y `opacity`. El blur se usa solo durante entradas breves; no animar dimensiones ni márgenes.
+- Cada animación de scroll se ejecuta una vez salvo carruseles o indicadores que expresen progreso real.
+- `prefers-reduced-motion: reduce` elimina recorridos, parallax, flotación, scroll suave y bucles decorativos; conserva fundidos breves de hasta `180 ms`.
+- Loader y hero mantienen su coreografía aprobada y no se mezclan con el runtime general de movimiento.
 
 ## Composición responsive
 

@@ -6,7 +6,7 @@ import { HOME_INTRO_SEEN_CLASS, HOME_INTRO_SESSION_KEY } from "@/lib/home-intro-
 
 export const HOME_INTRO_TIMING = {
   playbackRate: 1,
-  revealBeforeEndSeconds: 0
+  revealBeforeEndSeconds: 4
 } as const;
 export type HomeIntroStatus = "checking" | "loading" | "playing" | "revealing" | "completed" | "failed" | "skipped";
 

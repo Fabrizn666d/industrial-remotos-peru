@@ -4,6 +4,7 @@ import { chromium } from "playwright-core";
 const outputDirectory = process.cwd() + "\\.visual-check";
 const baseUrl = process.env.SITE_URL || "http://127.0.0.1:3000";
 const executablePath = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+const motionPreference = process.env.REDUCED_MOTION === "0" ? "no-preference" : "reduce";
 const viewports = [
   ["desktop-1920", 1920, 1080],
   ["desktop-1440", 1440, 900],
@@ -57,9 +58,9 @@ async function routeMetrics(page, route) {
 
 try {
   for (const [name, width, height] of viewports) {
-    const context = await browser.newContext({ viewport: { width, height }, reducedMotion: "reduce", locale: "es-PE" });
+    const context = await browser.newContext({ viewport: { width, height }, reducedMotion: motionPreference, locale: "es-PE" });
     await context.addInitScript(() => {
-      sessionStorage.setItem("irp-intro-v4", "seen");
+      sessionStorage.setItem("irp-intro-v16", "seen");
       localStorage.setItem("irp_cookie_consent_v1", JSON.stringify({ necessary: true, analytics: false, optional: false, savedAt: new Date().toISOString() }));
     });
     const page = await context.newPage();

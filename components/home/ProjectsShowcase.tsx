@@ -251,7 +251,7 @@ export function ProjectsShowcase({ content }: { content: HomeContent["projects"]
           {content.description}
         </FadeInUp>
         <FadeInUp className={styles.ctaReveal} delay={0.18} duration={0.58} offset={14}>
-          <Link href={content.cta.href} className={styles.cta}>
+          <Link href={content.cta.href} className={styles.cta} data-magnetic>
             {content.cta.label} <ArrowUpRight aria-hidden="true" />
           </Link>
         </FadeInUp>

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import Script from "next/script";
 import "./globals.css";
 import { NavigationTransition } from "@/components/NavigationTransition";
 import { siteConfig } from "@/data/site";
@@ -53,7 +54,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="es-PE" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: introPreflight }} />
+        <Script id="irp-home-intro-preflight" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: introPreflight }} />
         <style dangerouslySetInnerHTML={{ __html: introFirstPaintCss }} />
       </head>
       <body className={plusJakartaSans.variable}>

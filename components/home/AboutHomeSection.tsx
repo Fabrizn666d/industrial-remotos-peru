@@ -131,7 +131,7 @@ export function AboutHomeSection() {
         </div>
 
         <FadeInUp visible={isVisible} delay={0.76} duration={0.62} offset={10}>
-          <Link href="/nosotros" className={styles.editorialLink}>
+          <Link href="/nosotros" className={styles.editorialLink} data-magnetic>
             Conoce nuestra historia <i aria-hidden="true" /><ArrowRight aria-hidden="true" />
           </Link>
         </FadeInUp>

@@ -1,10 +1,11 @@
 "use client";
 
-import { motion, useInView, useReducedMotion } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useRef } from "react";
 
 import type { HomeContent } from "@/lib/cms/content-contracts";
+import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { AnimatedCounter } from "./AnimatedCounter";
 import styles from "./ExperienceImpactSection.module.css";
 
@@ -36,7 +37,7 @@ function GaugeCard({
   const gradientId = `irp-impact-gauge-${index}`;
   const cardRef = useRef<HTMLElement>(null);
   const start = useInView(cardRef, { once: true, amount: 0.55 });
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = usePrefersReducedMotion();
   const gaugeTransition = {
     duration: 2.15,
     ease: [0.16, 1, 0.3, 1] as const,

@@ -21,18 +21,18 @@ export const defaultCmsContent: CmsContentMap = {
         proofRightTitle: "Asesoría técnica", proofRightBody: "antes de fabricar e instalar",
         advisorImage: { src: "/NUEVO/ChatGPT Image 22 sept 2026%2C 14_56_50.png", alt: "Asesor de Industrial Remotos Perú", position: "center" },
         advisorHref: "/asistente",
-        desktopVideo: { src: "/NUEVO/NUEVO%20LOADER/intro-home-pc-20261015.mp4", alt: "Presentación de Industrial Remotos Perú", position: "center" },
+        desktopVideo: { src: "/NUEVO/NUEVO%20LOADER/nuevopc.mp4?v=20261016-single-source", alt: "Presentación de Industrial Remotos Perú", position: "center" },
         mobileVideo: { src: "/NUEVO/NUEVO%20LOADER/intro-home-mobile-20261015.mp4", alt: "Presentación de Industrial Remotos Perú", position: "center" },
         desktopPoster: { src: "/NUEVO/NUEVO%20LOADER/pc-poster.webp", alt: "Presentación de Industrial Remotos Perú", position: "center" },
         mobilePoster: { src: "/NUEVO/NUEVO%20LOADER/celular-poster.webp", alt: "Presentación de Industrial Remotos Perú", position: "center" },
-        fallbackImage: { src: "/NUEVO/ChatGPT%20Image%2021%20sept%202026%2C%2011_01_15.png", alt: "Casa moderna con acceso automatizado", position: "center" }
+        fallbackImage: { src: "/NUEVO/NUEVO%20LOADER/ChatGPT%20Image%2021%20sept%202026%2C%2011_01_15.png", alt: "Casa moderna con acceso automatizado", position: "center" }
       },
       imageOnly: {
-        desktop: { src: "/NUEVO/ChatGPT Image 21 sept 2026%2C 11_01_15.png", alt: "Casa moderna con acceso automatizado", position: "center" },
-        mobile: { src: "/NUEVO/mobile-intro-last-frame.webp", alt: "Casa moderna con acceso automatizado", position: "center" }
+        desktop: { src: "/NUEVO/NUEVO%20LOADER/ChatGPT%20Image%2021%20sept%202026%2C%2011_01_15.png", alt: "Casa moderna con acceso automatizado", position: "center" },
+        mobile: { src: "/NUEVO/NUEVO%20LOADER/mobile-intro-last-frame.webp", alt: "Casa moderna con acceso automatizado", position: "center" }
       },
       videoOnly: {
-        desktop: { src: "/NUEVO/NUEVO%20LOADER/intro-home-pc-20261015.mp4", alt: "Presentación de Industrial Remotos Perú", position: "center" },
+        desktop: { src: "/NUEVO/NUEVO%20LOADER/nuevopc.mp4?v=20261016-single-source", alt: "Presentación de Industrial Remotos Perú", position: "center" },
         mobile: { src: "/NUEVO/NUEVO%20LOADER/intro-home-mobile-20261015.mp4", alt: "Presentación de Industrial Remotos Perú", position: "center" },
         desktopPoster: { src: "/NUEVO/NUEVO%20LOADER/pc-poster.webp", alt: "Presentación de Industrial Remotos Perú", position: "center" },
         mobilePoster: { src: "/NUEVO/NUEVO%20LOADER/celular-poster.webp", alt: "Presentación de Industrial Remotos Perú", position: "center" }

@@ -169,7 +169,7 @@ export function NeedsSection({ content }: { content: HomeContent["needs"] }) {
         </motion.div>
 
         <motion.div className={styles.ctaWrap} variants={fadeUp}>
-          <Link href={content.cta.href} className={styles.cta}>
+          <Link href={content.cta.href} className={styles.cta} data-magnetic>
             <span><ArrowRight aria-hidden="true" /></span>
             <b>{content.cta.label}</b>
           </Link>

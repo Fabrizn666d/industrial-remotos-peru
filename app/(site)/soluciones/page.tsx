@@ -174,10 +174,10 @@ export default function SolutionsPage() {
           <h2 id="closing-title">Hagamos espacio<br /><span>para tu proyecto.</span></h2>
           <i aria-hidden="true" />
           <p>Cuéntanos tu idea y te ayudamos a encontrar la mejor solución para hacerla realidad.</p>
-          <Link href="/contacto">Conversemos <ArrowRight aria-hidden="true" /></Link>
+          <Link href="/contacto" data-magnetic>Conversemos <ArrowRight aria-hidden="true" /></Link>
         </div>
         <div className={styles.closingMedia} aria-hidden="true" data-motion-item data-motion-direction="right" data-motion-mask>
-          <Image src={closingImage} alt="" fill sizes="(min-width: 900px) 44vw, 100vw" />
+          <Image src={closingImage} alt="" fill sizes="(min-width: 900px) 44vw, 100vw" data-motion-parallax="18" />
           <span />
         </div>
       </section>

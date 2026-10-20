@@ -69,6 +69,19 @@ function normalizeDoorTaxonomy<K extends CmsKey>(key: K, content: CmsContentMap[
       "/NUEVO/NUEVO%20LOADER/CELULAR.mp4"
     ]);
     const defaultHero = defaultCmsContent.home.hero;
+    const brokenDesktopHeroImages = new Set([
+      "/NUEVO/ChatGPT%20Image%2021%20sept%202026%2C%2011_01_15.png",
+      "/NUEVO/ChatGPT Image 21 sept 2026%2C 11_01_15.png"
+    ]);
+    if (brokenDesktopHeroImages.has(home.hero.composition.fallbackImage.src)) {
+      home.hero.composition.fallbackImage = structuredClone(defaultHero.composition.fallbackImage);
+    }
+    if (brokenDesktopHeroImages.has(home.hero.imageOnly.desktop.src)) {
+      home.hero.imageOnly.desktop = structuredClone(defaultHero.imageOnly.desktop);
+    }
+    if (home.hero.imageOnly.mobile.src === "/NUEVO/mobile-intro-last-frame.webp") {
+      home.hero.imageOnly.mobile = structuredClone(defaultHero.imageOnly.mobile);
+    }
     if (legacyIntroVideos.has(home.hero.composition.desktopVideo.src) || legacyIntroVideos.has(home.hero.composition.mobileVideo.src)) {
       home.hero.composition.desktopVideo = structuredClone(defaultHero.composition.desktopVideo);
       home.hero.composition.mobileVideo = structuredClone(defaultHero.composition.mobileVideo);
@@ -76,8 +89,22 @@ function normalizeDoorTaxonomy<K extends CmsKey>(key: K, content: CmsContentMap[
       home.hero.composition.mobilePoster = structuredClone(defaultHero.composition.mobilePoster);
       home.hero.composition.fallbackImage = structuredClone(defaultHero.composition.fallbackImage);
     }
+    const staleDesktopIntroVideos = new Set([
+      "/NUEVO/NUEVO%20LOADER/intro-home-pc-20261015.mp4",
+      "/NUEVO/NUEVO%20LOADER/nuevopc.mp4"
+    ]);
+    const compositionDesktopBase = home.hero.composition.desktopVideo.src.split("?")[0];
+    if (staleDesktopIntroVideos.has(compositionDesktopBase)
+      && home.hero.composition.desktopVideo.src !== defaultHero.composition.desktopVideo.src) {
+      home.hero.composition.desktopVideo = structuredClone(defaultHero.composition.desktopVideo);
+    }
     if (legacyIntroVideos.has(home.hero.videoOnly.desktop.src) || legacyIntroVideos.has(home.hero.videoOnly.mobile.src)) {
       home.hero.videoOnly = structuredClone(defaultHero.videoOnly);
+    }
+    const videoOnlyDesktopBase = home.hero.videoOnly.desktop.src.split("?")[0];
+    if (staleDesktopIntroVideos.has(videoOnlyDesktopBase)
+      && home.hero.videoOnly.desktop.src !== defaultHero.videoOnly.desktop.src) {
+      home.hero.videoOnly.desktop = structuredClone(defaultHero.videoOnly.desktop);
     }
     const legacyNeeds = new Set(["Puertas automáticas / Principales", "Puertas a medida", "Puertas de Garaje y Principales a Medida"]);
     const expectedNeedsOrder = defaultCmsContent.home.needs.services.map((item) => item.id);

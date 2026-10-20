@@ -71,7 +71,7 @@ export default async function AboutPage({ searchParams }: { searchParams?: Promi
             <h2 id="values-title">{content.values.title}<br /><span>{content.values.titleAccent}</span></h2>
             <div className={styles.valueItems}>{content.values.items.map((item, index) => { const Icon = valueIcons[index % valueIcons.length]; return <article key={item.id}><Icon aria-hidden="true" /><div><h3>{item.title}</h3><p>{item.body}</p></div></article>; })}</div>
           </div>
-          <div className={styles.valuesMedia} data-motion-item data-motion-direction="right" data-motion-mask><Image src={content.values.image.src} alt={content.values.image.alt} fill sizes="(min-width: 760px) 46vw, 100vw" className={styles.cover} style={{ objectPosition: objectPosition[content.values.image.position] }} /></div>
+          <div className={styles.valuesMedia} data-motion-item data-motion-direction="right" data-motion-mask><Image src={content.values.image.src} alt={content.values.image.alt} fill sizes="(min-width: 760px) 46vw, 100vw" className={styles.cover} style={{ objectPosition: objectPosition[content.values.image.position] }} data-motion-parallax="16" /></div>
         </div>
       </section>}
 
@@ -83,13 +83,13 @@ export default async function AboutPage({ searchParams }: { searchParams?: Promi
             <h2 id="visit-title">Visítanos y conversemos</h2>
             <div className={styles.mapFrame}>{mapEmbed ? <iframe title="Mapa de ubicación de Industrial Remotos Perú" src={mapEmbed} loading="lazy" referrerPolicy="no-referrer-when-downgrade" /> : <div className={styles.mapEmpty}><MapPin aria-hidden="true" /><span>Ubicación por configurar</span></div>}</div>
             <p><MapPin aria-hidden="true" />{company.location || company.address || "Ubicación por configurar"}</p>
-            {mapHref && <a className={styles.directions} href={mapHref} target="_blank" rel="noreferrer"><Navigation aria-hidden="true" />Cómo llegar</a>}
+            {mapHref && <a className={styles.directions} href={mapHref} target="_blank" rel="noreferrer" data-magnetic><Navigation aria-hidden="true" />Cómo llegar</a>}
           </div>
           <div className={styles.contactColumn} data-motion-item data-motion-direction="right">
             <div className={styles.speech}>{content.cta.title}</div>
             <Image src={content.cta.image.src} alt={content.cta.image.alt} width={1024} height={1536} sizes="(min-width: 760px) 330px, 230px" className={styles.character} />
             <div className={styles.contactActions}>
-              <a className={styles.whatsapp} href={whatsappHref} target="_blank" rel="noreferrer"><MessageCircle aria-hidden="true" />{content.cta.label}</a>
+              <a className={styles.whatsapp} href={whatsappHref} target="_blank" rel="noreferrer" data-magnetic><MessageCircle aria-hidden="true" />{content.cta.label}</a>
               <a className={styles.phone} href={`tel:+${company.whatsappNumber}`}><Phone aria-hidden="true" />{company.phoneDisplay}</a>
             </div>
           </div>

@@ -148,7 +148,7 @@ export function StatsWaveSection({ content }: { content: HomeContent["process"] 
               </div>
             ))}
           </div>
-          <Link className={styles.cta} href={content.cta.href}>
+          <Link className={styles.cta} href={content.cta.href} data-magnetic>
             {content.cta.label} <ArrowRight aria-hidden="true" />
           </Link>
         </motion.div>

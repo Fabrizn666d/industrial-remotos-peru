@@ -11,8 +11,10 @@ import { PageTransition } from "@/components/PageTransition";
 import { NavigationTransitionConfigBridge } from "@/components/NavigationTransitionConfigBridge";
 import { PublicMotionRuntime } from "@/components/PublicMotionRuntime";
 import { PremiumScrollIndicator } from "@/components/PremiumScrollIndicator";
+import { MagneticButtonsRuntime } from "@/components/motion/MagneticButtonsRuntime";
 import { ContactDialogProvider } from "@/components/ContactDialog";
 import { getCmsDocument } from "@/lib/cms/content-repository";
+import "@/app/public-premium.css";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +28,7 @@ export default async function SiteLayout({ children }: Readonly<{ children: Reac
           <HomeIntroProvider>
             <NavigationTransitionConfigBridge config={company.routeTransition} />
             <PublicMotionRuntime />
+            <MagneticButtonsRuntime />
             <PremiumScrollIndicator />
             <Header />
             <PageTransition>{children}</PageTransition>

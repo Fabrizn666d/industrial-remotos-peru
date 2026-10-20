@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeft, ArrowRight, Check, CircleCheck, FolderPlus, Pencil, RotateCw, Smartphone, Trash2, Upload } from "lucide-react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -13,6 +13,7 @@ import { finishes, products } from "@/data/products";
 import { CUSTOM_ENTRY_DESIGN_ID, pricingDefinition, supportsCustomDesign, type PublishedPricingDefinition } from "@/lib/pricing/catalog";
 import { calculateItemPrice, formatPublicPrice, PROPOSAL_DISCLAIMER } from "@/lib/pricing/engine";
 import { usePublicPricingCatalog } from "@/lib/pricing/use-public-catalog";
+import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import type { ConfiguratorChoiceKey, ConfiguratorStep } from "@/types/configurator";
 
 type Answers = { width: string; height: string; measurementsUnknown: boolean; subtype: string; design: string; panel: string; automation: string; model: string; variant: string; openingSystem: string; material: string; finish: string; notes: string; accessories: string[]; customDesignAttachmentId: string; customDesignAccessToken: string; customDesignName: string; customDesignUrl: string; customDesignDraftId: string };
@@ -81,7 +82,7 @@ type ConfiguratorProps = {
 };
 
 export function Configurator({ embedded = false, initialProductId, initialNotes, source }: ConfiguratorProps = {}) {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = usePrefersReducedMotion();
   const publicCatalog = usePublicPricingCatalog();
   const router = useRouter();
   const params = useSearchParams();
@@ -275,7 +276,7 @@ function ReviewPanel({ embedded, productId, productName, answers, openingLabel, 
 }
 
 function PreparedPreview({ visual }: { visual: ConfiguratorVisualSlot }) {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = usePrefersReducedMotion();
   const [shown, setShown] = useState(visual);
   useEffect(() => {
     if (visual.imageSrc === shown.imageSrc && visual.position === shown.position) { setShown(visual); return; }

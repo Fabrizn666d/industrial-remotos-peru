@@ -1,246 +1,271 @@
+import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { chromium } from "playwright-core";
 
-const baseUrl = process.env.SITE_URL || "http://127.0.0.1:3000";
-const mode = process.env.AUDIT_MODE || "dev";
-const output = path.resolve(".visual-audit", "intro-gsap", mode);
-const browser = await chromium.launch({ executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe", headless: true });
-const report = { baseUrl, mode, viewports: {}, performance: {}, errors: [], failures: [] };
-const check = (condition, label) => { if (!condition) report.failures.push(label); };
+const baseUrl = process.env.SITE_URL || "http://localhost:3000";
+const output = path.resolve(".visual-audit", "home-intro-current");
+const chrome = process.env.CHROME_PATH || "C:/Program Files/Google/Chrome/Application/chrome.exe";
+const browser = await chromium.launch({ executablePath: chrome, headless: true });
+const report = { baseUrl, output, tests: [], errors: [] };
 await mkdir(output, { recursive: true });
 
-function instrument() {
-  localStorage.setItem("irp_cookie_consent_v1", JSON.stringify({ necessary: true, analytics: false, optional: false, savedAt: new Date().toISOString() }));
-  window.__qa = { video: null, endedAt: null, frames: [], longTasks: [], firstMediaTime: null, revealSamples: [] };
-  new PerformanceObserver(list => {
-    for (const e of list.getEntries()) window.__qa.longTasks.push({ start: e.startTime, duration: e.duration, name: e.name });
-  }).observe({ type: "longtask", buffered: true });
-  let previous = null;
-  let lastReducedSample = 0;
-  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const tick = now => {
-    const video = document.querySelector(".irp-hero__video");
-    if (video && !window.__qa.video) {
-      window.__qa.video = video;
-      video.addEventListener("ended", () => { window.__qa.endedAt = performance.now(); }, { once: true });
+function auditInit({ rejectPlay = false } = {}) {
+  localStorage.setItem("irp_cookie_consent_v1", JSON.stringify({ necessary: true, analytics: false, optional: false }));
+  window.__introAudit = { playCalls: 0, endedAt: null, videoNodeCount: 0, mediaResets: 0, playingEvents: 0, lastMediaTime: 0 };
+  const nativePlay = HTMLMediaElement.prototype.play;
+  HTMLMediaElement.prototype.play = function () {
+    if (this.matches?.(".irp-hero__video")) {
+      window.__introAudit.playCalls += 1;
+      if (rejectPlay) return Promise.reject(new DOMException("Rechazo controlado", "NotAllowedError"));
     }
-    if (video?.currentTime > 0 && window.__qa.firstMediaTime === null) window.__qa.firstMediaTime = video.currentTime;
-    if (video && video.currentTime >= video.duration - 5.3 && video.currentTime <= video.duration - 2.5) {
-      if (previous !== null) window.__qa.frames.push({ at: now, delta: now - previous });
-      previous = now;
-    } else previous = null;
-    if (reduced && video && video.currentTime >= 5 && video.currentTime <= 7.5 && now - lastReducedSample >= 75) {
-      lastReducedSample = now;
-      window.__qa.revealSamples.push({
-        videoTime: video.currentTime,
-        title: [...document.querySelectorAll(".irp-hero__title-line")]
-          .filter(el => getComputedStyle(el).display !== "none")
-          .map(el => +getComputedStyle(el).opacity)
-      });
-    }
-    requestAnimationFrame(tick);
+    return nativePlay.call(this);
   };
-  requestAnimationFrame(tick);
-}
-
-async function state(page) {
-  return page.evaluate(() => {
+  const observe = () => {
     const video = document.querySelector(".irp-hero__video");
+    if (!video || window.__introAudit.video === video) return;
+    window.__introAudit.video = video;
+    window.__introAudit.videoNodeCount += 1;
+    video.addEventListener("playing", () => { window.__introAudit.playingEvents += 1; });
+    video.addEventListener("timeupdate", () => {
+      if (video.currentTime + .08 < window.__introAudit.lastMediaTime) window.__introAudit.mediaResets += 1;
+      window.__introAudit.lastMediaTime = video.currentTime;
+    });
+    video.addEventListener("ended", () => { window.__introAudit.endedAt = performance.now(); }, { once: true });
+  };
+  new MutationObserver(observe).observe(document, { childList: true, subtree: true });
+  document.addEventListener("DOMContentLoaded", observe, { once: true });
+}
+
+async function readState(page) {
+  return page.evaluate(() => {
     const hero = document.querySelector(".irp-hero");
-    const rect = selector => {
-      const el = document.querySelector(selector);
-      if (!el) return null;
-      const r = el.getBoundingClientRect();
-      return { x: r.x, y: r.y, width: r.width, height: r.height };
-    };
-    const opacity = selector => {
-      const el = document.querySelector(selector);
-      return el ? +getComputedStyle(el).opacity : null;
-    };
+    const video = document.querySelector(".irp-hero__video");
+    const fallback = document.querySelector(".irp-hero__fallback");
+    const title = [...document.querySelectorAll(".irp-hero__title-line")]
+      .find((item) => getComputedStyle(item).display !== "none");
+    const opacity = (item) => item ? Number(getComputedStyle(item).opacity) : null;
+    const visibility = (item) => item ? getComputedStyle(item).visibility : null;
+    const quality = video?.getVideoPlaybackQuality?.();
     return {
-      now: performance.now(), status: hero?.dataset.introStatus, settled: hero?.dataset.heroSettled,
-      currentTime: video?.currentTime, duration: video?.duration, playbackRate: video?.playbackRate,
-      firstMediaTime: window.__qa.firstMediaTime, revealVideoTime: +hero?.dataset.revealVideoTime,
-      revealStartedAt: +hero?.dataset.revealStartedAt, endedAt: window.__qa.endedAt,
-      sameVideoNode: window.__qa.video === video, currentSrc: video?.currentSrc, poster: video?.getAttribute("poster"),
-      safetySrc: document.querySelector(".irp-hero__last-frame img")?.currentSrc,
-      mediaBackground: getComputedStyle(document.querySelector(".irp-hero__media")).backgroundImage,
-      fallbackMounted: !!document.querySelector(".irp-hero__fallback"),
-      videoRect: rect(".irp-hero__video"), heroRect: rect(".irp-hero"), safetyRect: rect(".irp-hero__last-frame"),
-      advisorRect: rect(".irp-hero__advisor"), titleRect: rect(".irp-hero h1"), waveRect: rect(".irp-hero__wave"),
-      objectFit: video && getComputedStyle(video).objectFit, objectPosition: video && getComputedStyle(video).objectPosition,
-      innerWidth, clientWidth: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth,
-      logoOpacity: opacity(".irp-entry-loader__brand-stage"), headerOpacity: opacity(".site-header"),
-      advisorOpacity: opacity(".irp-hero__advisor-stage"), actionsOpacity: opacity(".irp-hero__actions"),
-      titleOpacities: [...document.querySelectorAll(".irp-hero__title-line")]
-        .filter(el => getComputedStyle(el).display !== "none")
-        .map(el => +getComputedStyle(el).opacity),
-      assistantOpacity: opacity(".quote-assistant"), railOpacity: opacity(".premium-scroll-indicator"),
-      railDisplay: getComputedStyle(document.querySelector(".premium-scroll-indicator")).display,
-      activeHeroAnimations: document.querySelector(".irp-hero").getAnimations({ subtree: true }).length,
-      promotions: [...document.querySelectorAll(".irp-hero *, .site-header")]
-        .filter(el => !["", "auto"].includes(getComputedStyle(el).willChange)).map(el => el.className)
+      now: performance.now(),
+      status: hero?.dataset.introStatus, failed: hero?.dataset.mediaFailed,
+      playing: hero?.dataset.videoPlaying, settled: hero?.dataset.heroSettled,
+      currentSrc: video?.currentSrc, currentTime: video?.currentTime ?? 0,
+      duration: video?.duration ?? 0, paused: video?.paused, ended: video?.ended,
+      mediaError: video?.error ? { code: video.error.code, message: video.error.message } : null,
+      fallbackOpacity: opacity(fallback), videoOpacity: opacity(video),
+      titleOpacity: opacity(title), actionsOpacity: opacity(document.querySelector(".irp-hero__actions")),
+      headerOpacity: opacity(document.querySelector(".site-header")),
+      revealStartedAt: Number(hero?.dataset.revealStartedAt || 0),
+      revealVideoTime: Number(hero?.dataset.revealVideoTime || 0),
+      firstVideoFrameAt: Number(hero?.dataset.firstVideoFrameAt || 0),
+      endedAt: window.__introAudit?.endedAt ?? null,
+      playCalls: window.__introAudit?.playCalls ?? 0,
+      videoNodeCount: window.__introAudit?.videoNodeCount ?? 0,
+      mediaResets: window.__introAudit?.mediaResets ?? 0,
+      playingEvents: window.__introAudit?.playingEvents ?? 0,
+      totalVideoFrames: quality?.totalVideoFrames ?? null,
+      droppedVideoFrames: quality?.droppedVideoFrames ?? null,
+      sessionSeen: sessionStorage.getItem("irp-intro-v16")
     };
   });
 }
 
-const nearRect = (a, b) => a && b && ["x", "y", "width", "height"].every(k => Math.abs(a[k] - b[k]) < .5);
-async function open(viewport, recording = false, reduce = false) {
-  const context = await browser.newContext({
-    viewport, locale: "es-PE", reducedMotion: reduce ? "reduce" : "no-preference",
-    ...(recording ? { recordVideo: { dir: output, size: viewport } } : {})
+function watchErrors(page, label) {
+  page.on("pageerror", (error) => report.errors.push(`${label}: ${error.message}`));
+  page.on("response", (response) => {
+    if (response.status() < 400) return;
+    const url = response.url();
+    if (url.includes("intro-home-") || url.includes("nuevopc.mp4") || url.includes("/_next/")) {
+      report.errors.push(`${label}: HTTP ${response.status()} ${url}`);
+    }
   });
-  await context.addInitScript(instrument);
+  page.on("console", (message) => {
+    if (message.type() === "error" && !/Recovered from media failure|Failed to load resource/.test(message.text())) {
+      report.errors.push(`${label}: ${message.text()}`);
+    }
+  });
+}
+
+async function normalPlayback(name, viewport, expectedFile, expectedDuration) {
+  // Browser recording at 1080p/60 fps can throttle media decoding and makes a
+  // wall-clock assertion misleading. Validate timing in an unrecorded context.
+  const context = await browser.newContext({ viewport });
+  await context.addInitScript(auditInit, {});
   const page = await context.newPage();
-  page.on("pageerror", error => report.errors.push(error.message));
-  await page.goto(baseUrl + "/?intro=1", { waitUntil: "domcontentloaded" });
-  return { page, context };
+  watchErrors(page, name);
+  await page.goto(`${baseUrl}/?intro=1`, { waitUntil: "domcontentloaded", timeout: 30_000 });
+  await page.waitForSelector(".irp-hero__video");
+  const samples = [];
+  const deadline = Date.now() + 25_000;
+  while (Date.now() < deadline) {
+    const state = await readState(page);
+    samples.push(state);
+    if (state.status === "completed") break;
+    await page.waitForTimeout(80);
+  }
+  const final = samples.at(-1);
+  const progressing = samples.filter((sample) => sample.currentTime > .01);
+  const resets = progressing.slice(1).filter((sample, index) => sample.currentTime + .03 < progressing[index].currentTime);
+  const prematureHero = samples.some((sample) => !sample.ended
+    && sample.duration - sample.currentTime > 4.15 && sample.titleOpacity > .01);
+  assert.match(final.currentSrc, new RegExp(expectedFile.replaceAll(".", "\\.")));
+  assert.ok(Math.abs(final.duration - expectedDuration) < .02, `${name}: duración inesperada ${final.duration}`);
+  assert.equal(final.currentTime, final.duration, `${name}: el video no llegó al final`);
+  assert.equal(final.ended, true, `${name}: no se recibió ended`);
+  assert.equal(final.status, "completed", `${name}: el hero no terminó`);
+  assert.equal(final.failed, undefined, `${name}: mediaFailed inesperado`);
+  assert.equal(final.playCalls, 1, `${name}: el controlador no fue el único propietario de reproducción`);
+  assert.equal(final.videoNodeCount, 1, `${name}: React montó ${final.videoNodeCount} elementos de video`);
+  assert.equal(final.mediaResets, 0, `${name}: el video retrocedió durante la hidratación`);
+  assert.equal(final.playingEvents, 1, `${name}: el video inició ${final.playingEvents} veces`);
+  assert.ok(progressing[0]?.currentTime < .75, `${name}: el primer muestreo visible empezó tarde (${progressing[0]?.currentTime}s)`);
+  assert.ok(final.firstVideoFrameAt > 0, `${name}: no se registró el primer fotograma`);
+  assert.equal(resets.length, 0, `${name}: currentTime retrocedió`);
+  assert.equal(prematureHero, false, `${name}: el hero apareció antes de ended`);
+  assert.ok(Math.abs(final.revealVideoTime - (final.duration - 4)) < .12,
+    `${name}: la transición no comenzó en los últimos cuatro segundos del video (video=${final.revealVideoTime}, esperado=${final.duration - 4})`);
+  assert.ok(final.endedAt && final.endedAt - final.revealStartedAt > 3_600
+    && final.endedAt - final.revealStartedAt < 4_400,
+    `${name}: el reloj real se apartó de cuatro segundos (delta=${final.endedAt - final.revealStartedAt}ms)`);
+  assert.equal(final.actionsOpacity, 1, `${name}: acciones finales invisibles`);
+  assert.equal(final.sessionSeen, "seen", `${name}: sesión no registrada`);
+  await page.screenshot({ path: path.join(output, `${name}-final.png`) });
+  await context.close();
+  report.tests.push({ name, passed: true, source: final.currentSrc, duration: final.duration,
+    samples: samples.length, resets: resets.length, firstVisibleMediaTime: progressing[0]?.currentTime,
+    firstVideoFrameAt: final.firstVideoFrameAt, totalVideoFrames: final.totalVideoFrames,
+    droppedVideoFrames: final.droppedVideoFrames,
+    revealVideoTime: final.revealVideoTime,
+    revealLeadMs: final.endedAt - final.revealStartedAt });
+}
+
+async function heldDownload(name, releaseAfterMs, expectFailure) {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  await context.addInitScript(auditInit, {});
+  let release;
+  const gate = new Promise((resolve) => { release = resolve; });
+  await context.route(/\/(?:intro-home-[^/]*|nuevopc)\.mp4(?:\?.*)?$/, async (route) => {
+    await gate;
+    if (expectFailure) await route.abort("failed");
+    else await route.continue();
+  });
+  const page = await context.newPage();
+  watchErrors(page, name);
+  await page.goto(`${baseUrl}/?intro=1`, { waitUntil: "domcontentloaded", timeout: 30_000 });
+  await page.waitForSelector(".irp-hero__video");
+  const waiting = await readState(page);
+  assert.equal(waiting.titleOpacity, 0, `${name}: hero prematuro durante la espera`);
+  assert.equal(waiting.currentTime, 0, `${name}: video avanzó antes de descargar`);
+  assert.equal(waiting.fallbackOpacity, 0, `${name}: apareció una imagen encima del video durante la espera`);
+  if (releaseAfterMs) await page.waitForTimeout(releaseAfterMs);
+  release();
+  await page.waitForFunction((failed) => {
+    const status = document.querySelector(".irp-hero")?.dataset.introStatus;
+    return failed ? status === "failed" : status === "playing";
+  }, expectFailure, { timeout: expectFailure ? 5_000 : 10_000 });
+  const released = await readState(page);
+  if (expectFailure) {
+    assert.equal(released.fallbackOpacity, 1, `${name}: fallback final invisible`);
+    assert.equal(released.titleOpacity, 1, `${name}: título invisible al recuperar`);
+    assert.equal(released.actionsOpacity, 1, `${name}: acciones invisibles al recuperar`);
+    assert.equal(released.headerOpacity, 1, `${name}: menú invisible al recuperar`);
+  } else {
+    assert.equal(released.playCalls, 1, `${name}: el controlador no inició exactamente una vez tras la espera`);
+    assert.equal(released.playing, "true", `${name}: no presentó fotograma`);
+  }
+  await context.close();
+  report.tests.push({ name, passed: true, waiting, released });
+}
+
+async function rejectedPlay() {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  await context.addInitScript(auditInit, { rejectPlay: true });
+  let release;
+  const gate = new Promise((resolve) => { release = resolve; });
+  await context.route(/\/(?:intro-home-[^/]*|nuevopc)\.mp4(?:\?.*)?$/, async (route) => { await gate; await route.abort("failed"); });
+  const page = await context.newPage();
+  await page.goto(`${baseUrl}/?intro=1`, { waitUntil: "domcontentloaded" });
+  await page.waitForFunction(() => document.querySelector(".irp-hero")?.dataset.introStatus === "failed");
+  const state = await readState(page);
+  assert.equal(state.playCalls, 1);
+  assert.equal(state.fallbackOpacity, 1);
+  assert.equal(state.titleOpacity, 1);
+  assert.equal(state.actionsOpacity, 1);
+  assert.equal(state.headerOpacity, 1);
+  assert.equal(await page.locator(".irp-hero__actions a").first().isVisible(), true);
+  release();
+  await context.close();
+  report.tests.push({ name: "play-rejected", passed: true, state });
+}
+
+async function retainedDownload() {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  await context.addInitScript(auditInit, {});
+  let release;
+  const gate = new Promise((resolve) => { release = resolve; });
+  await context.route(/\/(?:intro-home-[^/]*|nuevopc)\.mp4(?:\?.*)?$/, async (route) => {
+    await gate;
+    await route.abort("failed");
+  });
+  const page = await context.newPage();
+  await page.goto(`${baseUrl}/?intro=1`, { waitUntil: "domcontentloaded", timeout: 30_000 });
+  await page.waitForSelector(".irp-hero__video");
+  const waiting = await readState(page);
+  assert.equal(waiting.currentTime, 0);
+  assert.equal(waiting.fallbackOpacity, 0);
+  await page.waitForFunction(() => document.querySelector(".irp-hero")?.dataset.introStatus === "failed", null, { timeout: 15_000 });
+  const recovered = await readState(page);
+  assert.equal(recovered.fallbackOpacity, 1);
+  assert.equal(recovered.titleOpacity, 1);
+  assert.equal(recovered.actionsOpacity, 1);
+  assert.equal(recovered.headerOpacity, 1);
+  release();
+  await context.close();
+  report.tests.push({ name: "retained-download-timeout", passed: true, waiting, recovered });
+}
+
+async function sessionPolicy() {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  await context.addInitScript(auditInit, {});
+  const page = await context.newPage();
+  watchErrors(page, "session-policy");
+  await page.goto(`${baseUrl}/?intro=1`, { waitUntil: "domcontentloaded" });
+  await page.waitForFunction(() => document.querySelector(".irp-hero")?.dataset.introStatus === "completed", null, { timeout: 25_000 });
+  await page.goto(`${baseUrl}/`, { waitUntil: "domcontentloaded" });
+  await page.waitForFunction(() => document.querySelector(".irp-hero")?.dataset.introStatus === "skipped");
+  const reload = await readState(page);
+  assert.equal(reload.status, "skipped");
+  assert.equal(reload.paused, true);
+  await page.goto(`${baseUrl}/nosotros`, { waitUntil: "domcontentloaded" });
+  await page.goBack({ waitUntil: "domcontentloaded" });
+  await page.waitForFunction(() => document.querySelector(".irp-hero")?.dataset.introStatus === "skipped");
+  const returned = await readState(page);
+  assert.equal(returned.status, "skipped");
+  await page.goto(`${baseUrl}/?intro=1`, { waitUntil: "domcontentloaded" });
+  await page.waitForFunction(() => document.querySelector(".irp-hero")?.dataset.introStatus === "playing", null, { timeout: 10_000 });
+  const forced = await readState(page);
+  assert.equal(forced.status, "playing");
+  assert.equal(forced.playCalls, 1);
+  await context.close();
+  report.tests.push({ name: "session-policy", passed: true, reload, returned, forced });
 }
 
 try {
-  // Natural playback: no seeking, pausing or externally advancing the timeline.
-  for (const [name, width, height] of [["desktop",1440,900],["wide",1920,1080],["mobile",390,844]]) {
-    const { page, context } = await open({ width, height }, true);
-    const frames = {};
-    const cdp = await context.newCDPSession(page);
-    const shot = async label => {
-      frames[label] = await state(page);
-      const image = await cdp.send("Page.captureScreenshot", { format: "jpeg", quality: 85 });
-      await writeFile(path.join(output, name + "-" + label + ".jpg"), Buffer.from(image.data, "base64"));
-    };
-    await shot("first-paint");
-    for (const [label, seconds] of [["video-100ms",.1],["video-500ms",.5],["logo-before-fade",2.5],["logo-mid-fade",3.025],["logo-gone",3.55]]) {
-      await page.waitForFunction(t => document.querySelector("video")?.currentTime >= t, seconds);
-      await shot(label);
-    }
-    await page.waitForFunction(() => document.querySelector(".irp-hero")?.dataset.revealStartedAt);
-    for (const ms of [0,250,500,800,1100,1500,1900]) {
-      await page.waitForFunction(offset => performance.now() >= +document.querySelector(".irp-hero").dataset.revealStartedAt + offset, ms);
-      await shot("reveal-" + ms + "ms");
-    }
-    await page.waitForFunction(() => { const v = document.querySelector("video"); return v.currentTime >= v.duration - .2; });
-    await shot("ended-minus-200ms");
-    await page.waitForFunction(() => window.__qa.endedAt !== null);
-    for (const ms of [0,100,500]) {
-      await page.waitForFunction(offset => performance.now() >= window.__qa.endedAt + offset, ms);
-      await shot(ms === 0 ? "ended" : "ended-plus-" + ms + "ms");
-    }
-    await page.waitForTimeout(1600);
-    const final = await state(page);
-    const start = frames["first-paint"], before = frames["ended-minus-200ms"];
-    check(start.logoOpacity === 1, name + ": logo absent at first paint");
-    check(name === "mobile"
-      ? start.currentSrc?.includes("HERO%20MOPVIL.mp4") && start.mediaBackground.includes("mobile-intro-first-frame.webp")
-      : start.currentSrc?.includes("Garage_door_opening_transition_1080p_20260921110657.mp4") && start.mediaBackground.includes("garage-intro-first-frame.webp"),
-    name + ": incorrect responsive intro media");
-    check(start.headerOpacity === 0 && start.titleOpacities.every(o => o === 0), name + ": premature UI");
-    check(final.duration === 10 && final.playbackRate === 1, name + ": incorrect video playback");
-    check(final.revealVideoTime >= 5 && final.revealVideoTime < 5.15, name + ": incorrect reveal threshold");
-    check(final.settled === "true" && final.actionsOpacity === 1, name + ": incomplete timeline");
-    check(final.sameVideoNode && !final.fallbackMounted, name + ": replaced video");
-    check(nearRect(before.videoRect, final.videoRect) && nearRect(before.heroRect, final.heroRect) &&
-      nearRect(before.advisorRect, final.advisorRect) && nearRect(before.titleRect, final.titleRect) && nearRect(before.waveRect, final.waveRect), name + ": geometry jump at ended");
-    check(nearRect(final.videoRect, final.safetyRect), name + ": safety frame crop mismatch");
-    check(final.objectPosition === before.objectPosition && final.clientWidth === before.clientWidth &&
-      final.innerWidth === final.clientWidth, name + ": crop/gutter change");
-    check(final.scrollWidth === final.clientWidth, name + ": horizontal overflow");
-    check(final.activeHeroAnimations === 0 && final.promotions.length === 0, name + ": continuous animation/GPU promotions");
-    check(frames["reveal-1500ms"].assistantOpacity === 0, name + ": premature floating assistant");
-    if (name === "mobile") check(final.railDisplay === "none", "Mobile rail visible");
-    const recording = page.video();
-    await context.close();
-    const recordingPath = path.join(output, name + "-full-intro.webm");
-    await recording.saveAs(recordingPath);
-    report.viewports[name] = { frames, final, recordingPath };
-  }
-
-  // Separate run without screenshots or recording to avoid measuring capture overhead.
-  const { page: perfPage, context: perfContext } = await open({ width: 1440, height: 900 });
-  await perfPage.waitForFunction(() => document.querySelector("video")?.ended, undefined, { timeout: 20000 });
-  const perf = await perfPage.evaluate(() => {
-    const data = window.__qa.frames;
-    const sorted = data.map(f => f.delta).sort((a,b) => a-b);
-    const first = data[0]?.at ?? 0, last = data.at(-1)?.at ?? 0;
-    return { frames: data.length, averageMs: sorted.reduce((a,b)=>a+b,0)/sorted.length,
-      p95Ms: sorted[Math.floor(sorted.length * .95)], worstMs: sorted.at(-1),
-      longTasks: window.__qa.longTasks.filter(t => t.start + t.duration >= first && t.start <= last) };
-  });
-  report.performance = perf;
-  await perfContext.close();
-
-  const reduced = await open({ width: 390, height: 844 }, false, true);
-  await reduced.page.waitForFunction(() => document.querySelector(".irp-hero")?.dataset.heroSettled === "true");
-  const reducedState = await state(reduced.page);
-  const reducedSamples = await reduced.page.evaluate(() => window.__qa.revealSamples);
-  check(reducedState.advisorOpacity === 1 && reducedState.titleOpacities.every(o => o === 1), "Reduced motion incomplete");
-  check(reducedSamples.some(sample => sample.title[0] > .25 && sample.title[2] < .25),
-    "Reduced motion collapsed the title into an instant reveal");
-  await reduced.context.close();
-  report.reducedMotion = { ...reducedState, staggerObserved: reducedSamples.some(sample => sample.title[0] > .25 && sample.title[2] < .25) };
-
-  // A returning visitor must never see a 1–2 second fake intro while hydration
-  // discovers the session flag. This is intentionally checked before hydration.
-  const returningContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-  await returningContext.addInitScript(() => sessionStorage.setItem("irp-intro-v4", "seen"));
-  const returningPage = await returningContext.newPage();
-  returningPage.on("pageerror", error => report.errors.push(error.message));
-  returningPage.on("console", message => {
-    if (message.type() === "error" && /hydration|hydrated/i.test(message.text())) report.errors.push(message.text());
-  });
-  await returningPage.goto(baseUrl + "/", { waitUntil: "domcontentloaded" });
-  await returningPage.screenshot({ path: path.join(output, "returning-first-paint.jpg"), type: "jpeg", quality: 85 });
-  const returningFirstPaint = await returningPage.evaluate(() => ({
-    preflight: document.documentElement.classList.contains("irp-intro-seen"),
-    loaderDisplay: getComputedStyle(document.querySelector(".irp-entry-loader")).display,
-    videoDisplay: document.querySelector(".irp-hero__video")
-      ? getComputedStyle(document.querySelector(".irp-hero__video")).display : "absent",
-    headerOpacity: +getComputedStyle(document.querySelector(".site-header")).opacity,
-    exteriorBackground: getComputedStyle(document.querySelector(".irp-hero__media")).backgroundImage.includes("11_01_15.png")
-  }));
-  check(returningFirstPaint.preflight && returningFirstPaint.loaderDisplay === "none" &&
-    ["none", "absent"].includes(returningFirstPaint.videoDisplay) && returningFirstPaint.headerOpacity === 1 &&
-    returningFirstPaint.exteriorBackground, "Returning visit showed a partial intro before hydration");
-  await returningPage.waitForFunction(() => document.querySelector(".irp-hero")?.dataset.introStatus === "skipped");
-  await returningPage.screenshot({ path: path.join(output, "returning-settled.jpg"), type: "jpeg", quality: 85 });
-  const returningFinal = await returningPage.evaluate(() => ({
-    fallback: !!document.querySelector(".irp-hero__fallback"),
-    video: !!document.querySelector(".irp-hero__video"),
-    titleOpacity: +getComputedStyle(document.querySelector(".irp-hero__title-line")).opacity
-  }));
-  check(returningFinal.fallback && !returningFinal.video && returningFinal.titleOpacity === 1,
-    "Returning visit did not settle on the hero");
-  report.returningVisit = { firstPaint: returningFirstPaint, final: returningFinal };
-  await returningContext.close();
-
-  const forcedContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-  await forcedContext.addInitScript(() => sessionStorage.setItem("irp-intro-v4", "seen"));
-  const forcedPage = await forcedContext.newPage();
-  await forcedPage.goto(baseUrl + "/?intro=1", { waitUntil: "domcontentloaded" });
-  const forced = await forcedPage.evaluate(() => ({
-    preflight: document.documentElement.classList.contains("irp-intro-seen"),
-    loaderDisplay: getComputedStyle(document.querySelector(".irp-entry-loader")).display,
-    videoDisplay: document.querySelector(".irp-hero__video")
-      ? getComputedStyle(document.querySelector(".irp-hero__video")).display : "absent"
-  }));
-  check(!forced.preflight && forced.loaderDisplay !== "none" && !["none", "absent"].includes(forced.videoDisplay),
-    "Forced intro was skipped despite ?intro=1");
-  report.forcedVisit = forced;
-  await forcedContext.close();
-
-  const error = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-  await error.addInitScript(instrument);
-  await error.route("**/*.mp4", route => route.abort("failed"));
-  const errorPage = await error.newPage();
-  await errorPage.goto(baseUrl + "/?intro=1");
-  await errorPage.waitForFunction(() => document.querySelector(".irp-hero")?.dataset.introStatus === "failed");
-  check(await errorPage.locator(".irp-hero__fallback").count() === 1, "Real-error fallback missing");
-  await error.close();
+  await normalPlayback("desktop-cold", { width: 1440, height: 900 }, "nuevopc.mp4", 11.966667);
+  await normalPlayback("mobile-cold", { width: 390, height: 844 }, "intro-home-mobile-20261015.mp4", 11.233333);
+  await heldDownload("slow-start", 1_500, false);
+  await heldDownload("download-error", 0, true);
+  await rejectedPlay();
+  await retainedDownload();
+  await sessionPolicy();
 } catch (error) {
-  report.failures.push(error.stack);
+  report.errors.push(error.stack || String(error));
 } finally {
   await browser.close();
   await writeFile(path.join(output, "report.json"), JSON.stringify(report, null, 2));
 }
-console.log(JSON.stringify({ passed: !report.errors.length && !report.failures.length, output, performance: report.performance, failures: report.failures, errors: report.errors }, null, 2));
-if (report.errors.length || report.failures.length) process.exitCode = 1;
+
+console.log(JSON.stringify({ passed: report.errors.length === 0, output, tests: report.tests.map((test) => test.name), errors: report.errors }, null, 2));
+if (report.errors.length) process.exitCode = 1;

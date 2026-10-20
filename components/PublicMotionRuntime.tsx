@@ -3,8 +3,8 @@
 import { animate, inView } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { useLayoutEffect } from "react";
+import { PUBLIC_MOTION } from "@/components/motion/public-motion-config";
 
-const EASE = [0.16, 1, 0.3, 1] as const;
 const HERO_EVENT = "irp:route-transition-complete";
 
 type Direction = "left" | "right" | "up" | "fade";
@@ -23,39 +23,47 @@ function directionFor(element: HTMLElement, index: number): Direction {
   return index % 2 === 0 ? "left" : "right";
 }
 
-function offsetFor(direction: Direction, reduced: boolean) {
+function offsetFor(element: HTMLElement, direction: Direction, reduced: boolean) {
   if (reduced || direction === "fade") return { x: 0, y: 0 };
-  const distance = isMobile() ? 18 : 38;
+  const requested = Number(element.dataset.motionDistance);
+  const distance = Number.isFinite(requested) && requested > 0
+    ? requested
+    : isMobile() ? PUBLIC_MOTION.mobileDistance : PUBLIC_MOTION.desktopDistance;
   if (direction === "left") return { x: -distance, y: 0 };
   if (direction === "right") return { x: distance, y: 0 };
   return { x: 0, y: distance };
 }
 
-function prime(element: HTMLElement, direction: Direction, reduced: boolean, mask = false) {
+function prime(element: HTMLElement, direction: Direction, reduced: boolean, mask = false, soften = true) {
   delete element.dataset.motionSettled;
-  const { x, y } = offsetFor(direction, reduced);
+  const { x, y } = offsetFor(element, direction, reduced);
   element.style.opacity = "0";
   element.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+  if (soften && !reduced && !element.hasAttribute("data-motion-no-blur")) {
+    element.style.filter = `blur(${PUBLIC_MOTION.blur}px)`;
+  }
   if (mask && !reduced) element.style.clipPath = "inset(0 100% 0 0 round 18px)";
 }
 
 function settle(element: HTMLElement, mask = false) {
   element.style.removeProperty("opacity");
   element.style.removeProperty("transform");
+  element.style.removeProperty("filter");
   element.style.removeProperty("will-change");
   if (mask) element.style.removeProperty("clip-path");
   element.dataset.motionSettled = "true";
 }
 
-function reveal(element: HTMLElement, direction: Direction, reduced: boolean, delay = 0, mask = false) {
-  const duration = reduced ? 0.16 : mask ? 0.72 : 0.58;
-  element.style.willChange = mask ? "opacity, transform, clip-path" : "opacity, transform";
+function reveal(element: HTMLElement, direction: Direction, reduced: boolean, delay = 0, mask = false, soften = true) {
+  const duration = reduced ? 0.16 : mask ? PUBLIC_MOTION.maskDuration : PUBLIC_MOTION.revealDuration;
+  element.style.willChange = mask ? "opacity, transform, filter, clip-path" : "opacity, transform, filter";
+  const target = mask && !reduced
+    ? { opacity: 1, transform: "translate3d(0, 0, 0)", filter: "blur(0px)", clipPath: "inset(0 0% 0 0 round 18px)" }
+    : { opacity: 1, transform: "translate3d(0, 0, 0)", ...(soften ? { filter: "blur(0px)" } : {}) };
   const controls = animate(
     element,
-    mask && !reduced
-      ? { opacity: 1, transform: "translate3d(0, 0, 0)", clipPath: "inset(0 0% 0 0 round 18px)" }
-      : { opacity: 1, transform: "translate3d(0, 0, 0)" },
-    { duration, delay: reduced ? 0 : delay, ease: EASE }
+    target,
+    { duration, delay: reduced ? 0 : delay, ease: PUBLIC_MOTION.ease }
   );
   void controls.then(() => settle(element, mask));
   return () => controls.stop();
@@ -86,7 +94,7 @@ export function PublicMotionRuntime() {
 
     heroItems.forEach((item, index) => {
       const direction = directionFor(item, index);
-      prime(item, direction, reduced, item.hasAttribute("data-motion-mask"));
+      prime(item, direction, reduced, item.hasAttribute("data-motion-mask"), false);
     });
 
     const markPageReady = () => {
@@ -98,7 +106,8 @@ export function PublicMotionRuntime() {
           directionFor(item, index),
           reduced,
           index * (reduced ? 0 : 0.1),
-          item.hasAttribute("data-motion-mask")
+          item.hasAttribute("data-motion-mask"),
+          false
         ));
       });
       pendingReveals.forEach((run) => run());
@@ -141,20 +150,22 @@ export function PublicMotionRuntime() {
         item,
         directionFor(item, index),
         reduced,
-        item.hasAttribute("data-motion-mask")
+        item.hasAttribute("data-motion-mask"),
+        true
       ));
 
       const revealItems = (targets: HTMLElement[]) => {
         targets.forEach((item, index) => {
           if (item.dataset.motionSettled === "true") return;
           const explicitDelay = Number(item.dataset.motionDelay || 0);
-          const staggerDelay = Math.min(index, 5) * (reduced ? 0 : 0.085);
+          const staggerDelay = Math.min(index, 5) * (reduced ? 0 : PUBLIC_MOTION.stagger);
           cleanups.push(reveal(
             item,
             directionFor(item, index),
             reduced,
             explicitDelay + staggerDelay,
-            item.hasAttribute("data-motion-mask")
+            item.hasAttribute("data-motion-mask"),
+            true
           ));
         });
       };
@@ -178,6 +189,43 @@ export function PublicMotionRuntime() {
         item.dataset.motionDelay = String((index % 3) * (reduced ? 0 : 0.06));
       });
     });
+
+    if (!reduced) {
+      const parallaxTargets = [...root.querySelectorAll<HTMLElement>("[data-motion-parallax]")]
+        .filter((element) => !element.closest(".irp-hero, [data-motion-hero]"));
+      if (parallaxTargets.length) {
+        let frame = 0;
+        const renderParallax = () => {
+          frame = 0;
+          const viewportHeight = window.innerHeight || 1;
+          parallaxTargets.forEach((element) => {
+            const bounds = element.getBoundingClientRect();
+            if (bounds.bottom < -120 || bounds.top > viewportHeight + 120) return;
+            const requested = Number(element.dataset.motionParallax);
+            const strength = Number.isFinite(requested) && requested !== 0 ? requested : PUBLIC_MOTION.parallax;
+            const progress = (bounds.top + bounds.height / 2 - viewportHeight / 2) / viewportHeight;
+            const offset = Math.max(-strength, Math.min(strength, -progress * strength));
+            element.style.translate = `0 ${offset.toFixed(2)}px`;
+          });
+        };
+        const scheduleParallax = () => {
+          if (!frame) frame = window.requestAnimationFrame(renderParallax);
+        };
+        parallaxTargets.forEach((element) => { element.style.willChange = "translate"; });
+        window.addEventListener("scroll", scheduleParallax, { passive: true });
+        window.addEventListener("resize", scheduleParallax, { passive: true });
+        renderParallax();
+        cleanups.push(() => {
+          if (frame) window.cancelAnimationFrame(frame);
+          window.removeEventListener("scroll", scheduleParallax);
+          window.removeEventListener("resize", scheduleParallax);
+          parallaxTargets.forEach((element) => {
+            element.style.removeProperty("translate");
+            element.style.removeProperty("will-change");
+          });
+        });
+      }
+    }
 
     return () => {
       disposed = true;

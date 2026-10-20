@@ -99,7 +99,7 @@ export function Footer({ company, content }: { company: CompanyContent; content:
             {company.tiktok && <a className={styles.tiktok} href={company.tiktok} aria-label="TikTok" target="_blank" rel="noreferrer"><Music2 /></a>}
           </div>
           <p>Conoce nuestros proyectos, procesos y nuevas instalaciones.</p>
-          <a className={styles.whatsapp} href={`https://wa.me/${company.whatsappNumber}`} target="_blank" rel="noreferrer">
+          <a className={styles.whatsapp} href={`https://wa.me/${company.whatsappNumber}`} target="_blank" rel="noreferrer" data-magnetic>
             <WhatsAppIcon />
             <span>Habla con nosotros</span>
             <ArrowRight aria-hidden="true" />

@@ -2,7 +2,7 @@ import type { DoorClassification } from "@/lib/pricing/contracts";
 
 export const PUBLIC_CATALOG_VERSION = "2026.10-demo-1";
 export const CUSTOM_ENTRY_DESIGN_ID = "principal-diseno-propio";
-const customDesignProductIds = new Set(["puertas-a-medida", "puertas-contraplacadas", "seccionales"]);
+const customDesignProductIds = new Set(["puertas-a-medida", "puertas-contraplacadas", "seccionales", "puertas-principales", "techos-coberturas"]);
 export function supportsCustomDesign(productId: string) { return customDesignProductIds.has(productId); }
 
 export type ImportedDoorModel = {
@@ -132,7 +132,7 @@ const entryProposalImages = `${serviceImages}/01_Puertas_principales_a_medida/Pr
 const garageClientImages = `${serviceImages}/03_Puertas_de_garaje/Basadas_en_fotos_cliente`;
 const importedColorImages = `${serviceImages}/02_Puertas_importadas/Colores_propuestos`;
 const importedReferenceImages = `${serviceImages}/02_Puertas_importadas/Referencias_y_variantes_propuestas`;
-const contraplacadaImages = `${serviceImages}/11_Puertas_contraplacadas/Propuestas`;
+const contraplacadaSingapurImage = `${serviceImages}/11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel.webp`;
 
 const draftModel = (id: string, name: string, image: string, order: number, openingSystem?: string, subtype?: string): ImportedDoorModel => ({
   id,
@@ -207,8 +207,6 @@ const garageModels: ImportedDoorModel[] = [
   ["miel-horizontal", "Horizontal miel", "garaje-miel-horizontal.png", "Seccional"],
   ["nogal-horizontal", "Horizontal nogal", "garaje-nogal-horizontal.png", "Seccional"],
   ["peatonal-integrada", "Con puerta peatonal integrada", "garaje-peatonal-integrada.png", "Seccional"],
-  ["geometrico", "Geométrico", "garaje-geometrico.png", "Corrediza"],
-  ["negro-plata", "Negro y plata", "garaje-negro-plata.png", "Corrediza"],
 ].map(([id, name, file, openingSystem], order) => ({
   id: `garaje-${id}`,
   name,
@@ -232,6 +230,24 @@ const garageModels: ImportedDoorModel[] = [
   ],
 }));
 
+const garageCorredizaThumbnailModel: ImportedDoorModel = {
+  id: "garaje-corrediza-metalica",
+  name: "Corrediza metálica",
+  image: "/images/configurator/door-types/garage-corrediza.webp",
+  thumbnail: "/images/configurator/door-types/garage-corrediza-thumb.webp",
+  published: true,
+  order: garageModels.length,
+  openingSystem: "Corrediza",
+  openingStatus: "CONFIRMED",
+  origin: "CLIENT_REFERENCE",
+  priceMode: "EVALUATION",
+  commercialStatus: "PENDING",
+  allowedFinishes: [],
+  variants: [],
+  automation: [],
+  accessories: [],
+};
+
 const garageDraftSpecs: Array<[string, string, string, string]> = [
   ["batiente-doble", "Batiente doble", "batiente-doble.png", "Batiente"],
   ["blanco", "Garaje blanco", "blanco.png", "Seccional"],
@@ -246,7 +262,6 @@ const garageDraftSpecs: Array<[string, string, string, string]> = [
   ["nogal", "Garaje nogal", "nogal.png", "Seccional"],
   ["portada-grafito", "Portada grafito", "portada-grafito.png", "Seccional"],
   ["corrediza-doble-lamas", "Corrediza doble lamas", "Corredizas/doble-lamas.png", "Corrediza"],
-  ["corrediza-grafito-franja", "Corrediza grafito franja", "Corredizas/grafito-franja.png", "Corrediza"],
   ["levadiza-grafito-diagonal", "Levadiza grafito diagonal", "Levadizas/grafito-diagonal.png", "Levadiza"],
   ["levadiza-madera", "Levadiza madera", "Levadizas/madera.png", "Levadiza"],
 ];
@@ -295,13 +310,40 @@ const importedDraftModels: ImportedDoorModel[] = [
   ["nogal-horizontal", "Nogal horizontal"],
 ].map(([id, name], index) => draftModel(`importada-propuesta-${id}`, name, `${importedReferenceImages}/${id}.png`, index + 1, "Batiente"));
 
-const contraplacadaDraftModels: ImportedDoorModel[] = [
-  ["contraplacada-referencia-bloques-miel", "Bloques miel", `${serviceImages}/11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel.png`, "Batiente", "CLIENT_REFERENCE"],
-  ["contraplacada-batiente-blanco", "Batiente blanco", `${contraplacadaImages}/Batientes/blanco.png`, "Batiente"],
-  ["contraplacada-batiente-singapur", "Batiente Singapur", `${contraplacadaImages}/Batientes/singapur.png`, "Batiente"],
-  ["contraplacada-pivotante-grafito", "Pivotante grafito", `${contraplacadaImages}/Pivotantes/grafito.png`, "Pivotante"],
-  ["contraplacada-pivotante-madera", "Pivotante madera", `${contraplacadaImages}/Pivotantes/madera.png`, "Pivotante"],
-].map(([id, name, image, openingSystem, origin], order) => ({ id, name, image: image.replace(/\.png$/i, ".webp"), thumbnail: image.replace(/\.png$/i, "-thumb.webp"), openingSystem, openingStatus: "CONFIRMED" as const, origin: (origin ?? "DESIGN_PROPOSAL") as "CLIENT_REFERENCE" | "DESIGN_PROPOSAL", published: true, order, priceMode: "EVALUATION" as const, commercialStatus: "PENDING" as const, allowedFinishes: [], variants: [], automation: [], accessories: [] }));
+const contraplacadaModels: ImportedDoorModel[] = [{
+  id: "contraplacada-pivotante-singapur",
+  name: "Singapur",
+  image: contraplacadaSingapurImage,
+  thumbnail: contraplacadaSingapurImage.replace(/\.webp$/i, "-thumb.webp"),
+  openingSystem: "Pivotante",
+  openingStatus: "CONFIRMED",
+  origin: "DESIGN_PROPOSAL",
+  published: true,
+  order: 0,
+  priceMode: "EVALUATION",
+  commercialStatus: "PENDING",
+  allowedFinishes: [],
+  variants: [],
+  automation: [],
+  accessories: []
+}];
+
+const roofSolisombraModels: ImportedDoorModel[] = [{
+  id: "techo-solisombra",
+  name: "Techo solisombra",
+  image: `${serviceImages}/04_Pergolas_y_techos/Basadas_en_fotos_cliente/pergola-modular.webp`,
+  thumbnail: `${serviceImages}/04_Pergolas_y_techos/Basadas_en_fotos_cliente/pergola-modular-thumb.webp`,
+  openingStatus: "CONFIRMED",
+  origin: "CLIENT_REFERENCE",
+  published: true,
+  order: 0,
+  priceMode: "EVALUATION",
+  commercialStatus: "PENDING",
+  allowedFinishes: [],
+  variants: [],
+  automation: [],
+  accessories: []
+}];
 
 const entryDoorRule: NonNullable<PublishedPricingDefinition["custom"]> = {
   minWidthM: .8,
@@ -329,15 +371,15 @@ export const publishedPricingCatalog: PublishedPricingDefinition[] = [
     installationIncludedInRate: false,
     importedModels: [importedDoorModel, ...importedDraftModels]
   },
-  { productId: "seccionales", classification: "MADE_TO_MEASURE", demo: true, custom: garageDoorRule, importedModels: [...garageModels, ...garageDraftModels] },
+  { productId: "seccionales", classification: "MADE_TO_MEASURE", demo: true, custom: garageDoorRule, importedModels: [...garageModels, garageCorredizaThumbnailModel, ...garageDraftModels] },
   { productId: "puertas-a-medida", classification: "MADE_TO_MEASURE", demo: true, custom: entryDoorRule, importedModels: [...entryModels, ...entryDraftModels] },
-  { productId: "puertas-contraplacadas", classification: "MADE_TO_MEASURE", demo: true, custom: entryDoorRule, importedModels: contraplacadaDraftModels },
+  { productId: "puertas-contraplacadas", classification: "MADE_TO_MEASURE", demo: true, custom: entryDoorRule, importedModels: contraplacadaModels },
   { productId: "levadizas", classification: "MADE_TO_MEASURE", demo: true, custom: garageDoorRule },
   { productId: "corredizas", classification: "MADE_TO_MEASURE", demo: true, custom: garageDoorRule },
   { productId: "batientes", classification: "MADE_TO_MEASURE", demo: true, custom: garageDoorRule },
   { productId: "peatonales", classification: "MADE_TO_MEASURE", demo: true, custom: entryDoorRule },
   { productId: "automatizacion", classification: "NOT_APPLICABLE", demo: true, formula: { kind: "FIXED", label: "Automatización y control", minPrimary: .5, maxPrimary: 12, minSecondary: .5, maxSecondary: 6, minimumBillable: 1, unitPriceMinor: 0, unitPriceMinorBySubtype: {}, fixedPriceMinorByOption: { "Automatización nueva": 120_000, "Revisión o reemplazo": 75_000, "Mantenimiento o soporte": 35_000 }, finishPercentBps: {}, accessoryPrices: { "Control remoto": 6_500, "Control desde celular": 28_000, "Sensor de seguridad": 18_000, "Batería de respaldo": 35_000 }, baseMinor: 0, installationMinor: 35_000, installationIncludedInRate: false } },
-  { productId: "techos-coberturas", classification: "NOT_APPLICABLE", demo: true, formula: { kind: "AREA", label: "Cobertura y estructura", minPrimary: 1, maxPrimary: 20, minSecondary: 1, maxSecondary: 20, minimumBillable: 6, unitPriceMinor: 42_000, unitPriceMinorBySubtype: { "Techo o cobertura": 46_000, "Sol y sombra": 39_000 }, fixedPriceMinorByOption: { "Policarbonato": 0, "Aluzinc": 8_000, "Panel termoacústico": 16_000, "Lamas metálicas": 5_000, "Madera": 18_000, "Aluminio": 12_000, "Acero galvanizado": 9_000 }, finishPercentBps: {}, baseMinor: 0, installationMinor: 60_000, installationIncludedInRate: false } },
+  { productId: "techos-coberturas", classification: "NOT_APPLICABLE", demo: true, importedModels: roofSolisombraModels, formula: { kind: "AREA", label: "Techo solisombra", minPrimary: 1, maxPrimary: 20, minSecondary: 1, maxSecondary: 20, minimumBillable: 6, unitPriceMinor: 39_000, unitPriceMinorBySubtype: {}, fixedPriceMinorByOption: {}, finishPercentBps: {}, baseMinor: 0, installationMinor: 60_000, installationIncludedInRate: false } },
   { productId: "ventanas-mamparas", classification: "NOT_APPLICABLE", demo: true, formula: { kind: "AREA", label: "Sistema de aluminio y vidrio", minPrimary: .4, maxPrimary: 8, minSecondary: .4, maxSecondary: 4, minimumBillable: 2, unitPriceMinor: 34_000, unitPriceMinorBySubtype: { "Ventana": 32_000, "Mampara": 42_000, "División de vidrio": 38_000 }, fixedPriceMinorByOption: { "Corrediza": 4_000, "Batiente": 6_000, "Proyectante": 7_000, "Combinada": 9_000, "Plegable": 12_000, "Aluminio serie europea": 14_000, "Acero": 18_000, "Templado bronce": 5_000, "Laminado": 11_000, "Insulado": 18_000 }, finishPercentBps: {}, baseMinor: 0, installationMinor: 18_000, installationIncludedInRate: false } },
   { productId: "acero-barandas", classification: "NOT_APPLICABLE", demo: true, formula: { kind: "LINEAR", label: "Baranda o pasamanos", minPrimary: 1, maxPrimary: 80, minSecondary: .7, maxSecondary: 1.5, minimumBillable: 2, unitPriceMinor: 48_000, unitPriceMinorBySubtype: { "Baranda": 52_000, "Pasamanos": 36_000, "Complemento metálico": 44_000 }, fixedPriceMinorByOption: { "Acero inoxidable": 16_000, "Aluminio": 8_000 }, finishPercentBps: {}, baseMinor: 0, installationMinor: 28_000, installationIncludedInRate: false } },
   { productId: "estructuras-especiales", classification: "NOT_APPLICABLE", demo: true, formula: { kind: "TECHNICAL_REVIEW", label: "Estructura metálica", minPrimary: .1, maxPrimary: 100, minSecondary: .1, maxSecondary: 30, minimumBillable: 1, unitPriceMinor: 0, unitPriceMinorBySubtype: {}, fixedPriceMinorByOption: {}, finishPercentBps: {}, baseMinor: 0, installationMinor: 0 } },

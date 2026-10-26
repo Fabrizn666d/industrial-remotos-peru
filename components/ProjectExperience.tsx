@@ -53,6 +53,15 @@ export function ProjectExperience() {
   }, []);
 
   useEffect(() => {
+    const openAssistant = () => {
+      setAssistantOpen(true);
+      setTip(false);
+    };
+    window.addEventListener("irp:open-assistant", openAssistant);
+    return () => window.removeEventListener("irp:open-assistant", openAssistant);
+  }, []);
+
+  useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setAssistantOpen(false);

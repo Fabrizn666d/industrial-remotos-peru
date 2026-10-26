@@ -362,10 +362,13 @@
   align-items: center;
   gap: 10px;
   margin-top: auto;
+  border: 0;
   border-radius: 999px;
   background: linear-gradient(110deg, #0967ea, #1294ff);
   padding: 0 23px;
   color: #fff;
+  cursor: pointer;
+  font-family: inherit;
   font-size: 12px;
   font-weight: 760;
   text-align: center;

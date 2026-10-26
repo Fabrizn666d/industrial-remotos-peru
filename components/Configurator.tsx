@@ -16,7 +16,7 @@ import { usePublicPricingCatalog } from "@/lib/pricing/use-public-catalog";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import type { ConfiguratorChoiceKey, ConfiguratorStep } from "@/types/configurator";
 
-type Answers = { width: string; height: string; measurementsUnknown: boolean; subtype: string; design: string; panel: string; automation: string; model: string; variant: string; openingSystem: string; material: string; finish: string; notes: string; accessories: string[]; customDesignAttachmentId: string; customDesignAccessToken: string; customDesignName: string; customDesignUrl: string; customDesignDraftId: string };
+type Answers = { width: string; height: string; measurementsUnknown: boolean; subtype: string; design: string; panel: string; automation: string; model: string; variant: string; openingSystem: string; material: string; finish: string; notes: string; accessories: string[]; customDesignAttachmentId: string; customDesignAccessToken: string; customDesignName: string; customDesignUrl: string; customDesignDraftId: string; customDesignAttachments: UploadedDesign[] };
 
 type UploadedDesign = { id: string; token: string; name: string; mimeType: string; byteSize: number; url: string };
 
@@ -35,7 +35,7 @@ function uploadCustomDesign(file: File, draftId: string, progress: (value: numbe
   });
 }
 
-const featuredDoorIds = ["puertas-a-medida", "seccionales", "puertas-principales"];
+const featuredDoorIds = ["seccionales", "puertas-a-medida", "puertas-principales", "puertas-contraplacadas"];
 const hiddenProductIds = new Set(["automatizacion", "levadizas", "corredizas", "batientes", "peatonales", "estructuras-especiales"]);
 const baseSelectableProducts = [
   ...featuredDoorIds.map((id) => products.find((item) => item.id === id)).filter((item): item is (typeof products)[number] => Boolean(item)),
@@ -43,7 +43,25 @@ const baseSelectableProducts = [
 ];
 
 function initialAnswers(params: { get(name: string): string | null }): Answers {
-  return { width: params.get("width") ?? "", height: params.get("height") ?? "", measurementsUnknown: false, subtype: params.get("subtype") ?? "", design: params.get("design") ?? "", panel: "", automation: params.get("automation") ?? "", model: params.get("model") ?? "", variant: params.get("variant") ?? "", openingSystem: params.get("openingSystem") ?? "", material: params.get("material") ?? "", finish: params.get("finish") ?? "", notes: params.get("notes") ?? "", accessories: [], customDesignAttachmentId: "", customDesignAccessToken: "", customDesignName: "", customDesignUrl: "", customDesignDraftId: "" };
+  return { width: params.get("width") ?? "", height: params.get("height") ?? "", measurementsUnknown: false, subtype: params.get("subtype") ?? "", design: params.get("design") ?? "", panel: "", automation: params.get("automation") ?? "", model: params.get("model") ?? "", variant: params.get("variant") ?? "", openingSystem: params.get("openingSystem") ?? "", material: params.get("material") ?? "", finish: params.get("finish") ?? "", notes: params.get("notes") ?? "", accessories: [], customDesignAttachmentId: "", customDesignAccessToken: "", customDesignName: "", customDesignUrl: "", customDesignDraftId: "", customDesignAttachments: [] };
+}
+
+function storedDesignAttachments(fields?: Record<string, string>): UploadedDesign[] {
+  if (!fields) return [];
+  return ["", "2", "3", "4"].flatMap((suffix) => {
+    const id = fields[`attachmentId${suffix}`];
+    const token = fields[`attachmentToken${suffix}`];
+    const name = fields[`attachmentName${suffix}`];
+    const url = fields[`selectedImage${suffix}`];
+    return id && token && name && url?.startsWith("/api/request-attachments/") ? [{ id, token, name, url, mimeType: "image/*", byteSize: 0 }] : [];
+  });
+}
+
+function attachmentCustomFields(items: UploadedDesign[], draftId: string) {
+  return Object.fromEntries(items.flatMap((item, index) => {
+    const suffix = index === 0 ? "" : String(index + 1);
+    return [[`attachmentId${suffix}`, item.id], [`attachmentToken${suffix}`, item.token], [`attachmentName${suffix}`, item.name], [`selectedImage${suffix}`, item.url], [`attachmentDraftId${suffix}`, draftId]];
+  }));
 }
 
 function positiveDecimal(value: string) {
@@ -96,14 +114,20 @@ export function Configurator({ embedded = false, initialProductId, initialNotes,
   const [editLoaded, setEditLoaded] = useState(false);
   const { addProduct, updateItem, items, hydrated } = useProject();
   const product = useMemo(() => products.find((item) => item.id === productId) ?? products[0], [productId]);
-  const customDesignEnabled = supportsCustomDesign(product.id);
+  const customDesignAvailable = supportsCustomDesign(product.id);
+  const customReferenceSelected = answers.model === CUSTOM_ENTRY_DESIGN_ID;
+  const simplifiedDesignFlow = ["puertas-a-medida", "puertas-contraplacadas", "seccionales", "techos-coberturas"].includes(product.id);
+  const compactDesignConfiguration = simplifiedDesignFlow || customReferenceSelected;
   const selectableProducts = useMemo(() => baseSelectableProducts.filter((item) => {
     const definition = pricingDefinition(item.id, publicCatalog.definitions);
     if (item.id === "puertas-contraplacadas") return true;
     return !definition?.importedModels?.length || definition.importedModels.some((model) => !model.archived && model.published !== false);
   }), [publicCatalog.definitions]);
   const baseSchema = useMemo(() => getConfiguratorSchema(product.group, product.id, publicCatalog.definitions, publicCatalog.configuratorStepOverrides), [product.group, product.id, publicCatalog.definitions, publicCatalog.configuratorStepOverrides]);
-  const schema = useMemo(() => ({ ...baseSchema, steps: baseSchema.steps.filter((candidate) => isConfiguratorStepVisible(candidate, answers)) }), [answers, baseSchema]);
+  const schema = useMemo(() => ({
+    ...baseSchema,
+    steps: baseSchema.steps.filter((candidate) => isConfiguratorStepVisible(candidate, answers) && !(customReferenceSelected && ["finish", "variant", "imported-accessories", "notes"].includes(candidate.id)))
+  }), [answers, baseSchema, customReferenceSelected]);
   const review = active >= schema.steps.length;
   const step = schema.steps[Math.min(active, schema.steps.length - 1)] ?? schema.steps[0];
   const definition = useMemo(() => pricingDefinition(product.id, publicCatalog.definitions), [product.id, publicCatalog.definitions]);
@@ -164,8 +188,8 @@ export function Configurator({ embedded = false, initialProductId, initialNotes,
   const selectedFinish = answers.finish || "No seleccionado";
   const effectiveStep = useMemo(() => {
     if (step.kind === "choice" && step.id === "model") {
-      const models = (definition?.importedModels ?? []).filter((model) => !model.archived && model.published !== false && (!answers.subtype || !model.subtype || model.subtype === answers.subtype) && (!answers.openingSystem || (customDesignEnabled ? model.openingSystem === answers.openingSystem : !model.openingSystem || model.openingSystem === answers.openingSystem)));
-      return { ...step, options: [...models.sort((left, right) => (left.order ?? 0) - (right.order ?? 0)).map((model) => ({ value: model.id, label: model.name })), ...(customDesignEnabled && selectedCatalogType?.allowCustomDesign !== false ? [{ value: CUSTOM_ENTRY_DESIGN_ID, label: "Subir mi propio diseño" }] : [])] };
+      const models = (definition?.importedModels ?? []).filter((model) => !model.archived && model.published !== false && (!answers.subtype || !model.subtype || model.subtype === answers.subtype) && (!answers.openingSystem || (customDesignAvailable ? model.openingSystem === answers.openingSystem : !model.openingSystem || model.openingSystem === answers.openingSystem)));
+      return { ...step, options: [...models.sort((left, right) => (left.order ?? 0) - (right.order ?? 0)).map((model) => ({ value: model.id, label: model.name })), ...(customDesignAvailable && selectedCatalogType?.allowCustomDesign !== false ? [{ value: CUSTOM_ENTRY_DESIGN_ID, label: "Subir mis imágenes" }] : [])] };
     }
     if (step.kind !== "choice" && step.kind !== "multi-choice") return step;
     if (!selectedModel) return step;
@@ -175,16 +199,16 @@ export function Configurator({ embedded = false, initialProductId, initialNotes,
     if (step.id === "automation") return { ...step, options: selectedModel.automation.map((option) => ({ value: option.id, label: option.label })) };
     if (step.kind === "multi-choice") return { ...step, options: selectedModel.accessories.map((option) => ({ value: option.id, label: option.label })) };
     return step;
-  }, [answers.finish, answers.openingSystem, answers.subtype, customDesignEnabled, definition?.importedModels, selectedCatalogType?.allowCustomDesign, selectedModel, step]);
+  }, [answers.finish, answers.openingSystem, answers.subtype, customDesignAvailable, definition?.importedModels, selectedCatalogType?.allowCustomDesign, selectedModel, step]);
   const pricingWidth = product.id === "puertas-contraplacadas" && answers.width ? String(Number(answers.width.replace(",", ".")) / 1000) : answers.width;
   const pricingHeight = product.id === "puertas-contraplacadas" && answers.height ? String(Number(answers.height.replace(",", ".")) / 1000) : answers.height;
-  const pricing = useMemo(() => calculateItemPrice({ productId: product.id, quantity: 1, configuration: { width: pricingWidth || undefined, height: pricingHeight || undefined, measurementsUnknown: answers.measurementsUnknown, subtype: customDesignEnabled ? undefined : answers.subtype || undefined, model: answers.model || undefined, variant: customDesignEnabled ? undefined : answers.variant || undefined, openingSystem: answers.openingSystem || undefined, design: customDesignEnabled ? undefined : answers.design || undefined, panel: customDesignEnabled ? undefined : answers.panel || undefined, material: customDesignEnabled ? undefined : answers.material || undefined, finish: customDesignEnabled ? undefined : answers.finish || undefined, automation: customDesignEnabled ? undefined : answers.automation || undefined, accessories: product.id === "cerco-electrico" || customDesignEnabled ? [] : answers.accessories } }, publicCatalog.definitions, `v${publicCatalog.version}`, publicCatalog.configuratorStepOverrides), [answers, customDesignEnabled, pricingHeight, pricingWidth, product.id, publicCatalog]);
+  const pricing = useMemo(() => calculateItemPrice({ productId: product.id, quantity: 1, configuration: { width: pricingWidth || undefined, height: pricingHeight || undefined, measurementsUnknown: answers.measurementsUnknown, subtype: compactDesignConfiguration ? undefined : answers.subtype || undefined, model: answers.model || undefined, variant: compactDesignConfiguration ? undefined : answers.variant || undefined, openingSystem: answers.openingSystem || undefined, design: compactDesignConfiguration ? undefined : answers.design || undefined, panel: compactDesignConfiguration ? undefined : answers.panel || undefined, material: compactDesignConfiguration ? undefined : answers.material || undefined, finish: compactDesignConfiguration ? undefined : answers.finish || undefined, automation: compactDesignConfiguration ? undefined : answers.automation || undefined, accessories: product.id === "cerco-electrico" || compactDesignConfiguration ? [] : answers.accessories } }, publicCatalog.definitions, `v${publicCatalog.version}`, publicCatalog.configuratorStepOverrides), [answers, compactDesignConfiguration, pricingHeight, pricingWidth, product.id, publicCatalog]);
   const missing = review ? "" : validationMessage(effectiveStep, answers, product.id !== "puertas-a-medida") || (effectiveStep.id === "model" && answers.model === CUSTOM_ENTRY_DESIGN_ID && !answers.customDesignAttachmentId ? "Sube una imagen de tu diseño para continuar." : "");
 
   useEffect(() => setActive((current) => Math.min(current, schema.steps.length)), [schema.steps.length]);
   useEffect(() => {
     const publishedModels = definition?.importedModels?.filter((model) => !model.archived && model.published !== false) ?? [];
-    if (publishedModels.length !== 1 || answers.model === publishedModels[0].id) return;
+    if (publishedModels.length !== 1 || answers.model === publishedModels[0].id || answers.model === CUSTOM_ENTRY_DESIGN_ID) return;
     const model = publishedModels[0];
     setAnswers((current) => pruneConfiguratorAnswers(baseSchema, { ...current, model: model.id, openingSystem: model.openingSystem ?? "", subtype: model.subtype ?? current.subtype }));
   }, [answers.model, baseSchema, definition?.importedModels]);
@@ -194,7 +218,10 @@ export function Configurator({ embedded = false, initialProductId, initialNotes,
     if (item) {
       setProductId(item.productId);
       const dimensionFactor = item.productId === "puertas-contraplacadas" ? 1000 : 1;
-      setAnswers({ width: item.configuration.dimensions?.width ? String(Number(item.configuration.dimensions.width) * dimensionFactor) : "", height: item.configuration.dimensions?.height ? String(Number(item.configuration.dimensions.height) * dimensionFactor) : "", measurementsUnknown: item.configuration.measurementsUnknown ?? false, subtype: item.configuration.subtype ?? "", design: item.configuration.design ?? "", panel: item.configuration.panel ?? "", automation: item.configuration.automation ?? "", model: item.configuration.model ?? "", variant: item.configuration.variant ?? "", openingSystem: item.configuration.openingSystem ?? "", material: item.configuration.material ?? "", finish: item.configuration.finish ?? "", notes: item.configuration.notes ?? "", accessories: item.productId === "cerco-electrico" || supportsCustomDesign(item.productId) ? [] : [...item.configuration.accessories], customDesignAttachmentId: item.configuration.customFields?.attachmentId ?? "", customDesignAccessToken: item.configuration.customFields?.attachmentToken ?? "", customDesignName: item.configuration.customFields?.attachmentName ?? "", customDesignUrl: item.configuration.customFields?.selectedImage?.startsWith("/api/request-attachments/") ? item.configuration.customFields.selectedImage : "", customDesignDraftId: item.configuration.customFields?.attachmentDraftId ?? "" });
+      const simplifiedItem = ["puertas-a-medida", "puertas-contraplacadas", "seccionales", "techos-coberturas"].includes(item.productId) || item.configuration.model === CUSTOM_ENTRY_DESIGN_ID;
+      const customDesignAttachments = storedDesignAttachments(item.configuration.customFields);
+      const primaryAttachment = customDesignAttachments[0];
+      setAnswers({ width: item.configuration.dimensions?.width ? String(Number(item.configuration.dimensions.width) * dimensionFactor) : "", height: item.configuration.dimensions?.height ? String(Number(item.configuration.dimensions.height) * dimensionFactor) : "", measurementsUnknown: item.configuration.measurementsUnknown ?? false, subtype: item.configuration.subtype ?? "", design: item.configuration.design ?? "", panel: item.configuration.panel ?? "", automation: item.configuration.automation ?? "", model: item.configuration.model ?? "", variant: item.configuration.variant ?? "", openingSystem: item.configuration.openingSystem ?? "", material: item.configuration.material ?? "", finish: item.configuration.finish ?? "", notes: item.configuration.customFields?.referenceText ?? item.configuration.notes ?? "", accessories: item.productId === "cerco-electrico" || simplifiedItem ? [] : [...item.configuration.accessories], customDesignAttachmentId: primaryAttachment?.id ?? "", customDesignAccessToken: primaryAttachment?.token ?? "", customDesignName: primaryAttachment?.name ?? "", customDesignUrl: primaryAttachment?.url ?? "", customDesignDraftId: item.configuration.customFields?.attachmentDraftId ?? "", customDesignAttachments });
     }
     setEditLoaded(true);
   }, [editLoaded, editingId, hydrated, items]);
@@ -211,18 +238,19 @@ export function Configurator({ embedded = false, initialProductId, initialNotes,
     setProductId(nextProduct.id); setAdded(false);
   };
   const setChoice = (key: ConfiguratorChoiceKey, value: string) => {
-    if (key === "model" && value !== CUSTOM_ENTRY_DESIGN_ID && answers.customDesignUrl) void fetch(answers.customDesignUrl, { method: "DELETE" }).catch(() => undefined);
-    if (key === "openingSystem" && answers.model === CUSTOM_ENTRY_DESIGN_ID && answers.customDesignUrl) void fetch(answers.customDesignUrl, { method: "DELETE" }).catch(() => undefined);
+    if (key === "model" && value !== CUSTOM_ENTRY_DESIGN_ID) answers.customDesignAttachments.forEach((item) => void fetch(item.url, { method: "DELETE" }).catch(() => undefined));
+    if (key === "openingSystem" && answers.model === CUSTOM_ENTRY_DESIGN_ID) answers.customDesignAttachments.forEach((item) => void fetch(item.url, { method: "DELETE" }).catch(() => undefined));
     setAnswers((current) => {
       const sanitized = sanitizeConfiguratorAnswers(product.id, current, key, value);
-      if (key === "openingSystem" && current.model === CUSTOM_ENTRY_DESIGN_ID) Object.assign(sanitized, { customDesignAttachmentId: "", customDesignAccessToken: "", customDesignName: "", customDesignUrl: "", customDesignDraftId: "" });
+      if (key === "model" && current.model === CUSTOM_ENTRY_DESIGN_ID && value !== CUSTOM_ENTRY_DESIGN_ID) Object.assign(sanitized, { notes: "" });
+      if (key === "openingSystem" && current.model === CUSTOM_ENTRY_DESIGN_ID) Object.assign(sanitized, { customDesignAttachmentId: "", customDesignAccessToken: "", customDesignName: "", customDesignUrl: "", customDesignDraftId: "", customDesignAttachments: [] });
       if (key === "openingSystem" && current.model && current.model !== CUSTOM_ENTRY_DESIGN_ID) {
         const currentModel = definition?.importedModels?.find((candidate) => candidate.id === current.model && !candidate.archived && candidate.published !== false);
         if (currentModel?.openingSystem && currentModel.openingSystem !== value) Object.assign(sanitized, { model: "", finish: "", accessories: [] });
       }
       if (key === "model") {
         const model = definition?.importedModels?.find((candidate) => candidate.id === value && !candidate.archived && candidate.published !== false);
-        if (model) Object.assign(sanitized, { openingSystem: model.openingSystem ?? sanitized.openingSystem, subtype: model.subtype ?? sanitized.subtype, customDesignAttachmentId: "", customDesignAccessToken: "", customDesignName: "", customDesignUrl: "", customDesignDraftId: "" });
+        if (model) Object.assign(sanitized, { openingSystem: model.openingSystem ?? sanitized.openingSystem, subtype: model.subtype ?? sanitized.subtype, customDesignAttachmentId: "", customDesignAccessToken: "", customDesignName: "", customDesignUrl: "", customDesignDraftId: "", customDesignAttachments: [] });
       }
       if (key === "variant") {
         const variant = selectedModel?.variants.find((candidate) => candidate.id === value);
@@ -241,8 +269,9 @@ export function Configurator({ embedded = false, initialProductId, initialNotes,
       return;
     }
     const existingCustomFields = editingId ? items.find((item) => item.id === editingId)?.configuration.customFields : undefined;
-    const customFields = { ...existingCustomFields, ...(source ? { source } : {}), selectedImage: previewVisual.imageSrc, ...(answers.model === CUSTOM_ENTRY_DESIGN_ID ? { modelLabel: "Diseño propio", attachmentId: answers.customDesignAttachmentId, attachmentToken: answers.customDesignAccessToken, attachmentName: answers.customDesignName, attachmentDraftId: answers.customDesignDraftId, designOrigin: "VISITOR" } : {}), ...(selectedModel ? { modelLabel: selectedModel.name, included: (selectedModel.included ?? []).join(", "), designOrigin: selectedModel.origin === "DESIGN_PROPOSAL" ? "PROPOSAL" : "CLIENT_REFERENCE" } : {}), ...(selectedVariant ? { variantLabel: selectedVariant.label } : {}) };
-    const configuration = { subtype: customDesignEnabled ? undefined : answers.subtype || undefined, measurementsUnknown: answers.measurementsUnknown, dimensions: !answers.measurementsUnknown && (answers.width || answers.height) ? { width: pricingWidth || undefined, height: pricingHeight || undefined, unit: "m" as const } : undefined, design: customDesignEnabled ? undefined : answers.design || undefined, panel: customDesignEnabled ? undefined : answers.panel || undefined, finish: customDesignEnabled ? undefined : answers.finish || undefined, automation: customDesignEnabled ? undefined : answers.automation || undefined, model: answers.model || undefined, variant: customDesignEnabled ? undefined : answers.variant || undefined, openingSystem: answers.openingSystem || undefined, material: customDesignEnabled ? undefined : answers.material || undefined, accessories: product.id === "cerco-electrico" || customDesignEnabled ? [] : answers.accessories, notes: customDesignEnabled ? undefined : answers.notes || undefined, ...(Object.keys(customFields).length ? { customFields } : {}) };
+    const cleanExistingCustomFields = Object.fromEntries(Object.entries(existingCustomFields ?? {}).filter(([key]) => !/^(attachment(Id|Token|Name|DraftId)|selectedImage)\d*$/.test(key)));
+    const customFields = { ...cleanExistingCustomFields, ...(source ? { source } : {}), ...(answers.model === CUSTOM_ENTRY_DESIGN_ID ? { ...attachmentCustomFields(answers.customDesignAttachments, answers.customDesignDraftId), modelLabel: "Referencia propia", designOrigin: "VISITOR", ...(answers.notes.trim() ? { referenceText: answers.notes.trim() } : {}) } : { selectedImage: previewVisual.imageSrc }), ...(selectedModel ? { modelLabel: selectedModel.name, included: (selectedModel.included ?? []).join(", "), designOrigin: selectedModel.origin === "DESIGN_PROPOSAL" ? "PROPOSAL" : "CLIENT_REFERENCE" } : {}), ...(selectedVariant ? { variantLabel: selectedVariant.label } : {}) };
+    const configuration = { subtype: compactDesignConfiguration ? undefined : answers.subtype || undefined, measurementsUnknown: answers.measurementsUnknown, dimensions: !answers.measurementsUnknown && (answers.width || answers.height) ? { width: pricingWidth || undefined, height: pricingHeight || undefined, unit: "m" as const } : undefined, design: compactDesignConfiguration ? undefined : answers.design || undefined, panel: compactDesignConfiguration ? undefined : answers.panel || undefined, finish: compactDesignConfiguration ? undefined : answers.finish || undefined, automation: compactDesignConfiguration ? undefined : answers.automation || undefined, model: answers.model || undefined, variant: compactDesignConfiguration ? undefined : answers.variant || undefined, openingSystem: answers.openingSystem || undefined, material: compactDesignConfiguration ? undefined : answers.material || undefined, accessories: product.id === "cerco-electrico" || compactDesignConfiguration ? [] : answers.accessories, notes: compactDesignConfiguration ? undefined : answers.notes || undefined, ...(Object.keys(customFields).length ? { customFields } : {}) };
     if (editingId && items.some((item) => item.id === editingId)) { updateItem(editingId, product, configuration); router.push("/mi-proyecto"); }
     else { addProduct(product, configuration); setAdded(true); }
     window.dispatchEvent(new CustomEvent("irp:analytics", { detail: { name: "configurator_complete", parameters: { service: product.group } } }));
@@ -291,7 +320,7 @@ function PreparedPreview({ visual }: { visual: ConfiguratorVisualSlot }) {
 }
 
 function StepControl({ step, productId, answers, chooseProduct, setAnswers, setChoice, toggleAccessory, finishesAvailable, importedModels, catalogTypes, selectableProducts, visualOverrides }: { step: ConfiguratorStep; productId: string; answers: Answers; chooseProduct: (id: string) => void; setAnswers: React.Dispatch<React.SetStateAction<Answers>>; setChoice: (key: ConfiguratorChoiceKey, value: string) => void; toggleAccessory: (value: string) => void; finishesAvailable: typeof finishes; importedModels: NonNullable<PublishedPricingDefinition["importedModels"]>; catalogTypes: NonNullable<PublishedPricingDefinition["catalogTypes"]>; selectableProducts: typeof products; visualOverrides: ConfiguratorVisualOverride[] }) {
-  if (step.kind === "product") return <div className={styles.productGrid}>{selectableProducts.map((item) => { const visual = resolveConfiguratorVisual(item.id, {}, visualOverrides); return <button className={productId === item.id ? styles.selectedCard : undefined} type="button" onClick={() => chooseProduct(item.id)} key={item.id}><span><Image src={visual?.thumbnailSrc ?? item.image} alt={visual?.alt ?? `Imagen referencial de ${item.name}`} fill sizes="(min-width: 900px) 18vw, 42vw" className={styles.optionImage} style={{ objectPosition: visual?.position ?? "center" }}/></span><b>{item.name}</b>{productId === item.id && <CircleCheck size={22}/>}</button>; })}</div>;
+  if (step.kind === "product") return <div className={styles.productGrid}>{selectableProducts.map((item) => { const visual = resolveConfiguratorVisual(item.id, {}, visualOverrides); return <button className={productId === item.id ? styles.selectedCard : undefined} type="button" onClick={() => chooseProduct(item.id)} key={item.id}><span><Image src={visual?.thumbnailSrc ?? item.image} alt={visual?.alt ?? `Imagen referencial de ${item.name}`} fill sizes="(min-width: 900px) 18vw, 42vw" className={styles.optionImage} style={{ objectPosition: visual?.position ?? "center" }}/></span><b>{item.name}</b>{productId === item.id && <CircleCheck size={22}/>}</button>; })}<button className={styles.customSolutionCard} type="button" onClick={(event) => window.dispatchEvent(new CustomEvent("irp:open-contact", { detail: { trigger: event.currentTarget, origin: "/cotizar#solucion-personalizada" } }))}><span><Upload aria-hidden="true"/></span><b>¿No encuentras la solución que necesitas?</b><small>Sube tus referencias y te llamaremos para preparar tu cotización.</small></button></div>;
   if (step.kind === "dimensions") return <div className={styles.measureGrid}><label>{step.widthLabel}<input inputMode="decimal" disabled={answers.measurementsUnknown} value={answers.width} onChange={(event) => setAnswers((current) => ({ ...current, width: event.target.value }))} placeholder="Ej. 3,20"/></label>{!step.hideHeight && <label>{step.heightLabel}<input inputMode="decimal" disabled={answers.measurementsUnknown} value={answers.height} onChange={(event) => setAnswers((current) => ({ ...current, height: event.target.value }))} placeholder="Ej. 2,40"/></label>}<label><input type="checkbox" checked={answers.measurementsUnknown} onChange={(event) => setAnswers((current) => ({ ...current, measurementsUnknown: event.target.checked, ...(event.target.checked ? { width: "", height: "" } : {}) }))}/> No sé las medidas</label><p>{answers.measurementsUnknown ? "La solicitud se enviará pendiente de medición y sin un total definitivo." : "Las medidas finales se confirman durante la evaluación técnica."}</p></div>;
   if (step.kind === "choice" && step.id === "model" && importedModels.length) { const allowed = new Set(step.options.map((option) => option.value)); return <div className={styles.importedCatalog}>{importedModels.filter((model) => !model.archived && model.published !== false && allowed.has(model.id)).sort((left, right) => (left.order ?? 0) - (right.order ?? 0)).map((model) => { const selected = answers.model === model.id; return <button key={model.id} className={selected ? styles.selectedModel : undefined} type="button" onClick={() => setChoice("model", model.id)}><span><Image src={model.thumbnail ?? model.image} alt={`Diseño ${model.name}`} fill sizes="(min-width: 900px) 18vw, 80vw" className={styles.optionImage}/></span><b>{model.name}</b>{model.origin === "DESIGN_PROPOSAL" && <small>Propuesta de diseño · Referencial</small>}{model.origin === "CLIENT_REFERENCE" && <small>Referencia de trabajo</small>}{model.openingSystem && <small>Apertura: {model.openingSystem}</small>}{model.included?.length ? <small>Incluye: {model.included.join(" · ")}</small> : null}{selected && <CircleCheck size={22}/>}</button>; })}{supportsCustomDesign(productId) && allowed.has(CUSTOM_ENTRY_DESIGN_ID) && <CustomDesignCard answers={answers} setAnswers={setAnswers}/>}</div>; }
   if (step.kind === "choice") return <div className={styles.choiceGrid}>{step.options.map((option) => { const selected = (answers[step.answerKey] || step.defaultValue) === option.value; const key = step.answerKey === "subtype" || step.answerKey === "design" || step.answerKey === "material" || step.answerKey === "openingSystem" ? step.answerKey : undefined; const catalogType = step.answerKey === "openingSystem" ? catalogTypes.find((type) => type.value === option.value && !type.archived) : undefined; const visual = catalogType ? { thumbnailSrc: catalogType.thumbnail ?? catalogType.image, alt: catalogType.label, position: "center" as const } : key ? visualForOption(productId, key, option.value, answers, visualOverrides) : undefined; return <button key={option.value} className={`${selected ? styles.selectedChoice : ""} ${visual ? styles.visualChoice : ""}`} type="button" onClick={() => setChoice(step.answerKey, option.value)}>{visual && <span className={styles.choiceThumb}><Image src={visual.thumbnailSrc} alt={visual.alt} fill loading="eager" sizes="140px" className={styles.optionImage} style={{ objectPosition: visual.position }}/></span>}{selected && <Check size={17}/>}<span><b>{option.label}</b>{option.description && <small>{option.description}</small>}</span></button>; })}</div>;
@@ -304,35 +333,58 @@ function CustomDesignCard({ answers, setAnswers }: { answers: Answers; setAnswer
   const input = useRef<HTMLInputElement>(null);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
-  const selected = answers.model === CUSTOM_ENTRY_DESIGN_ID && Boolean(answers.customDesignAttachmentId);
-  const remove = async () => {
-    if (answers.customDesignUrl) await fetch(answers.customDesignUrl, { method: "DELETE" }).catch(() => undefined);
-    setAnswers((current) => ({ ...current, model: "", customDesignAttachmentId: "", customDesignAccessToken: "", customDesignName: "", customDesignUrl: "", customDesignDraftId: "" }));
+  const attachments = answers.customDesignAttachments;
+  const selected = answers.model === CUSTOM_ENTRY_DESIGN_ID && attachments.length > 0;
+  const removeAll = async () => {
+    await Promise.all(attachments.map((item) => fetch(item.url, { method: "DELETE" }).catch(() => undefined)));
+    setAnswers((current) => ({ ...current, model: "", notes: "", customDesignAttachmentId: "", customDesignAccessToken: "", customDesignName: "", customDesignUrl: "", customDesignDraftId: "", customDesignAttachments: [] }));
     setProgress(0); setError("");
   };
-  const upload = async (file: File) => {
-    if (!file.type.startsWith("image/") || file.size > 8 * 1024 * 1024) { setError("Usa JPG, PNG, WebP o AVIF de hasta 8 MB."); return; }
+  const removeOne = async (item: UploadedDesign) => {
+    await fetch(item.url, { method: "DELETE" }).catch(() => undefined);
+    setAnswers((current) => {
+      const remaining = current.customDesignAttachments.filter((candidate) => candidate.id !== item.id);
+      const primary = remaining[0];
+      return { ...current, model: primary ? CUSTOM_ENTRY_DESIGN_ID : "", ...(primary ? {} : { notes: "" }), customDesignAttachmentId: primary?.id ?? "", customDesignAccessToken: primary?.token ?? "", customDesignName: primary?.name ?? "", customDesignUrl: primary?.url ?? "", customDesignDraftId: primary ? current.customDesignDraftId : "", customDesignAttachments: remaining };
+    });
+  };
+  const upload = async (files: File[]) => {
+    const available = Math.max(0, 4 - attachments.length);
+    const selectedFiles = files.slice(0, available);
+    if (!available) { setError("Puedes adjuntar hasta 4 imágenes de referencia."); return; }
+    if (files.length > available) setError(`Puedes adjuntar hasta 4 imágenes. Se subirán ${available}.`);
+    else setError("");
+    if (selectedFiles.some((file) => !["image/jpeg", "image/png", "image/webp", "image/avif"].includes(file.type) || file.size > 8 * 1024 * 1024)) { setError("Usa JPG, PNG, WebP o AVIF de hasta 8 MB por imagen."); return; }
     const draftId = answers.customDesignDraftId || crypto.randomUUID();
-    const previousUrl = answers.customDesignUrl;
-    setProgress(1); setError("");
+    setProgress(1);
+    const uploaded: UploadedDesign[] = [];
     try {
-      const item = await uploadCustomDesign(file, draftId, setProgress);
-      setAnswers((current) => ({ ...current, model: CUSTOM_ENTRY_DESIGN_ID, finish: "", accessories: [], customDesignAttachmentId: item.id, customDesignAccessToken: item.token, customDesignName: item.name, customDesignUrl: item.url, customDesignDraftId: draftId }));
+      for (let index = 0; index < selectedFiles.length; index += 1) {
+        const item = await uploadCustomDesign(selectedFiles[index], draftId, (value) => setProgress(Math.round(((index + value / 100) / selectedFiles.length) * 100)));
+        uploaded.push(item);
+      }
+      setAnswers((current) => {
+        const nextAttachments = [...current.customDesignAttachments, ...uploaded].slice(0, 4);
+        const primary = nextAttachments[0];
+        return { ...current, model: CUSTOM_ENTRY_DESIGN_ID, finish: "", accessories: [], customDesignAttachmentId: primary.id, customDesignAccessToken: primary.token, customDesignName: primary.name, customDesignUrl: primary.url, customDesignDraftId: draftId, customDesignAttachments: nextAttachments };
+      });
       setProgress(100);
-      if (previousUrl) await fetch(previousUrl, { method: "DELETE" }).catch(() => undefined);
-    } catch (uploadError) { setProgress(0); setError(uploadError instanceof Error ? uploadError.message : "No se pudo subir la imagen."); }
+    } catch (uploadError) {
+      await Promise.all(uploaded.map((item) => fetch(item.url, { method: "DELETE" }).catch(() => undefined)));
+      setProgress(0); setError(uploadError instanceof Error ? uploadError.message : "No se pudo subir la imagen.");
+    }
   };
   return <article className={`${styles.customDesignCard} ${selected ? styles.selectedModel : ""}`}>
-    <input ref={input} hidden type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={(event) => { const file = event.target.files?.[0]; if (file) void upload(file); event.target.value = ""; }}/>
+    <input ref={input} hidden multiple type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={(event) => { const files = Array.from(event.target.files ?? []); if (files.length) void upload(files); event.target.value = ""; }}/>
     <button type="button" className={styles.customDesignMain} onClick={() => input.current?.click()}>
       <span>{answers.customDesignUrl ? <Image src={answers.customDesignUrl} alt="Vista previa del diseño propio" fill unoptimized sizes="(min-width: 900px) 18vw, 80vw" className={styles.optionImage}/> : <Upload aria-hidden="true"/>}</span>
-      <b>Subir mi propio diseño</b>
-      <small>{answers.customDesignName || "Imagen desde PC o celular · Hasta 8 MB"}</small>
-      <small>Pendiente de evaluación técnica y comercial</small>
+      <b>¿No encuentras lo que buscas?</b>
+      <small>{attachments.length ? `${attachments.length} imagen${attachments.length === 1 ? "" : "es"} adjunta${attachments.length === 1 ? "" : "s"}` : "Sube hasta 4 imágenes desde tu PC o celular · 8 MB c/u"}</small>
+      <small>Con gusto prepararemos una cotización según tu referencia.</small>
       {selected && <CircleCheck size={22}/>}
     </button>
     {progress > 0 && progress < 100 && <div className={styles.uploadProgress}><i style={{ width: `${progress}%` }}/><small>Subiendo {progress}%</small></div>}
-    {answers.customDesignUrl && <div className={styles.customDesignActions}><button type="button" onClick={() => input.current?.click()}><Upload size={14}/>Reemplazar</button><button type="button" onClick={() => void remove()}><Trash2 size={14}/>Quitar</button></div>}
+    {attachments.length > 0 && <><div className={styles.customDesignGallery}>{attachments.map((item, index) => <figure key={item.id}><Image src={item.url} alt={`Referencia ${index + 1}`} fill unoptimized sizes="90px"/><button type="button" onClick={() => void removeOne(item)} aria-label={`Quitar ${item.name}`}><Trash2 size={13}/></button></figure>)}</div><label className={styles.customReferenceText}>Texto de referencia<textarea rows={3} maxLength={450} value={answers.notes} onChange={(event) => setAnswers((current) => ({ ...current, notes: event.target.value }))} placeholder="Cuéntanos qué deseas fabricar, materiales, detalles o preferencias."/><small>{answers.notes.length}/450</small></label><div className={styles.customDesignActions}>{attachments.length < 4 && <button type="button" onClick={() => input.current?.click()}><Upload size={14}/>Agregar imágenes</button>}<button type="button" onClick={() => void removeAll()}><Trash2 size={14}/>Quitar todo</button></div></>}
     {error && <p className={styles.uploadError} role="alert">{error}</p>}
   </article>;
 }

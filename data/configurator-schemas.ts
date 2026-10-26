@@ -141,16 +141,10 @@ export const configuratorSchemas: Record<ConfiguratorFamily, ConfiguratorSchema>
   techos: {
     family: "techos",
     productGroup: "techos",
-    version: 2,
+    version: 3,
     steps: [
       solutionStep,
-      choice("roof-type", "Tipo", "Selecciona el tipo de techo", "subtype", ["Techo o cobertura", "Sol y sombra"]),
       dimensionsStep("Indica las dimensiones del área", "Ancho (m)", "Largo (m)", { required: true }),
-      choice("coverage-roof", "Cobertura", "Selecciona una cobertura compatible", "design", ["Policarbonato", "Aluzinc", "Panel termoacústico"], { visibleWhen: { key: "subtype", values: ["Techo o cobertura"] } }),
-      choice("coverage-sun", "Cobertura", "Selecciona una cobertura compatible", "design", ["Lamas metálicas", "Madera", "Aluminio"], { visibleWhen: { key: "subtype", values: ["Sol y sombra"] } }),
-      choice("roof-structure", "Estructura", "Selecciona la estructura", "material", ["Acero pintado", "Acero galvanizado", "Aluminio"]),
-      finishStep,
-      notesStep,
     ],
   },
   mamparas: {
@@ -335,10 +329,11 @@ export function getConfiguratorSchema(productGroup: ProductGroup, productId?: st
     return applyStepOverrides({
       family: "puertas-principales",
       productGroup: "puertas-principales",
-      version: 3,
+      version: 4,
       steps: [
         solutionStep,
-        ...(models.length > 1 ? [choice("model", "Modelo", "Selecciona el modelo disponible", "model", models.map((model) => model.id))] : []),
+        choice("model", "Modelo", "Selecciona un modelo o envíanos tu propia referencia", "model", [...models.map((model) => model.id), CUSTOM_ENTRY_DESIGN_ID]),
+        dimensionsStep("Indica las medidas aproximadas de tu referencia", "Ancho (m)", "Alto (m)", { required: true, visibleWhen: { key: "model", values: [CUSTOM_ENTRY_DESIGN_ID] } }),
         { ...finishStep, title: "Selecciona un color disponible", description: "La imagen cambia con el color cuando existe una referencia aprobada." },
         choice("variant", "Medida", "Selecciona una medida disponible", "variant", models.flatMap((model) => model.variants.map((variant) => variant.id))),
         ...(accessories.length ? [multi("imported-accessories", "Complementos", "Selecciona complementos compatibles", accessories.map((option) => option.id))] : []),
@@ -371,14 +366,24 @@ export function getConfiguratorSchema(productGroup: ProductGroup, productId?: st
   if (productId === "puertas-contraplacadas") return applyStepOverrides({
     family: "puertas-contraplacadas",
     productGroup: "puertas-contraplacadas",
-    version: 2,
+    version: 3,
     steps: [
       solutionStep,
-      typeStep("contraplacada-opening", "Elige el tipo de apertura", ["Batiente", "Pivotante"]),
+      typeStep("contraplacada-opening", "Elige el tipo de apertura", ["Pivotante"]),
       choice("model", "Diseño", "Elige un diseño compatible o sube tu propia referencia", "model", [...publishedModels.map((model) => model.id), CUSTOM_ENTRY_DESIGN_ID]),
       dimensionsStep("Ingresa las dimensiones de la puerta", "Ancho (mm)", "Alto (mm)", { required: true }),
     ],
   }, overrides, ["contraplacada-opening"]);
+  if (productId === "techos-coberturas") return applyStepOverrides({
+    family: "techos",
+    productGroup: "techos",
+    version: 3,
+    steps: [
+      solutionStep,
+      choice("model", "Modelo", "Selecciona el techo solisombra o sube tus propias imágenes de referencia", "model", [...publishedModels.map((model) => model.id), CUSTOM_ENTRY_DESIGN_ID]),
+      dimensionsStep("Indica las dimensiones aproximadas del área", "Ancho (m)", "Largo (m)", { required: true }),
+    ],
+  }, overrides);
   if (definition?.classification === "MADE_TO_MEASURE" && productGroup === "puertas-principales") return applyStepOverrides(configuratorSchemas["puertas-medida"], overrides);
   return applyStepOverrides(configuratorSchemas[configuratorFamilyByProductGroup[productGroup]], overrides);
 }
@@ -388,13 +393,14 @@ export function validateConfiguratorCompatibility(productId: string, answers: Co
   if (!product) return "La solución seleccionada no existe.";
   const definition = pricingDefinition(productId, catalog);
   const customEntryDesign = supportsCustomDesign(productId) && answers.model === CUSTOM_ENTRY_DESIGN_ID;
+  const compactDesignConfiguration = ["puertas-a-medida", "puertas-contraplacadas", "seccionales", "techos-coberturas"].includes(productId) || customEntryDesign;
   const selectedModel = definition?.importedModels?.find((model) => model.id === answers.model && !model.archived && model.published !== false);
   if (answers.model && !selectedModel && !customEntryDesign) return "El modelo seleccionado no existe o no está publicado.";
   if (selectedModel?.subtype && answers.subtype && selectedModel.subtype !== answers.subtype) return "El modelo no es compatible con la familia seleccionada.";
   if (selectedModel?.openingSystem && answers.openingSystem && selectedModel.openingSystem !== answers.openingSystem) return "La apertura no corresponde al modelo seleccionado.";
   if (!supportsCustomDesign(productId) && answers.panel && selectedModel?.thicknessOptionsMm?.length && !selectedModel.thicknessOptionsMm.map((value) => `${value} mm`).includes(answers.panel)) return "El espesor no corresponde al modelo seleccionado.";
   const schema = getConfiguratorSchema(product.group, productId, catalog, overrides);
-  const visibleSteps = schema.steps.filter((step) => isConfiguratorStepVisible(step, answers));
+  const visibleSteps = schema.steps.filter((step) => isConfiguratorStepVisible(step, answers) && !(customEntryDesign && ["finish", "variant", "imported-accessories", "notes"].includes(step.id)));
   const unanswered = visibleSteps.find((step): step is Extract<ConfiguratorStep, { kind: "choice" }> => step.kind === "choice" && !answers[step.answerKey] && !step.defaultValue);
   if (unanswered) return `Falta completar “${unanswered.label}” para calcular esta solución.`;
   const choiceKeys: ConfiguratorChoiceKey[] = ["subtype", "design", "panel", "automation", "model", "variant", "openingSystem", "material"];
@@ -402,7 +408,7 @@ export function validateConfiguratorCompatibility(productId: string, answers: Co
     const value = answers[key];
     if (!value) continue;
     if (productId === "drywall-cielorrasos" && (key === "design" || key === "material")) continue;
-    if (supportsCustomDesign(productId) && ["subtype", "design", "panel", "automation", "variant", "material"].includes(key)) continue;
+    if (compactDesignConfiguration && ["subtype", "design", "panel", "automation", "variant", "material"].includes(key)) continue;
     const step = visibleSteps.find((candidate): candidate is Extract<ConfiguratorStep, { kind: "choice" }> => candidate.kind === "choice" && candidate.answerKey === key);
     if (!step && key === "model") {
       const publishedModels = definition?.importedModels?.filter((model) => !model.archived && model.published !== false) ?? [];
@@ -413,7 +419,7 @@ export function validateConfiguratorCompatibility(productId: string, answers: Co
     if (!step) return `La respuesta “${value}” no corresponde al flujo de esta solución.`;
     if (!step.options.some((option) => option.value === value)) return `La opción “${value}” no es compatible con esta solución.`;
   }
-  const accessories = productId === "cerco-electrico" || productId === "drywall-cielorrasos" || supportsCustomDesign(productId) ? [] : answers.accessories ?? [];
+  const accessories = productId === "cerco-electrico" || productId === "drywall-cielorrasos" || compactDesignConfiguration ? [] : answers.accessories ?? [];
   if (accessories.length) {
     const allowed = visibleSteps.filter((step): step is Extract<ConfiguratorStep, { kind: "multi-choice" }> => step.kind === "multi-choice").flatMap((step) => step.options.map((option) => option.value));
     const incompatible = accessories.find((accessory) => !allowed.includes(accessory));

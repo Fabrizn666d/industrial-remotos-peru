@@ -4,7 +4,7 @@ import { gsap } from "gsap";
 import { ArrowRight, Play, Settings, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type RefObject } from "react";
 import { HOME_INTRO_TIMING, useHomeIntro } from "@/components/HomeIntroController";
 import type { HomeContent } from "@/lib/cms/content-contracts";
 import { HOME_INTRO_SEEN_CLASS } from "@/lib/home-intro-session";
@@ -28,14 +28,53 @@ const INTRO_STARTUP_TIMEOUT_MS = 12_000;
 
 type HeroContent = HomeContent["hero"];
 
+function useHeroScrollPin(sectionRef: RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let frame = 0;
+
+    const render = () => {
+      frame = 0;
+      if (reducedMotion.matches) {
+        section.style.removeProperty("--hero-scroll-y");
+        return;
+      }
+      const bounds = section.getBoundingClientRect();
+      const maximum = Math.min(300, window.innerHeight * 0.36);
+      const offset = Math.min(maximum, Math.max(0, -bounds.top));
+      section.style.setProperty("--hero-scroll-y", `${offset.toFixed(2)}px`);
+    };
+    const schedule = () => {
+      if (!frame) frame = window.requestAnimationFrame(render);
+    };
+
+    render();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule, { passive: true });
+    reducedMotion.addEventListener("change", schedule);
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+      reducedMotion.removeEventListener("change", schedule);
+      section.style.removeProperty("--hero-scroll-y");
+    };
+  }, [sectionRef]);
+}
+
 export function HeroSection({ content }: { content: HeroContent }) {
   return content.mode === "composition" ? <CompositionHero content={content.composition} /> : <MediaOnlyHero content={content} />;
 }
 
 function MediaOnlyHero({ content }: { content: HeroContent }) {
   const { complete } = useHomeIntro();
+  const sectionRef = useRef<HTMLElement>(null);
   const [mobile, setMobile] = useState<boolean | null>(null);
   const [reduced, setReduced] = useState(false);
+  useHeroScrollPin(sectionRef);
   useEffect(() => {
     complete();
     const query = matchMedia("(max-width: 767px)");
@@ -44,10 +83,10 @@ function MediaOnlyHero({ content }: { content: HeroContent }) {
     sync(); query.addEventListener("change", sync); motion.addEventListener("change", sync);
     return () => { query.removeEventListener("change", sync); motion.removeEventListener("change", sync); };
   }, [complete]);
-  if (content.mode === "image") return <section className="irp-hero irp-hero--media-only" id="inicio" data-hero-mode="image" data-intro-status="completed"><picture style={{ "--hero-position-desktop": content.imageOnly.desktop.position, "--hero-position-mobile": content.imageOnly.mobile.position } as CSSProperties}><source media="(max-width: 767px)" srcSet={content.imageOnly.mobile.src}/><img src={content.imageOnly.desktop.src} alt={content.imageOnly.desktop.alt}/></picture></section>;
+  if (content.mode === "image") return <section ref={sectionRef} className="irp-hero irp-hero--media-only" id="inicio" data-hero-mode="image" data-intro-status="completed"><picture style={{ "--hero-position-desktop": content.imageOnly.desktop.position, "--hero-position-mobile": content.imageOnly.mobile.position } as CSSProperties}><source media="(max-width: 767px)" srcSet={content.imageOnly.mobile.src}/><img src={content.imageOnly.desktop.src} alt={content.imageOnly.desktop.alt}/></picture></section>;
   const video = mobile ? content.videoOnly.mobile : content.videoOnly.desktop;
   const poster = mobile ? content.videoOnly.mobilePoster : content.videoOnly.desktopPoster;
-  return <section className="irp-hero irp-hero--media-only" id="inicio" data-hero-mode="video" data-intro-status="completed">{reduced || mobile === null ? <picture><source media="(max-width: 767px)" srcSet={content.videoOnly.mobilePoster.src}/><img src={content.videoOnly.desktopPoster.src} alt={poster.alt}/></picture> : <video key={video.src} src={video.src} poster={poster.src} aria-label={video.alt} style={{ objectPosition: video.position }} autoPlay muted loop playsInline preload="metadata" disablePictureInPicture />}</section>;
+  return <section ref={sectionRef} className="irp-hero irp-hero--media-only" id="inicio" data-hero-mode="video" data-intro-status="completed">{reduced || mobile === null ? <picture><source media="(max-width: 767px)" srcSet={content.videoOnly.mobilePoster.src}/><img src={content.videoOnly.desktopPoster.src} alt={poster.alt}/></picture> : <video key={video.src} src={video.src} poster={poster.src} aria-label={video.alt} style={{ objectPosition: video.position }} autoPlay muted loop playsInline preload="metadata" disablePictureInPicture />}</section>;
 }
 
 function CompositionHero({ content }: { content: HeroContent["composition"] }) {
@@ -69,6 +108,7 @@ function CompositionHero({ content }: { content: HeroContent["composition"] }) {
   const proofRef = useRef<HTMLDivElement>(null);
   const waveRef = useRef<HTMLDivElement>(null);
   const playPromiseRef = useRef<Promise<void> | null>(null);
+  useHeroScrollPin(sectionRef);
 
   useLayoutEffect(() => {
     const section = sectionRef.current;
@@ -313,7 +353,7 @@ function CompositionHero({ content }: { content: HeroContent["composition"] }) {
           <source media="(max-width: 767px)" srcSet="/NUEVO/NUEVO%20LOADER/mobile-intro-last-frame.webp" />
           <img src={content.fallbackImage.src} alt={content.fallbackImage.alt} width={1920} height={1080} />
         </picture>
-        <video ref={videoRef} className="irp-hero__video" preload="auto" muted playsInline
+        <video ref={videoRef} className="irp-hero__video" preload="auto" autoPlay muted playsInline
           disablePictureInPicture tabIndex={-1} aria-label={content.desktopVideo.alt}>
           <source media="(max-width: 767px)" src={content.mobileVideo.src} type="video/mp4" />
           <source media="(min-width: 768px)" src={content.desktopVideo.src} type="video/mp4" />

@@ -5,7 +5,7 @@ import { ArrowRight, Cog, PencilRuler, UserRoundCheck, Wrench } from "lucide-rea
 import Image from "next/image";
 import Link from "next/link";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
-import { createFadeUpVariants, createLineRevealVariants, createStaggerContainer, scrollViewport } from "@/lib/motion";
+import { createFadeUpVariants, createLineRevealVariants, createStaggerContainer, motionEase } from "@/lib/motion";
 import styles from "./NeedsSection.module.css";
 import { usePublicPricingCatalog } from "@/lib/pricing/use-public-catalog";
 import type { HomeContent } from "@/lib/cms/content-contracts";
@@ -34,8 +34,8 @@ const services = [
   },
   {
     name: "Puertas contraplacadas",
-    description: "Modelos batientes y pivotantes para cada ambiente.",
-    image: "/NUEVO/IRP-imagenes-por-servicio/11_Puertas_contraplacadas/Propuestas/Batientes/singapur.png",
+    description: "Modelo Singapur con apertura pivotante y fabricación a medida.",
+    image: "/images/configurator/catalog/11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel.webp",
     href: "/soluciones/puertas-contraplacadas",
     icon: "contraplacada"
   },
@@ -54,9 +54,9 @@ const services = [
     icon: "window"
   },
   {
-    name: "Techos y coberturas",
-    description: "Protección y confort para terrazas, patios y cocheras.",
-    image: "/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_53 (4).png",
+    name: "Techo solisombra",
+    description: "Fabricado a medida para terrazas, patios y cocheras.",
+    image: "/images/configurator/catalog/04_Pergolas_y_techos/Basadas_en_fotos_cliente/pergola-modular.webp",
     href: "/soluciones/techos-coberturas",
     icon: "pergola"
   }
@@ -92,10 +92,47 @@ export function NeedsSection({ content }: { content: HomeContent["needs"] }) {
   const processItems = content.process.map((item) => ({ ...item, description: item.body, iconComponent: processIcons[item.icon as keyof typeof processIcons] || Wrench }));
   const reduceMotion = usePrefersReducedMotion();
 
-  const fadeUp = createFadeUpVariants(reduceMotion, { delay: .18 });
-  const processReveal = createFadeUpVariants(reduceMotion, { delay: .04 });
-  const serviceReveal = createFadeUpVariants(reduceMotion);
-  const stagger = createStaggerContainer(reduceMotion, .18);
+  const surfaceReveal = {
+    hidden: reduceMotion ? { opacity: 0 } : { opacity: 0, y: 16 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: reduceMotion ? .16 : 1.08, ease: motionEase.enter }
+    }
+  };
+  const sectionReveal = {
+    hidden: reduceMotion ? { opacity: 0 } : { opacity: 0, y: 30, scale: .995 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: { duration: reduceMotion ? .16 : 1.02, delay: reduceMotion ? 0 : .06, ease: motionEase.enter }
+    }
+  };
+  const glowReveal = {
+    hidden: reduceMotion ? { opacity: 0 } : { opacity: 0, scaleX: .76, y: -12 },
+    visible: {
+      opacity: 1,
+      scaleX: 1,
+      y: 0,
+      transition: { duration: reduceMotion ? .16 : 1.3, ease: motionEase.enter }
+    }
+  };
+  const processReveal = {
+    hidden: reduceMotion ? { opacity: 0 } : { opacity: 0, y: 18, scale: .985 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: { duration: reduceMotion ? .16 : .78, delay: reduceMotion ? 0 : .06, ease: motionEase.enter }
+    }
+  };
+  const kickerReveal = createFadeUpVariants(reduceMotion, { delay: .15, distance: 16, duration: .68 });
+  const titleReveal = createFadeUpVariants(reduceMotion, { delay: .21, distance: 24, duration: .82 });
+  const copyReveal = createFadeUpVariants(reduceMotion, { delay: .29, distance: 18, duration: .72 });
+  const ctaReveal = createFadeUpVariants(reduceMotion, { delay: .48, distance: 18, duration: .72 });
+  const serviceReveal = createFadeUpVariants(reduceMotion, { distance: 18, duration: .7 });
+  const stagger = createStaggerContainer(reduceMotion, .36);
   const lineReveal = createLineRevealVariants(reduceMotion, .24);
 
   return (
@@ -103,10 +140,12 @@ export function NeedsSection({ content }: { content: HomeContent["needs"] }) {
       id="soluciones"
       className={styles.section}
       aria-labelledby="needs-title"
+      variants={surfaceReveal}
       initial="hidden"
       whileInView="visible"
-      viewport={scrollViewport}
+      viewport={{ once: true, amount: 0.025 }}
     >
+      <motion.div className={styles.entryGlow} variants={glowReveal} aria-hidden="true" />
       <div className={`${styles.sideNote} ${styles.sideNoteLeft}`} aria-hidden="true">
         <i />
         <span>INGENIERÍA<br />SEGURIDAD<br />AUTOMATIZACIÓN<br />CONFIANZA</span>
@@ -116,7 +155,7 @@ export function NeedsSection({ content }: { content: HomeContent["needs"] }) {
         <span>HOGARES<br />EMPRESAS<br />INDUSTRIAS<br />PROYECTOS ESPECIALES</span>
       </div>
 
-      <div className={styles.shell}>
+      <motion.div className={styles.shell} variants={sectionReveal}>
         <motion.ol className={styles.processBand} variants={processReveal} aria-label="Beneficios de trabajar con nosotros">
           {processItems.map(({ title, description, iconComponent: Icon }) => (
             <li key={title} className={styles.processStep}>
@@ -130,15 +169,15 @@ export function NeedsSection({ content }: { content: HomeContent["needs"] }) {
         </motion.ol>
 
         <header className={styles.header}>
-          <motion.span className={styles.kicker} variants={fadeUp}>{content.eyebrow}</motion.span>
+          <motion.span className={styles.kicker} variants={kickerReveal}>{content.eyebrow}</motion.span>
           <motion.i className={styles.kickerLine} variants={lineReveal} aria-hidden="true" />
-          <motion.h2 id="needs-title" variants={fadeUp}>
+          <motion.h2 id="needs-title" variants={titleReveal}>
             {content.title} <span>{content.titleAccent}</span>
           </motion.h2>
-          <motion.p className={styles.desktopSubtitle} variants={fadeUp}>
+          <motion.p className={styles.desktopSubtitle} variants={copyReveal}>
             {content.desktopDescription}
           </motion.p>
-          <motion.p className={styles.mobileSubtitle} variants={fadeUp}>
+          <motion.p className={styles.mobileSubtitle} variants={copyReveal}>
             {content.mobileDescription}
           </motion.p>
         </header>
@@ -168,13 +207,13 @@ export function NeedsSection({ content }: { content: HomeContent["needs"] }) {
           ))}
         </motion.div>
 
-        <motion.div className={styles.ctaWrap} variants={fadeUp}>
+        <motion.div className={styles.ctaWrap} variants={ctaReveal}>
           <Link href={content.cta.href} className={styles.cta} data-magnetic>
             <span><ArrowRight aria-hidden="true" /></span>
             <b>{content.cta.label}</b>
           </Link>
         </motion.div>
-      </div>
+      </motion.div>
     </motion.section>
   );
 }

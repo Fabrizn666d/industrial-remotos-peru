@@ -20,7 +20,7 @@ function formatConfiguration(value: string | number | boolean | string[] | null)
 }
 
 function visibleConfiguration(key: string) {
-  return !["custom_attachmentToken", "custom_attachmentId", "custom_attachmentDraftId", "custom_selectedImage"].includes(key);
+  return !/^custom_(attachmentToken|attachmentId|attachmentDraftId|selectedImage)\d*$/.test(key);
 }
 
 function activityCopy(metadata: Record<string, string | number | boolean | string[] | null>) {
@@ -64,10 +64,10 @@ export default async function AdminRequestDetailPage({ params }: { params: Promi
 
           <section className={styles.panel}>
             <header className={styles.sectionHeader}><div><FileText size={19} /><h2>Elementos solicitados</h2></div><small>{request.items.length} registros</small></header>
-            <div className={styles.itemList}>{request.items.map((item, index) => { const visitorDesign = typeof item.configuration.custom_selectedImage === "string" && item.configuration.custom_selectedImage.startsWith("/api/request-attachments/") ? item.configuration.custom_selectedImage : null; return <article key={item.id}>
+            <div className={styles.itemList}>{request.items.map((item, index) => { const visitorDesigns = Object.entries(item.configuration).filter(([key, value]) => /^custom_selectedImage\d*$/.test(key) && typeof value === "string" && value.startsWith("/api/request-attachments/")).map(([, value]) => value as string); return <article key={item.id}>
               <span className={styles.itemNumber}>{String(index + 1).padStart(2, "0")}</span>
               <div className={styles.itemBody}><div><h3>{item.name}</h3><b>Cantidad: {item.quantity}</b></div>
-                {visitorDesign && <a className={styles.visitorDesign} href={visitorDesign} target="_blank" rel="noreferrer"><img src={visitorDesign} alt="Diseño original aportado por el cliente"/><span>Abrir diseño original del visitante</span></a>}
+                {visitorDesigns.map((visitorDesign, designIndex) => <a className={styles.visitorDesign} href={visitorDesign} target="_blank" rel="noreferrer" key={visitorDesign}><img src={visitorDesign} alt={`Referencia ${designIndex + 1} aportada por el cliente`}/><span>Abrir referencia {designIndex + 1} del visitante</span></a>)}
                 {Object.keys(item.configuration).length > 0 && <dl>{Object.entries(item.configuration).filter(([key]) => visibleConfiguration(key)).map(([key, value]) => <div key={key}><dt>{key}</dt><dd>{formatConfiguration(value)}</dd></div>)}</dl>}
                 {item.notes && <p>{item.notes}</p>}
               </div>

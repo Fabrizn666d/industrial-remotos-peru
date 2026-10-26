@@ -58,16 +58,16 @@ const editorialSolutions: readonly EditorialSolution[] = [
     number: "04",
     id: "puertas-contraplacadas",
     title: "Puertas contraplacadas",
-    description: "Puertas batientes o pivotantes que se registran como referencia y se confirman técnicamente antes de cotizar.",
+    description: "Modelo Singapur con apertura pivotante, fabricado según las medidas del ingreso.",
     image: "/images/configurator/catalog/11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel.webp",
     layout: "stacked"
   },
   {
     number: "05",
     id: "techos-coberturas",
-    title: "Techos y coberturas",
-    description: "Soluciones en pérgolas, techos y coberturas que crean espacios más funcionales, cómodos y protegidos.",
-    image: "/NUEVO/I/Terraza moderna bajo pérgola de madera-4.png",
+    title: "Techo solisombra",
+    description: "Un único modelo solisombra fabricado a medida para crear espacios exteriores cómodos y protegidos.",
+    image: "/images/configurator/catalog/04_Pergolas_y_techos/Basadas_en_fotos_cliente/pergola-modular.webp",
     categoryId: "estructuras",
     layout: "panorama"
   },

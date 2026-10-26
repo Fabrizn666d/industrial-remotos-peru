@@ -52,10 +52,10 @@ export const defaultCmsContent: CmsContentMap = {
         ["garage","Puertas de garaje a medida","Fabricadas según el vano, el uso y el sistema de apertura.","/images/reales/portada-puerta-seccional.jpg","/soluciones/puertas-automatizacion","garage"],
         ["principales-medida","Puertas principales a medida","Diseñadas y fabricadas para tu ingreso, fachada y estilo.","/NUEVO/IRP-imagenes-por-servicio/01_Puertas_principales_a_medida/Propuestas/portada-principal-grafito.png","/soluciones/puertas-a-medida","entry"],
         ["medida","Puertas principales importadas","Elige un modelo, una medida disponible y el color.","/images/configurator/catalog/02_Puertas_importadas/Colores_propuestos/nogal.webp","/soluciones/puertas-principales","customDoor"],
-        ["contraplacadas","Puertas contraplacadas","Modelos batientes y pivotantes para cada ambiente.","/NUEVO/IRP-imagenes-por-servicio/11_Puertas_contraplacadas/Propuestas/Batientes/singapur.png","/soluciones/puertas-contraplacadas","contraplacada"],
+        ["contraplacadas","Puertas contraplacadas","Modelo Singapur con apertura pivotante y fabricación a medida.","/images/configurator/catalog/11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel.webp","/soluciones/puertas-contraplacadas","contraplacada"],
         ["baranda","Acero inoxidable y barandas","Seguridad y elegancia en cada detalle.","/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_52 (2).png","/soluciones/acero-barandas","rail"],
         ["mamparas","Mamparas y ventanas","Diseño, iluminación y funcionalidad.","/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_53 (3).png","/soluciones/ventanas-mamparas","window"],
-        ["techos","Techos y coberturas","Protección y confort para terrazas, patios y cocheras.","/NUEVO/A/ChatGPT Image 21 sept 2026%2C 20_19_53 (4).png","/soluciones/techos-coberturas","pergola"]
+        ["techos","Techo solisombra","Fabricado a medida para terrazas, patios y cocheras.","/images/configurator/catalog/04_Pergolas_y_techos/Basadas_en_fotos_cliente/pergola-modular.webp","/soluciones/techos-coberturas","pergola"]
       ].map(([id,title,body,src,href,icon]) => ({ id, title, body, image: { src, alt: title, position: "center" as const }, href, icon }))
     },
     projects: {
@@ -76,7 +76,7 @@ export const defaultCmsContent: CmsContentMap = {
         ["puertas-medida","Importadas","Puertas principales importadas","Modelos de catálogo disponibles por medida, acabado y color.","/soluciones/puertas-principales"],
         ["baranda","Barandas","Acero inoxidable y barandas","Barandas y pasamanos integrados al diseño y las necesidades del proyecto.","/soluciones/acero-barandas"],
         ["mamparas","Mamparas","Mamparas y ventanas","Mamparas y ventanas que conectan ambientes y aprovechan la luz natural.","/soluciones/ventanas-mamparas"],
-        ["solisombra","Techos","Techos y coberturas","Coberturas diseñadas para acondicionar terrazas, patios y cocheras.","/soluciones/techos-coberturas"],
+        ["solisombra","Solisombra","Techo solisombra","Fabricado a medida para acondicionar terrazas, patios y cocheras.","/soluciones/techos-coberturas"],
         ["drywall","Drywall","Drywall y cielorrasos","Acondicionamiento de interiores para distribuir y transformar espacios.","/soluciones/drywall-cielorrasos"]
       ].map(([id,shortTitle,title,body,href]) => ({ id, shortTitle, title, body, href, visible: true }))
     },

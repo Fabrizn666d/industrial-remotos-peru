@@ -134,6 +134,8 @@ export function ExperienceImpactMetrics({
 
 export function ExperienceImpactSection({ content }: { content: HomeContent["impact"] }) {
   const sectionRef = useRef<HTMLElement>(null);
+  const sectionVisible = useInView(sectionRef, { once: true, amount: 0.1, margin: "0px 0px -7% 0px" });
+  const reduceMotion = usePrefersReducedMotion();
   const contentMosaic: ImpactTile[] = content.gallery.map((image, index) => ({
     src: image.src,
     size: tileSizes[index % tileSizes.length],
@@ -249,33 +251,50 @@ export function ExperienceImpactSection({ content }: { content: HomeContent["imp
         aria-hidden="true"
       />
 
-      <div className={`${styles.sideArtwork} ${styles.sideArtworkLeft}`} aria-hidden="true">
+      <motion.div
+        className={`${styles.sideArtwork} ${styles.sideArtworkLeft}`}
+        aria-hidden="true"
+        initial={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -42, scale: 0.98 }}
+        animate={sectionVisible ? { opacity: 1, x: 0, scale: 1 } : undefined}
+        transition={{ duration: reduceMotion ? 0.18 : 0.9, delay: reduceMotion ? 0 : 0.08, ease: [0.16, 1, 0.3, 1] }}
+      >
         <Image
           src="/NUEVO/EN ARCO/Técnico sonriente con arco azul-1.png"
           alt=""
           fill
           sizes="(max-width: 768px) 48vw, 30vw"
         />
-      </div>
+      </motion.div>
 
-      <div className={`${styles.sideArtwork} ${styles.sideArtworkRight}`} aria-hidden="true">
+      <motion.div
+        className={`${styles.sideArtwork} ${styles.sideArtworkRight}`}
+        aria-hidden="true"
+        initial={reduceMotion ? { opacity: 0 } : { opacity: 0, x: 42, scale: 0.98 }}
+        animate={sectionVisible ? { opacity: 1, x: 0, scale: 1 } : undefined}
+        transition={{ duration: reduceMotion ? 0.18 : 0.9, delay: reduceMotion ? 0 : 0.12, ease: [0.16, 1, 0.3, 1] }}
+      >
         <Image
           src="/NUEVO/EN ARCO/Robot sonriente tras arco azul-2.png"
           alt=""
           fill
           sizes="(max-width: 768px) 48vw, 30vw"
         />
-      </div>
+      </motion.div>
 
       <div className={styles.content}>
-        <div className={styles.intro}>
+        <motion.div
+          className={styles.intro}
+          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 28, filter: "blur(7px)" }}
+          animate={sectionVisible ? { opacity: 1, y: 0, filter: "blur(0px)" } : undefined}
+          transition={{ duration: reduceMotion ? 0.18 : 0.78, ease: [0.16, 1, 0.3, 1] }}
+        >
           <h2 id="experience-impact-title">
             <span>{content.titleLine1}</span>
             <span>{content.titleLine2}</span>
             <span className={styles.titleAccent}>{content.titleAccent}</span>
           </h2>
           <p>{content.description}</p>
-        </div>
+        </motion.div>
 
         <ExperienceImpactMetrics metrics={content.metrics} animateCards />
       </div>

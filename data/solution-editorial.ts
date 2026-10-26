@@ -240,9 +240,9 @@ export const solutionEditorialProfiles: Record<string, SolutionEditorialProfile>
   },
   "techos-coberturas": {
     variant: "panorama",
-    heroHeading: "Techos y",
-    heroAccent: "coberturas",
-    heroDescription: "Soluciones para terrazas, patios y cocheras, definidas según el uso, los apoyos existentes y el nivel de sombra o cobertura requerido.",
+    heroHeading: "Techo",
+    heroAccent: "solisombra",
+    heroDescription: "El modelo de la referencia se adapta a terrazas, patios y cocheras según el área, los apoyos existentes y el nivel de sombra requerido.",
     visuals: {
       hero: { src: `${serviceMedia}/hero-techos-coberturas.webp`, objectPosition: "50% 50%", mobileObjectPosition: "48% 50%" },
       characters: {
@@ -258,12 +258,10 @@ export const solutionEditorialProfiles: Record<string, SolutionEditorialProfile>
       { title: "Patios", description: "Alternativas ligeras o cubiertas según la necesidad real.", image: img.roofPoly },
       { title: "Cocheras", description: "Protección para vehículos con estructura y material evaluados.", image: img.pergola }
     ],
-    alternativesTitle: "Opciones con propósitos diferentes.",
-    alternativesIntro: "No todas las alternativas son impermeables. La protección frente a lluvia depende del sistema especificado.",
+    alternativesTitle: "Un modelo, adaptado a tu espacio.",
+    alternativesIntro: "Trabajamos el techo solisombra mostrado y definimos sus dimensiones después de revisar el lugar.",
     alternatives: [
-      { title: "Sol y sombra", description: "Control parcial de luz y ventilación para exteriores.", image: img.roof },
-      { title: "Policarbonato", description: "Cobertura translúcida cuando el proyecto y la estructura lo permiten.", image: img.roofPoly },
-      { title: "Cobertura metálica", description: "Solución opaca y resistente, definida después de evaluar apoyos y uso.", image: img.pergola }
+      { title: "Techo solisombra", description: "Control parcial de luz y ventilación para exteriores, fabricado a medida.", image: img.roof }
     ],
     detailTitle: "Materiales y uniones definidos para cada proyecto.",
     detailDescription: "La propuesta especifica estructura, sistema de cubierta, acabado y encuentros de acuerdo con las condiciones verificadas.",
@@ -477,21 +475,19 @@ export const solutionEditorialProfiles: Record<string, SolutionEditorialProfile>
 
 solutionEditorialProfiles["puertas-contraplacadas"] = {
   ...solutionEditorialProfiles["puertas-a-medida"],
-  heroHeading: "Referencias para tu puerta contraplacada.",
-  heroDescription: "Registra apertura y dimensiones; los modelos y fichas se confirman antes de publicar una tarifa.",
-  ctaTitle: "Solicita la evaluación de tu puerta.",
+  heroHeading: "Singapur, una puerta contraplacada protagonista.",
+  heroDescription: "Un único modelo con apertura pivotante, configurado según las dimensiones de tu ingreso.",
+  ctaTitle: "Solicita la evaluación de tu Singapur.",
   ctaDescription: "Puedes continuar aunque aún no conozcas las medidas definitivas."
 };
 
 export const solutionFinishPresentations: Record<string, SolutionFinishPresentation> = {
   "puertas-contraplacadas": {
-    eyebrow: "Modelos y terminaciones",
-    title: "Referencias sujetas a validación comercial.",
-    description: "Las propuestas visuales sirven para registrar la preferencia. Materiales, espesores, acabados y precio se confirman antes de emitir la cotización.",
+    eyebrow: "Modelo disponible",
+    title: "Singapur con apertura pivotante.",
+    description: "La fabricación, dimensiones y precio se confirman durante la evaluación comercial del proyecto.",
     options: [
-      { name: "Blanco", color: "#ecece8", description: "Referencia clara pendiente de ficha técnica y tarifa publicadas." },
-      { name: "Grafito", color: "#343b42", description: "Referencia oscura pendiente de compatibilidad con el modelo." },
-      { name: "Tipo madera", color: "#8b5232", description: "Tono referencial que se confirma durante la evaluación." }
+      { name: "Singapur", color: "#7a4328", description: "Modelo contraplacado pivotante mostrado en la fotografía aprobada." }
     ]
   },
   "puertas-a-medida": {

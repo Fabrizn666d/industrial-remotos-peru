@@ -13,6 +13,21 @@
   scroll-margin-top: 96px;
 }
 
+.entryGlow {
+  position: absolute;
+  z-index: 3;
+  top: clamp(-88px, -5.5vw, -58px);
+  right: -8%;
+  left: -8%;
+  height: clamp(130px, 10vw, 190px);
+  background:
+    radial-gradient(ellipse 48% 78% at 50% 50%, rgba(119, 190, 255, .25), rgba(222, 241, 255, .15) 48%, transparent 76%),
+    linear-gradient(180deg, transparent, rgba(247, 251, 255, .76) 68%, #f7fbff 100%);
+  filter: blur(8px);
+  pointer-events: none;
+  transform-origin: center top;
+}
+
 .section::after {
   position: absolute;
   z-index: 1;
@@ -387,6 +402,15 @@
 
   .section::after { height: 82px; }
 
+  .entryGlow {
+    top: -48px;
+    height: 105px;
+    background:
+      radial-gradient(ellipse 76% 72% at 50% 48%, rgba(119, 190, 255, .19), transparent 75%),
+      linear-gradient(180deg, transparent, rgba(247, 251, 255, .86) 72%, #f7fbff 100%);
+    filter: blur(5px);
+  }
+
   .shell {
     width: min(calc(100% - 36px), 520px);
     padding: 0 0 300px;
@@ -458,6 +482,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .entryGlow { filter: none; }
   .photo img,
   .processStep,
   .processStep > svg,

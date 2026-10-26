@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -14,7 +14,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { siteConfig } from "@/data/site";
 import type { CompanyContent, FooterContent } from "@/lib/cms/content-contracts";
-import { createFadeUpVariants, createStaggerContainer, scrollViewport } from "@/lib/motion";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import styles from "./Footer.module.css";
 
@@ -24,21 +23,33 @@ function WhatsAppIcon() {
 
 export function Footer({ company, content }: { company: CompanyContent; content: FooterContent }) {
   const reduceMotion = usePrefersReducedMotion();
-  const revealContainer = createStaggerContainer(reduceMotion);
-  const revealColumn = createFadeUpVariants(reduceMotion);
+  const footerReveal: Variants = {
+    hidden: reduceMotion ? { opacity: 0 } : { opacity: 0, y: "100%" },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: reduceMotion ? 0.18 : 0.8,
+        ease: reduceMotion ? "linear" : [0.215, 0.61, 0.355, 1],
+      },
+    },
+  };
 
   return (
-    <footer className={`site-footer ${styles.footer}`}>
-      <div className={styles.background} aria-hidden="true" />
-
-      <motion.div
-        className={styles.main}
-        variants={revealContainer}
-        initial="hidden"
-        whileInView="visible"
-        viewport={scrollViewport}
+    <motion.div
+      className={styles.revealShell}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.02 }}
+    >
+      <motion.footer
+        className={`site-footer ${styles.footer}`}
+        variants={footerReveal}
       >
-        <motion.section className={styles.brand} aria-label="Industrial Remotos Perú" variants={revealColumn}>
+        <div className={styles.background} aria-hidden="true" />
+
+      <div className={styles.main}>
+        <section className={styles.brand} aria-label="Industrial Remotos Perú">
           <Link href="/" aria-label="Ir al inicio">
             <span className={styles.logo}>
               <Image
@@ -58,16 +69,16 @@ export function Footer({ company, content }: { company: CompanyContent; content:
             <Link href="/contacto"><MessageCircle aria-hidden="true" />Formulario de contacto</Link>
             <a href={`tel:+${company.whatsappNumber}`}><Phone aria-hidden="true" />{company.phoneDisplay}</a>
           </div>
-        </motion.section>
+        </section>
 
-        <motion.nav className={styles.column} aria-label="Navegación del pie de página" variants={revealColumn}>
+        <nav className={styles.column} aria-label="Navegación del pie de página">
           <FooterHeading>Navega</FooterHeading>
           <div className={styles.links}>
             {content.navigation.filter((item) => item.visible).map((item) => <Link key={item.id} href={item.href}>{item.label}</Link>)}
           </div>
-        </motion.nav>
+        </nav>
 
-        <motion.section className={`${styles.column} ${styles.legal}`} variants={revealColumn}>
+        <section className={`${styles.column} ${styles.legal}`}>
           <FooterHeading>Legal</FooterHeading>
           <div className={styles.links}>
             {content.legal.filter((item) => item.visible && item.href !== "/libro-reclamaciones").map((item) => <Link key={item.id} href={item.href}>{item.label}</Link>)}
@@ -82,16 +93,16 @@ export function Footer({ company, content }: { company: CompanyContent; content:
               <strong>Libro de<br />Reclamaciones <ArrowRight aria-hidden="true" /></strong>
             </span>
           </Link>
-        </motion.section>
+        </section>
 
-        <motion.section className={`${styles.column} ${styles.details}`} variants={revealColumn}>
+        <section className={`${styles.column} ${styles.details}`}>
           <FooterHeading>Datos legales</FooterHeading>
           <div><small>Razón social</small><p>{company.legalName || "—"}</p></div>
           <div><small>RUC</small><p>{company.ruc || "—"}</p></div>
           <div><small>Dirección</small><p>{company.address || "—"}</p></div>
-        </motion.section>
+        </section>
 
-        <motion.section className={`${styles.column} ${styles.follow}`} variants={revealColumn}>
+        <section className={`${styles.column} ${styles.follow}`}>
           <FooterHeading>Síguenos</FooterHeading>
           <div className={styles.socials}>
             {company.facebook && <a className={styles.facebook} href={company.facebook} aria-label="Facebook" target="_blank" rel="noreferrer"><Facebook /></a>}
@@ -99,13 +110,13 @@ export function Footer({ company, content }: { company: CompanyContent; content:
             {company.tiktok && <a className={styles.tiktok} href={company.tiktok} aria-label="TikTok" target="_blank" rel="noreferrer"><Music2 /></a>}
           </div>
           <p>Conoce nuestros proyectos, procesos y nuevas instalaciones.</p>
-          <a className={styles.whatsapp} href={`https://wa.me/${company.whatsappNumber}`} target="_blank" rel="noreferrer" data-magnetic>
+          <a className={styles.whatsapp} href={`https://wa.me/${company.whatsappNumber}`} target="_blank" rel="noreferrer">
             <WhatsAppIcon />
             <span>Habla con nosotros</span>
             <ArrowRight aria-hidden="true" />
           </a>
-        </motion.section>
-      </motion.div>
+        </section>
+      </div>
 
       <div className={styles.bottom}>
         <div>
@@ -113,7 +124,8 @@ export function Footer({ company, content }: { company: CompanyContent; content:
           <a href={siteConfig.developer.url} target="_blank" rel="noreferrer">Diseñado por {siteConfig.developer.name} <ArrowUpRight aria-hidden="true" /></a>
         </div>
       </div>
-    </footer>
+      </motion.footer>
+    </motion.div>
   );
 }
 

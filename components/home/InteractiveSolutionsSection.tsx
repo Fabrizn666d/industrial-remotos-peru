@@ -83,9 +83,9 @@ const services = [
   },
   {
     id: "solisombra",
-    shortTitle: "Techos",
-    title: "Techos y coberturas",
-    description: "Coberturas diseñadas para acondicionar terrazas, patios y cocheras.",
+    shortTitle: "Solisombra",
+    title: "Techo solisombra",
+    description: "Fabricado a medida para acondicionar terrazas, patios y cocheras.",
     href: "/soluciones/techos-coberturas",
     icon: SunMedium,
     desktop: { x: 58, y: 25 },

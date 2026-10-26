@@ -94,10 +94,12 @@ export async function deleteUnclaimedRequestAttachment(id: string, token: string
 type AttachmentCredential = { id: string; token: string; source?: string };
 function credentials(input: PublicRequestSubmission): AttachmentCredential[] {
   return input.items.flatMap((item) => {
-    const id = item.configuration.custom_attachmentId;
-    const token = item.configuration.custom_attachmentToken;
-    const source = item.configuration.custom_selectedImage;
-    return typeof id === "string" && typeof token === "string" ? [{ id, token, source: typeof source === "string" ? source : undefined }] : [];
+    return ["", "2", "3", "4"].flatMap((suffix) => {
+      const id = item.configuration[`custom_attachmentId${suffix}`];
+      const token = item.configuration[`custom_attachmentToken${suffix}`];
+      const source = item.configuration[`custom_selectedImage${suffix}`];
+      return typeof id === "string" && typeof token === "string" ? [{ id, token, source: typeof source === "string" ? source : undefined }] : [];
+    });
   });
 }
 

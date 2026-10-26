@@ -1,12 +1,15 @@
+.revealShell {
+  position: relative;
+  overflow: hidden;
+  background: #f5faff;
+}
+
 .footer {
   position: relative;
   overflow: hidden;
   padding: 0;
-  background:
-    radial-gradient(circle at 12% 8%, rgba(26, 132, 255, .2), transparent 30%),
-    radial-gradient(circle at 88% 18%, rgba(35, 178, 255, .1), transparent 25%),
-    linear-gradient(145deg, #061d3a 0%, #031329 48%, #020d1e 100%);
-  color: #f4f8ff;
+  background: #f5faff;
+  color: #0f172a;
   isolation: isolate;
 }
 
@@ -17,16 +20,15 @@
   background-image: url("/NUEVO/E/ChatGPT Image 22 sept 2026%2C 10_38_39 (1).png");
   background-position: center;
   background-size: cover;
-  opacity: .14;
-  filter: saturate(.72) contrast(1.08);
+  opacity: .46;
 }
 
 .footer::after {
   position: absolute;
   z-index: -1;
   inset: 0 0 74px;
-  background: linear-gradient(90deg, rgba(2, 15, 34, .84), rgba(4, 25, 51, .92) 20%, rgba(3, 18, 38, .94) 80%, rgba(2, 13, 29, .88));
-  backdrop-filter: blur(2px) saturate(.82);
+  background: linear-gradient(90deg, rgba(248, 250, 252, .68), rgba(255, 255, 255, .88) 20%, rgba(255, 255, 255, .9) 80%, rgba(248, 250, 252, .68));
+  backdrop-filter: blur(1.5px) saturate(.86);
   content: "";
   pointer-events: none;
 }
@@ -41,16 +43,6 @@
   padding: 55px 0 45px;
 }
 
-.main::before {
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(91, 177, 255, .55), transparent);
-  content: "";
-}
-
 .main > * {
   min-width: 0;
   padding-inline: clamp(25px, 2.1vw, 42px);
@@ -58,7 +50,7 @@
 
 .main > *:first-child { padding-left: 0; }
 .main > *:last-child { padding-right: 0; }
-.main > *:not(:last-child) { border-right: 1px solid rgba(132, 193, 255, .14); }
+.main > *:not(:last-child) { border-right: 1px solid rgba(52, 116, 183, .14); }
 
 .brand { align-self: start; }
 .brand > a:first-child { display: inline-flex; }
@@ -69,10 +61,6 @@
   width: clamp(195px, 12vw, 225px) !important;
   height: clamp(104px, 6.4vw, 118px) !important;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, .78);
-  border-radius: 24px;
-  background: rgba(255, 255, 255, .94);
-  box-shadow: 0 18px 45px rgba(0, 5, 20, .26), inset 0 1px rgba(255, 255, 255, .95);
 }
 
 .logoAsset {
@@ -82,7 +70,7 @@
   width: clamp(170px, 10vw, 190px);
   max-width: none;
   height: auto;
-  filter: drop-shadow(0 7px 14px rgba(8, 34, 67, .16));
+  filter: drop-shadow(0 7px 14px rgba(8, 34, 67, .12));
   transform: translate(-50%, -50%);
 }
 
@@ -99,7 +87,7 @@
 .follow > p {
   max-width: 320px;
   margin: 0;
-  color: rgba(225, 237, 252, .72);
+  color: #334155;
   font-size: clamp(13px, .78vw, 15px);
   line-height: 1.52;
 }
@@ -115,7 +103,7 @@
   width: fit-content;
   align-items: center;
   gap: 9px;
-  color: rgba(244, 249, 255, .9);
+  color: #0f172a;
   font-size: 13px;
   font-weight: 620;
   transition: color 220ms ease, transform 220ms ease;
@@ -125,16 +113,16 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: rgba(45, 147, 255, .16);
+  background: rgba(20, 132, 255, .1);
   padding: 9px;
   color: #0879ed;
 }
 
-.contactLines a:hover { color: #72bdff; transform: translateX(3px); }
+.contactLines a:hover { color: #0879ed; transform: translateX(3px); }
 
 .column h2 {
   margin: 2px 0 23px;
-  color: #8bcbff;
+  color: #073b7a;
   font-size: 15px;
   font-weight: 800;
   letter-spacing: .13em;
@@ -159,7 +147,7 @@
   border: 0;
   background: transparent;
   padding: 0;
-  color: rgba(244, 249, 255, .88);
+  color: #0f172a;
   font-size: clamp(13px, .9vw, 16px);
   font-family: inherit;
   line-height: 1.3;
@@ -169,7 +157,7 @@
 }
 
 .links a:hover,
-.links button:hover { color: #72bdff; transform: translateX(3px); }
+.links button:hover { color: #0879ed; transform: translateX(3px); }
 
 .legal { display: flex; flex-direction: column; }
 
@@ -181,12 +169,11 @@
   align-items: center;
   gap: 12px;
   margin-top: 25px;
-  border: 1px solid rgba(130, 194, 255, .14);
+  border-top: 1px solid rgba(52, 116, 183, .18);
   border-radius: 0 0 12px 12px;
-  background: rgba(255, 255, 255, .07);
+  background: rgba(255, 255, 255, .56);
   padding: 16px 8px 8px 6px;
-  box-shadow: 0 16px 40px rgba(0, 6, 20, .2), inset 0 1px rgba(255, 255, 255, .1);
-  backdrop-filter: blur(14px);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .72);
 }
 
 .claimsArt {
@@ -211,7 +198,7 @@
 }
 
 .claimsCopy small {
-  color: rgba(221, 236, 252, .58);
+  color: #475569;
   font-size: 8px;
   font-weight: 750;
   letter-spacing: .09em;
@@ -221,7 +208,7 @@
 
 .claimsCopy strong {
   display: inline;
-  color: #70bdff;
+  color: #075ecf;
   font-size: 14px;
   font-weight: 790;
   letter-spacing: -.025em;
@@ -237,7 +224,7 @@
 .details > div { display: grid; gap: 7px; }
 
 .details small {
-  color: rgba(205, 225, 246, .54);
+  color: #64748b;
   font-size: 10px;
   font-weight: 780;
   letter-spacing: .1em;
@@ -250,13 +237,13 @@
   align-items: flex-start;
   gap: 8px;
   margin: 0;
-  color: rgba(244, 249, 255, .88);
+  color: #0f172a;
   font-size: 13px;
   font-weight: 650;
   line-height: 1.48;
 }
 
-.details p svg { width: 15px; height: 15px; flex: 0 0 auto; margin-top: 2px; color: #62b5ff; }
+.details p svg { width: 15px; height: 15px; flex: 0 0 auto; margin-top: 2px; color: #0879ed; }
 
 .socials { display: flex; gap: 12px; }
 
@@ -267,7 +254,7 @@
   place-items: center;
   border-radius: 50%;
   color: #fff;
-  box-shadow: 0 10px 24px rgba(0, 5, 20, .3), inset 0 1px rgba(255, 255, 255, .18);
+  box-shadow: 0 10px 24px rgba(25, 74, 127, .14);
   transition: transform 250ms cubic-bezier(.16, 1, .3, 1), box-shadow 250ms ease;
 }
 
@@ -304,8 +291,7 @@
 
 .bottom {
   position: relative;
-  border-top: 1px solid rgba(127, 190, 255, .1);
-  background: rgba(1, 8, 19, .72);
+  background: linear-gradient(105deg, #062d59, #031d3c);
   color: rgba(230, 242, 255, .88);
 }
 
@@ -355,12 +341,12 @@
 @media (max-width: 960px) {
   .main { grid-template-columns: 1.1fr .9fr; }
   .main > * { padding: 0 28px; border-right: 0; }
-  .main > *:nth-child(odd) { padding-left: 0; border-right: 1px solid rgba(132, 193, 255, .14); }
+  .main > *:nth-child(odd) { padding-left: 0; border-right: 1px solid rgba(52, 116, 183, .14); }
   .main > *:nth-child(even) { padding-right: 0; }
   .main > *:nth-child(4),
   .main > *:nth-child(5) { grid-column: auto; grid-row: auto; }
   .details { display: flex; }
-  .follow { grid-column: 1 / -1; padding: 40px 0 0 !important; border-top: 1px solid rgba(132, 193, 255, .14); border-right: 0 !important; }
+  .follow { grid-column: 1 / -1; padding: 40px 0 0 !important; border-top: 1px solid rgba(52, 116, 183, .14); border-right: 0 !important; }
   .follow > p { max-width: 360px; }
 }
 
@@ -369,7 +355,7 @@
     background-image: url("/NUEVO/E/ChatGPT Image 22 sept 2026%2C 10_38_40 (2).png");
     background-position: center;
   }
-  .footer::after { background: rgba(2, 15, 33, .91); backdrop-filter: blur(2px) saturate(.8); }
+  .footer::after { background: rgba(248, 250, 252, .86); backdrop-filter: blur(1px) saturate(.85); }
   .main,
   .bottom > div { width: calc(100% - 36px); }
   .main { grid-template-columns: 1fr; gap: 0; padding: 65px 0 58px; }
@@ -377,7 +363,7 @@
     grid-column: auto !important;
     grid-row: auto !important;
     padding: 34px 0 !important;
-    border-top: 1px solid rgba(132, 193, 255, .14);
+    border-top: 1px solid rgba(52, 116, 183, .14);
     border-right: 0 !important;
   }
   .main > *:first-child { border-top: 0; padding-top: 0 !important; }
@@ -412,7 +398,7 @@
 
 @media (max-width: 400px) {
   .legal { grid-template-columns: 1fr; }
-  .claims { grid-column: auto; grid-row: auto; width: 270px; grid-template-columns: 122px minmax(0, 1fr); gap: 12px; margin-top: 25px; border: 1px solid rgba(132, 193, 255, .14); padding-top: 18px; }
+  .claims { grid-column: auto; grid-row: auto; width: 270px; grid-template-columns: 122px minmax(0, 1fr); gap: 12px; margin-top: 25px; border-top: 1px solid rgba(52, 116, 183, .18); padding-top: 18px; }
   .claimsArt { width: 122px; height: 58px; }
   .claimsArt img { width: 130px; transform: translate(-4px, -37px); }
   .claims:hover .claimsArt img { transform: translate(-4px, -40px); }

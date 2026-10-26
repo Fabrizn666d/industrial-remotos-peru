@@ -414,7 +414,7 @@ export function PricingCatalogManager({ initialDraft, publishedVersion }: { init
   function addModel(definition: Definition, typeId?: string | null) {
     const id = crypto.randomUUID();
     const selectedType = definition.catalogTypes.find((type) => type.id === typeId && !type.archived) ?? definition.catalogTypes.find((type) => !type.archived);
-    const openingSystem = selectedType?.value ?? (definition.productId === "seccionales" ? "Seccional" : definition.productId === "puertas-a-medida" || definition.productId === "puertas-contraplacadas" ? "Batiente" : undefined);
+    const openingSystem = selectedType?.value ?? (definition.productId === "seccionales" ? "Seccional" : definition.productId === "puertas-contraplacadas" ? "Pivotante" : definition.productId === "puertas-a-medida" ? "Batiente" : undefined);
     const model: ImportedModel = { id, name: "Nuevo modelo", image: selectedType?.image ?? "/images/placeholders/puerta-contraplacada-temporal.png", thumbnail: selectedType?.thumbnail, gallery: [], published: false, archived: false, order: definition.importedModels?.length ?? 0, catalogTypeId: selectedType?.id, openingSystem, openingStatus: "CONFIRMED", origin: "CLIENT_REFERENCE", allowedFinishes: [], finishImages: {}, included: [], thicknessOptionsMm: [], leafOptions: [], priceMode: "EVALUATION", measurementBands: [], commercialStatus: "PENDING", variants: [], automation: [], accessories: [] };
     updateDefinition(definition.productId, (value) => ({ ...value, importedModels: [...(value.importedModels ?? []), model] }));
     setSelectedModelId(id);

@@ -9,6 +9,20 @@ import { PricingCatalogDocumentSchema, type PricingCatalogDocument } from "@/lib
 export interface PricingCatalogRepository { getPublished(): Promise<PricingCatalogDocument>; getDraft(): Promise<PricingCatalogDocument>; saveDraft(value: PricingCatalogDocument): Promise<PricingCatalogDocument>; publish(): Promise<PricingCatalogDocument>; }
 
 const importedHomeCard = { title: "Puertas principales importadas", description: "Elige un modelo, una medida disponible y el color.", image: "/images/configurator/catalog/02_Puertas_importadas/Colores_propuestos/nogal.webp", visible: true, order: 3, destination: "/soluciones/puertas-principales" };
+const contraplacadaSingapurImage = "/images/configurator/catalog/11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel.webp";
+const contraplacadaSingapurThumbnail = "/images/configurator/catalog/11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel-thumb.webp";
+const legacyContraplacadaModelIds = new Set([
+  "contraplacada-referencia-bloques-miel",
+  "contraplacada-batiente-blanco",
+  "contraplacada-batiente-singapur",
+  "contraplacada-pivotante-grafito",
+  "contraplacada-pivotante-madera"
+]);
+const legacyGarageCorredizaModelIds = new Set([
+  "garaje-geometrico",
+  "garaje-negro-plata",
+  "garaje-propuesta-corrediza-grafito-franja"
+]);
 
 const defaultCatalogTypes: Record<string, Array<{
   id: string;
@@ -27,22 +41,20 @@ const defaultCatalogTypes: Record<string, Array<{
     { id: "puertas-a-medida-pivotante", value: "Pivotante", label: "Pivotante", description: "Puerta protagonista con eje de giro desplazado.", image: "/images/configurator/cotri/option-3.webp", thumbnail: "/images/configurator/cotri/option-3-thumb.webp", published: true, archived: false, order: 1, allowCustomDesign: true },
   ],
   seccionales: [
-    { id: "seccionales-seccional", value: "Seccional", label: "Seccional", description: "Paneles articulados que se recogen bajo el techo.", image: "/images/configurator/door-types/garage-seccional.webp", thumbnail: "/images/configurator/door-types/garage-seccional-thumb.webp", published: true, archived: false, order: 0, allowCustomDesign: true },
+    { id: "seccionales-seccional", value: "Seccional", label: "Seccional", description: "Paneles articulados que se recogen bajo el techo.", image: "/images/configurator/catalog/03_Puertas_de_garaje/Basadas_en_fotos_cliente/garaje-miel-horizontal.webp", thumbnail: "/images/configurator/catalog/03_Puertas_de_garaje/Basadas_en_fotos_cliente/garaje-miel-horizontal-thumb.webp", published: true, archived: false, order: 0, allowCustomDesign: true },
     { id: "seccionales-levadiza", value: "Levadiza", label: "Levadiza", description: "Una hoja que se eleva y queda suspendida.", image: "/images/configurator/cotri/option-4.webp", thumbnail: "/images/configurator/cotri/option-4-thumb.webp", published: false, archived: true, order: 1, allowCustomDesign: true },
     { id: "seccionales-corrediza", value: "Corrediza", label: "Corrediza", description: "Apertura lateral sobre guía para accesos amplios.", image: "/images/configurator/door-types/garage-corrediza.webp", thumbnail: "/images/configurator/door-types/garage-corrediza-thumb.webp", published: true, archived: false, order: 2, allowCustomDesign: true },
     { id: "seccionales-batiente", value: "Batiente", label: "Batiente", description: "Dos hojas con apertura lateral tradicional.", image: "/images/configurator/cotri/option-6.webp", thumbnail: "/images/configurator/cotri/option-6-thumb.webp", published: true, archived: false, order: 3, allowCustomDesign: true },
   ],
   "puertas-contraplacadas": [
-    { id: "puertas-contraplacadas-batiente", value: "Batiente", label: "Batiente", description: "Apertura convencional para interiores y accesos.", image: "/images/configurator/door-types/contraplacada-batiente.webp", thumbnail: "/images/configurator/door-types/contraplacada-batiente-thumb.webp", published: true, archived: false, order: 0, allowCustomDesign: true },
-    { id: "puertas-contraplacadas-pivotante", value: "Pivotante", label: "Pivotante", description: "Apertura de eje desplazado para una presencia contemporánea.", image: "/images/configurator/door-types/contraplacada-pivotante.webp", thumbnail: "/images/configurator/door-types/contraplacada-pivotante-thumb.webp", published: true, archived: false, order: 1, allowCustomDesign: true },
+    { id: "puertas-contraplacadas-pivotante", value: "Pivotante", label: "Pivotante", description: "Apertura pivotante del modelo Singapur.", image: contraplacadaSingapurImage, thumbnail: contraplacadaSingapurThumbnail, published: true, archived: false, order: 0, allowCustomDesign: true },
   ],
 };
 
 const correctedDoorTypeAssets: Record<string, { image: string; thumbnail: string }> = {
-  "seccionales-seccional": { image: "/images/configurator/door-types/garage-seccional.webp", thumbnail: "/images/configurator/door-types/garage-seccional-thumb.webp" },
+  "seccionales-seccional": { image: "/images/configurator/catalog/03_Puertas_de_garaje/Basadas_en_fotos_cliente/garaje-miel-horizontal.webp", thumbnail: "/images/configurator/catalog/03_Puertas_de_garaje/Basadas_en_fotos_cliente/garaje-miel-horizontal-thumb.webp" },
   "seccionales-corrediza": { image: "/images/configurator/door-types/garage-corrediza.webp", thumbnail: "/images/configurator/door-types/garage-corrediza-thumb.webp" },
-  "puertas-contraplacadas-batiente": { image: "/images/configurator/door-types/contraplacada-batiente.webp", thumbnail: "/images/configurator/door-types/contraplacada-batiente-thumb.webp" },
-  "puertas-contraplacadas-pivotante": { image: "/images/configurator/door-types/contraplacada-pivotante.webp", thumbnail: "/images/configurator/door-types/contraplacada-pivotante-thumb.webp" },
+  "puertas-contraplacadas-pivotante": { image: contraplacadaSingapurImage, thumbnail: contraplacadaSingapurThumbnail },
 };
 
 function normalizeCatalogTypes(types: PricingCatalogDocument["definitions"][number]["catalogTypes"]) {
@@ -50,7 +62,8 @@ function normalizeCatalogTypes(types: PricingCatalogDocument["definitions"][numb
     if (type.id === "seccionales-levadiza") return { ...type, published: false, archived: true };
     const corrected = correctedDoorTypeAssets[type.id];
     const usesLegacyAsset = type.image.includes("/images/configurator/cotri/option-") || (type.thumbnail ?? "").includes("/images/configurator/cotri/option-");
-    return corrected && usesLegacyAsset ? { ...type, ...corrected } : type;
+    const usesPreviousSeccionalAsset = type.id === "seccionales-seccional" && type.image.includes("/images/configurator/door-types/garage-seccional");
+    return corrected && (usesLegacyAsset || usesPreviousSeccionalAsset) ? { ...type, ...corrected } : type;
   });
 }
 
@@ -76,7 +89,7 @@ function hasLegacyGarageLimits(definition: PricingCatalogDocument["definitions"]
 
 function normalizeDoorTaxonomy(input: unknown): PricingCatalogDocument {
   const document = input as PricingCatalogDocument;
-  const modelProducts = new Set(["puertas-a-medida", "seccionales", "puertas-principales", "puertas-contraplacadas"]);
+  const modelProducts = new Set(["puertas-a-medida", "seccionales", "puertas-principales", "puertas-contraplacadas", "techos-coberturas"]);
   const obsoleteImportedIds = new Set(["irp-principal-linea-urbana", "irp-principal-linea-natura", "irp-principal-linea-minimal"]);
   const staticByProduct = new Map(publishedPricingCatalog.map((definition) => [definition.productId, definition]));
   const existingByProduct = new Map(document.definitions.map((definition) => [definition.productId, definition]));
@@ -90,18 +103,32 @@ function normalizeDoorTaxonomy(input: unknown): PricingCatalogDocument {
     const seededTypes = defaultCatalogTypes[definition.productId] ?? [];
     const hasPersistedTypes = Object.prototype.hasOwnProperty.call(definition, "catalogTypes");
     const hasPersistedModels = Object.prototype.hasOwnProperty.call(definition, "importedModels");
-    const existingTypes = normalizeCatalogTypes(hasPersistedTypes ? (definition.catalogTypes ?? []) : seededTypes);
+    const normalizedPersistedTypes = normalizeCatalogTypes(hasPersistedTypes ? (definition.catalogTypes ?? []) : seededTypes);
+    const hasLegacyContraplacadaCatalog = definition.productId === "puertas-contraplacadas" && (
+      normalizedPersistedTypes.some((type) => type.id === "puertas-contraplacadas-batiente" || type.value === "Batiente")
+      || (definition.importedModels ?? []).some((model) => legacyContraplacadaModelIds.has(model.id))
+    );
+    const existingTypes = hasLegacyContraplacadaCatalog ? structuredClone(seededTypes) : normalizedPersistedTypes;
     const correctedCustom = (definition.productId === "puertas-a-medida" || definition.productId === "puertas-contraplacadas") && hasLegacyGarageLimits(definition) && fallback?.custom
       ? structuredClone(fallback.custom)
       : definition.custom;
     const hasObsoleteModels = definition.importedModels?.some((model) => obsoleteImportedIds.has(model.id));
     const needsSeedModels = !hasPersistedModels || hasObsoleteModels;
-    if (needsSeedModels && fallback?.importedModels) return { ...definition, custom: correctedCustom, catalogTypes: existingTypes, importedModels: attachCatalogTaxonomy(definition.productId, structuredClone(fallback.importedModels)) };
+    if (hasLegacyContraplacadaCatalog && fallback?.importedModels) {
+      return {
+        ...definition,
+        custom: correctedCustom,
+        catalogTypes: existingTypes,
+        importedModels: attachCatalogTaxonomy(definition.productId, structuredClone(fallback.importedModels))
+      };
+    }
+    if (needsSeedModels && fallback?.importedModels) return { ...definition, custom: correctedCustom, ...(definition.productId === "techos-coberturas" && fallback.formula ? { formula: structuredClone(fallback.formula) } : {}), catalogTypes: existingTypes, importedModels: attachCatalogTaxonomy(definition.productId, structuredClone(fallback.importedModels)) };
     const seedModels = new Map((fallback?.importedModels ?? []).map((model) => [model.id, model]));
     const currentModels = (definition.importedModels ?? []).map((model) => {
       const seedModel = seedModels.get(model.id);
       const isSimplifiedSeed = supportsCustomDesign(definition.productId) && Boolean(seedModel);
       const assignedType = existingTypes.find((type) => type.value === (model.openingSystem ?? seedModel?.openingSystem));
+      const legacyGarageCorrediza = definition.productId === "seccionales" && legacyGarageCorredizaModelIds.has(model.id);
       return {
         ...(seedModel ?? {}),
         ...model,
@@ -116,7 +143,8 @@ function normalizeDoorTaxonomy(input: unknown): PricingCatalogDocument {
           published: Boolean(model.openingSystem) && model.published !== false,
           openingStatus: "CONFIRMED"
         } : { openingStatus: "CONFIRMED" }),
-        archived: model.archived ?? false,
+        archived: legacyGarageCorrediza ? true : model.archived ?? false,
+        ...(legacyGarageCorrediza ? { published: false } : {}),
         catalogTypeId: model.catalogTypeId ?? assignedType?.id,
         image: optimizedCatalogSource(model.image),
         thumbnail: model.thumbnail ? optimizedCatalogSource(model.thumbnail, true) : optimizedCatalogSource(model.image, true),
@@ -124,11 +152,14 @@ function normalizeDoorTaxonomy(input: unknown): PricingCatalogDocument {
         finishImages: Object.fromEntries(Object.entries(model.finishImages ?? {}).map(([finish, source]) => [finish, optimizedCatalogSource(source)]))
       };
     });
+    const completedModels = definition.productId === "seccionales"
+      ? [...currentModels, ...(fallback?.importedModels ?? []).filter((model) => model.id === "garaje-corrediza-metalica" && !currentModels.some((current) => current.id === model.id)).map((model) => ({ ...structuredClone(model), catalogTypeId: "seccionales-corrediza", archived: false }))]
+      : currentModels;
     return {
       ...definition,
       custom: correctedCustom,
       catalogTypes: existingTypes,
-      importedModels: currentModels
+      importedModels: completedModels
     };
   });
   for (const productId of modelProducts) {

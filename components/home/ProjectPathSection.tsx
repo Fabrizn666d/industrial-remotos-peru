@@ -78,11 +78,18 @@ export function ProjectPathSection({ content }: { content: HomeContent["projectP
               <span><Check aria-hidden="true" /> Respuesta guiada</span>
             </div>
 
-            <Link className={styles.cardCta} href={content.assistant.button.href}>
+            <button
+              type="button"
+              className={styles.cardCta}
+              data-analytics="irp_start"
+              onClick={(event) => window.dispatchEvent(new CustomEvent("irp:open-assistant", {
+                detail: { trigger: event.currentTarget, origin: "home-project-path" }
+              }))}
+            >
               <MessageCircle aria-hidden="true" />
               {content.assistant.button.label}
               <ArrowRight aria-hidden="true" />
-            </Link>
+            </button>
           </motion.article>
 
           <motion.article className={`${styles.card} ${styles.quoteCard}`} variants={cardRight}>

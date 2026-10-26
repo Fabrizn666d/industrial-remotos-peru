@@ -11,7 +11,14 @@ import { googleMapsEmbedUrl, safeGoogleMapsHref } from "@/lib/maps";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import styles from "./ContactDialog.module.css";
 
-type ContactDialogContextValue = { openContact: (trigger?: HTMLElement | null, origin?: string) => void; closeContact: () => void; open: boolean };
+type ContactDialogContextValue = {
+  openContact: (trigger?: HTMLElement | null, origin?: string) => void;
+  closeContact: () => void;
+  open: boolean;
+  content: ContactContent;
+  company: CompanyContent;
+  services: Array<{ value: string; label: string }>;
+};
 const ContactDialogContext = createContext<ContactDialogContextValue | null>(null);
 
 export function useContactDialog() {
@@ -26,6 +33,70 @@ function WhatsappIcon({ className }: { className?: string }) {
 
 function cssImage(value: string) {
   return value ? `url(${JSON.stringify(value)})` : "none";
+}
+
+export function contactDialogStyle(content: ContactContent) {
+  return {
+    "--contact-desktop-image": cssImage(content.desktopBackground.src),
+    "--contact-mobile-image": cssImage(content.mobileBackground.src),
+    "--contact-desktop-position": content.desktopBackground.position,
+    "--contact-mobile-position": content.mobileBackground.position
+  } as CSSProperties;
+}
+
+export function ContactDialogContent({
+  content,
+  company,
+  services,
+  originPage,
+  renderMap = true,
+  titleId = "contact-dialog-title",
+  descriptionId = "contact-dialog-description"
+}: {
+  content: ContactContent;
+  company: CompanyContent;
+  services: Array<{ value: string; label: string }>;
+  originPage: string;
+  renderMap?: boolean;
+  titleId?: string;
+  descriptionId?: string;
+}) {
+  const mapHref = safeGoogleMapsHref(company.mapUrl);
+  const mapEmbed = googleMapsEmbedUrl(company.mapUrl, company.location || company.address);
+  const showMap = content.showMap && Boolean(mapHref && mapEmbed);
+  const locationName = company.location.split(/[–-]/).at(-1)?.trim() || company.location || "Villa El Salvador";
+  const locationSubtitle = company.location.toLowerCase().includes("lima") ? "Lima, Perú" : company.address;
+  const directWhatsapp = `https://wa.me/${company.whatsappNumber}?text=${encodeURIComponent(content.whatsappMessage)}`;
+
+  return <>
+    <div className={styles.brandSignature} aria-label="Industrial Remotos Perú">
+      <Image className={styles.brandLogo} src="/NUEVO/LOGO.png" alt="Industrial Remotos Perú" width={1254} height={1254} priority unoptimized />
+    </div>
+    <header className={styles.intro}>
+      <span>{content.eyebrow}</span>
+      <h1 id={titleId}><span>{content.title}</span> <strong>{content.titleAccent}</strong></h1>
+      <p id={descriptionId}>{content.description}</p>
+    </header>
+    {content.showWhatsapp && <article className={styles.whatsappCard}>
+      <span className={styles.whatsappIcon}><WhatsappIcon /></span>
+      <div><h2>{content.whatsappTitle}</h2><p>{content.whatsappDescription}</p></div>
+      <a href={directWhatsapp} target="_blank" rel="noreferrer"><WhatsappIcon />{content.whatsappLabel}</a>
+      <a className={styles.whatsappPhone} href={`tel:+${company.whatsappNumber}`}><Phone size={20} />{company.phoneDisplay}</a>
+    </article>}
+    <div className={styles.formColumn}>
+      <ContactExperience content={content} company={company} originPage={originPage} services={services} />
+    </div>
+    <aside className={styles.side} aria-label="Canales directos y ubicación">
+      {showMap && <article className={styles.locationCard}>
+        <div className={styles.locationHeader}>
+          <span><MapPin size={22} /></span>
+          <p><strong>Visítanos en {locationName}</strong><small>{locationSubtitle}</small></p>
+          <a href={mapHref} target="_blank" rel="noreferrer">Cómo llegar<ArrowUpRight size={17} /></a>
+        </div>
+        {renderMap && <iframe title="Mapa de ubicación de Industrial Remotos Perú" src={mapEmbed} loading="lazy" referrerPolicy="no-referrer-when-downgrade" />}
+      </article>}
+    </aside>
+  </>;
 }
 
 export function ContactDialogProvider({ content, company, services, children }: { content: ContactContent; company: CompanyContent; services: Array<{ value: string; label: string }>; children: React.ReactNode }) {
@@ -118,51 +189,14 @@ export function ContactDialogProvider({ content, company, services, children }: 
     return () => window.removeEventListener("keydown", onKey);
   }, [closeContact, open]);
 
-  const mapHref = safeGoogleMapsHref(company.mapUrl);
-  const mapEmbed = googleMapsEmbedUrl(company.mapUrl, company.location || company.address);
-  const showMap = content.showMap && Boolean(mapHref && mapEmbed);
-  const locationName = company.location.split(/[–-]/).at(-1)?.trim() || company.location || "Villa El Salvador";
-  const locationSubtitle = company.location.toLowerCase().includes("lima") ? "Lima, Perú" : company.address;
-  const directWhatsapp = `https://wa.me/${company.whatsappNumber}?text=${encodeURIComponent(content.whatsappMessage)}`;
-  const dialogStyle = {
-    "--contact-desktop-image": cssImage(content.desktopBackground.src),
-    "--contact-mobile-image": cssImage(content.mobileBackground.src),
-    "--contact-desktop-position": content.desktopBackground.position,
-    "--contact-mobile-position": content.mobileBackground.position
-  } as CSSProperties;
+  const dialogStyle = contactDialogStyle(content);
 
-  return <ContactDialogContext.Provider value={{ openContact, closeContact, open }}>
+  return <ContactDialogContext.Provider value={{ openContact, closeContact, open, content, company, services }}>
     {children}
     <motion.div className={styles.overlay} data-open={open ? "true" : "false"} aria-hidden={!open} initial={false} animate={{ opacity: open ? 1 : 0 }} transition={{ duration: reduceMotion ? 0.12 : 0.24, ease: [0.16, 1, 0.3, 1] }} onMouseDown={(event) => { if (event.target === event.currentTarget) closeContact(); }}>
       <motion.section ref={panelRef} className={styles.dialog} style={dialogStyle} role="dialog" aria-modal="true" aria-labelledby="contact-dialog-title" aria-describedby="contact-dialog-description" tabIndex={-1} inert={open ? undefined : true} initial={false} animate={{ opacity: open ? 1 : 0, y: open || reduceMotion ? 0 : 22, scale: open || reduceMotion ? 1 : 0.985 }} transition={{ duration: reduceMotion ? 0.12 : 0.42, ease: [0.16, 1, 0.3, 1] }}>
         <button className={styles.close} type="button" onClick={closeContact} aria-label="Cerrar ventana de contacto"><X /></button>
-        <div className={styles.brandSignature} aria-label="Industrial Remotos Perú">
-          <Image className={styles.brandLogo} src="/NUEVO/LOGO.png" alt="Industrial Remotos Perú" width={1254} height={1254} priority unoptimized />
-        </div>
-        <header className={styles.intro}>
-          <span>{content.eyebrow}</span>
-          <h1 id="contact-dialog-title"><span>{content.title}</span> <strong>{content.titleAccent}</strong></h1>
-          <p id="contact-dialog-description">{content.description}</p>
-        </header>
-        {content.showWhatsapp && <article className={styles.whatsappCard}>
-          <span className={styles.whatsappIcon}><WhatsappIcon /></span>
-          <div><h2>{content.whatsappTitle}</h2><p>{content.whatsappDescription}</p></div>
-          <a href={directWhatsapp} target="_blank" rel="noreferrer"><WhatsappIcon />{content.whatsappLabel}</a>
-          <a className={styles.whatsappPhone} href={`tel:+${company.whatsappNumber}`}><Phone size={20} />{company.phoneDisplay}</a>
-        </article>}
-        <div className={styles.formColumn}>
-          <ContactExperience content={content} company={company} originPage={originPage} services={services} />
-        </div>
-        <aside className={styles.side} aria-label="Canales directos y ubicación">
-          {showMap && <article className={styles.locationCard}>
-            <div className={styles.locationHeader}>
-              <span><MapPin size={22} /></span>
-              <p><strong>Visítanos en {locationName}</strong><small>{locationSubtitle}</small></p>
-              <a href={mapHref} target="_blank" rel="noreferrer">Cómo llegar<ArrowUpRight size={17} /></a>
-            </div>
-            {open && <iframe title="Mapa de ubicación de Industrial Remotos Perú" src={mapEmbed} loading="lazy" referrerPolicy="no-referrer-when-downgrade" />}
-          </article>}
-        </aside>
+        <ContactDialogContent content={content} company={company} services={services} originPage={originPage} renderMap={open} />
       </motion.section>
     </motion.div>
   </ContactDialogContext.Provider>;

@@ -1599,7 +1599,7 @@ p, small { font-style: normal; font-weight: 400; }
   display: block;
   width: 134px;
   height: 76px;
-  overflow: visible;
+  overflow: clip;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -1853,7 +1853,7 @@ body:has(.home-v2) .quote-assistant { display: block; }
   --irp-blue-bright: #3da2ff;
   --irp-paper: #f5f8fc;
   position: relative;
-  overflow: clip;
+  overflow: visible;
   background: var(--irp-paper);
   color: var(--irp-ink);
 }
@@ -3065,36 +3065,6 @@ body:has(.irp-home) .irp-shell { width: min(calc(100% - 64px), 1760px); }
 .coverage{padding:82px 0;background:#f6f8fb}.coverage-grid{display:grid;grid-template-columns:.85fr 1.1fr .7fr;gap:48px;align-items:center}.coverage h2{color:#071629}.coverage a{color:#087eff;font-size:12px;font-weight:600}.peru-map{position:relative;height:260px;background:radial-gradient(ellipse at center,#e8f1fc,transparent 67%);clip-path:polygon(45% 0,66% 12%,64% 29%,77% 44%,61% 62%,68% 83%,45% 100%,36% 79%,23% 68%,31% 48%,20% 31%,35% 19%)}.peru-map span{position:absolute;color:#087eff;font-size:30px}.peru-map span:nth-child(1){left:48%;top:17%}.peru-map span:nth-child(2){left:37%;top:35%}.peru-map span:nth-child(3){left:58%;top:49%}.peru-map span:nth-child(4){left:39%;top:65%}.peru-map span:nth-child(5){left:52%;top:80%}.coverage ul{margin:0;padding:0;list-style:none;color:#5a6879;font-size:13px;line-height:2}.coverage li::before{color:#087eff;content:"● ";font-size:9px}
 .home-contact{padding:72px 0;background:radial-gradient(850px circle at 80% 10%,rgba(20,120,255,.13),transparent 50%),#000A13;color:#fff}.contact-grid{display:grid;grid-template-columns:.82fr 1.18fr;gap:72px;align-items:center}.contact-grid h2{font-size:clamp(2rem,3.3vw,3.8rem)}.contact-grid p{color:rgba(255,255,255,.65)}.contact-grid small{color:rgba(255,255,255,.67);font-size:11px}.contact-grid form{display:grid;grid-template-columns:1fr 1fr;gap:10px}.contact-grid input,.contact-grid textarea{border:1px solid rgba(255,255,255,.13);border-radius:12px;background:rgba(255,255,255,.045);padding:14px;color:#fff;font:12px var(--font-jakarta)}.contact-grid textarea{grid-column:2;grid-row:1 / span 2;min-height:108px;resize:vertical}.contact-grid button{width:max-content}
 
-/* Unified home coverage and contact section. */
-.coverage-contact{position:relative;overflow:hidden;padding:clamp(72px,7vw,112px) 0;background:radial-gradient(60rem 34rem at 77% 18%,rgba(67,163,255,.17),transparent 62%),radial-gradient(42rem 27rem at 15% 85%,rgba(227,241,255,.88),transparent 70%),linear-gradient(135deg,#fff 0%,#f7fbff 48%,#edf6ff 100%)}
-.coverage-contact::before{position:absolute;z-index:0;top:0;right:0;left:0;height:clamp(88px,8vw,138px);background:linear-gradient(180deg,#fff 0%,rgba(249,252,255,.83) 33%,rgba(237,247,255,.38) 69%,transparent 100%);content:"";pointer-events:none}
-.coverage-contact__shell{position:relative;z-index:1;display:grid;gap:clamp(42px,4.8vw,70px)}
-.coverage-contact__overview{display:grid;grid-template-columns:minmax(280px,.78fr) minmax(500px,1.22fr);gap:clamp(42px,6vw,96px);align-items:center}
-.coverage-contact__copy{max-width:35rem}
-.coverage-contact__copy .home-eyebrow,.coverage-contact__cta .home-eyebrow{display:flex;align-items:center;gap:18px;color:#126bea;font-size:11px;font-weight:800;letter-spacing:.24em}
-.coverage-contact__copy .home-eyebrow::before,.coverage-contact__cta .home-eyebrow::before{width:66px;height:2px;background:#126bea;content:""}
-.coverage-contact h2{margin:22px 0 0;color:#06143f;font-size:clamp(2.75rem,4.25vw,5rem);font-weight:760;letter-spacing:-.06em;line-height:.96}
-.coverage-contact__copy p{max-width:34rem;margin:25px 0 0;color:#344e78;font-size:clamp(16px,1.16vw,21px);line-height:1.48}
-.coverage-contact__copy ul{display:grid;gap:22px;margin:34px 0 0;padding:0;list-style:none}
-.coverage-contact__copy li{display:flex;align-items:center;gap:19px;color:#102752;font-size:clamp(15px,1.1vw,19px);font-weight:570}
-.coverage-contact__copy li svg{width:40px;height:40px;flex:0 0 auto;border-radius:50%;background:rgba(215,232,255,.74);padding:10px;color:#087bff;stroke-width:1.9}
-.coverage-contact__map{position:relative;min-height:clamp(310px,27vw,455px);overflow:hidden;border:2px solid rgba(255,255,255,.84);border-radius:28px;background:#e8f4ff;box-shadow:0 25px 70px rgba(35,91,150,.13)}
-.coverage-contact__map iframe{position:absolute;inset:0;width:100%;height:100%;border:0;filter:saturate(.74) brightness(1.08) contrast(.9)}
-.coverage-contact__map::after{position:absolute;inset:0;border:1px solid rgba(7,92,255,.12);border-radius:inherit;content:"";pointer-events:none}
-.coverage-contact__map>a{position:absolute;z-index:2;top:24px;left:24px;display:inline-flex;align-items:center;gap:9px;border-radius:14px;background:rgba(255,255,255,.96);padding:15px 18px;color:#102752;font-size:14px;font-weight:720;box-shadow:0 12px 25px rgba(14,54,102,.13);transition:transform 280ms ease,box-shadow 280ms ease}
-.coverage-contact__map>a svg{width:18px;height:18px;color:#087bff}.coverage-contact__map>a svg:last-child{width:15px;height:15px;margin-left:1px}
-.coverage-contact__map>a:hover{box-shadow:0 17px 30px rgba(14,54,102,.18);transform:translateY(-2px)}
-.coverage-contact__cta{display:grid;grid-template-columns:minmax(0,.93fr) minmax(0,1.07fr);gap:clamp(34px,5vw,80px);align-items:center;border:1px solid rgba(87,151,229,.25);border-radius:28px;background:linear-gradient(110deg,rgba(255,255,255,.83),rgba(248,252,255,.73));padding:clamp(31px,3.8vw,56px);box-shadow:0 16px 48px rgba(42,90,145,.06);backdrop-filter:blur(8px)}
-.coverage-contact__cta h2{max-width:38rem;margin-top:16px;font-size:clamp(2rem,2.7vw,3.65rem);line-height:1.02}.coverage-contact__cta p{max-width:37rem;margin:18px 0 0;color:#617799;font-size:clamp(15px,1vw,19px);line-height:1.48}
-.coverage-contact__actions{display:flex;flex-wrap:wrap;align-items:center;gap:14px 16px;padding-left:clamp(0px,3vw,50px);border-left:1px solid rgba(56,116,190,.18)}
-.coverage-contact__primary,.coverage-contact__whatsapp{display:inline-flex;min-height:60px;align-items:center;justify-content:center;gap:13px;border-radius:999px;padding:0 27px;font-size:15px;font-weight:740;transition:transform 280ms ease,box-shadow 280ms ease}
-.coverage-contact__primary{background:linear-gradient(105deg,#075cff,#148dff);color:#fff;box-shadow:0 14px 28px rgba(7,92,255,.22)}
-.coverage-contact__whatsapp{border:1px solid rgba(27,83,155,.35);background:rgba(255,255,255,.65);color:#102752}.coverage-contact__primary svg,.coverage-contact__whatsapp svg{width:19px;height:19px}.coverage-contact__primary:hover,.coverage-contact__whatsapp:hover{transform:translateY(-2px)}
-.coverage-contact__actions>span{display:flex;width:100%;align-items:center;gap:9px;color:#6a7f9e;font-size:14px}.coverage-contact__actions>span svg{width:19px;height:19px;color:#087bff}.coverage-contact__actions>span strong{color:#14294f}
-
-@media (max-width:1000px){.coverage-contact__overview{grid-template-columns:1fr;gap:38px}.coverage-contact__copy{max-width:44rem}.coverage-contact__cta{grid-template-columns:1fr;gap:29px}.coverage-contact__actions{padding:28px 0 0;border-top:1px solid rgba(56,116,190,.18);border-left:0}.coverage-contact__map{min-height:390px}}
-@media (max-width:700px){.coverage-contact{padding:66px 0}.coverage-contact::before{height:76px}.coverage-contact__shell{gap:34px}.coverage-contact__copy .home-eyebrow,.coverage-contact__cta .home-eyebrow{gap:12px;font-size:9px;letter-spacing:.2em}.coverage-contact__copy .home-eyebrow::before,.coverage-contact__cta .home-eyebrow::before{width:39px}.coverage-contact h2{margin-top:16px;font-size:clamp(2.45rem,11vw,3.35rem)}.coverage-contact__copy p{margin-top:19px;font-size:16px}.coverage-contact__copy ul{gap:15px;margin-top:28px}.coverage-contact__copy li{gap:13px;font-size:15px}.coverage-contact__copy li svg{width:36px;height:36px;padding:9px}.coverage-contact__map{min-height:270px;border-radius:23px}.coverage-contact__map>a{top:16px;left:16px;border-radius:12px;padding:12px 13px;font-size:12px}.coverage-contact__cta{gap:23px;border-radius:23px;padding:26px 22px}.coverage-contact__cta h2{font-size:clamp(1.9rem,8.8vw,2.65rem)}.coverage-contact__cta p{margin-top:14px;font-size:15px}.coverage-contact__actions{display:grid;grid-template-columns:1fr;padding-top:23px}.coverage-contact__primary,.coverage-contact__whatsapp{width:100%;min-height:55px;font-size:14px}.coverage-contact__actions>span{justify-content:center;font-size:12px;text-align:center}}
-
 /* Corrections from visual QA: the real bot panel must never inherit the fixed
    assistant dialog, and the coverage map keeps its card treatment. */
 .home-assistant-panel { display:grid; grid-template-columns:.9fr .7fr 1fr; gap:24px; align-items:center; border-radius:30px; background:#f6f8fb; padding:32px; color:#071629; }
@@ -3338,8 +3308,9 @@ body:has(.irp-hero[data-intro-status="failed"]) .quote-assistant { opacity: 1; v
 /* HOME HERO BASE — GSAP exclusively owns reveal opacity and transforms. */
 .irp-hero { position: relative; height: max(820px,100svh); min-height: 820px; max-height: 1050px; overflow: hidden; background: #000a13; color: #fff; }
 .irp-hero--media-only{height:max(720px,100svh);min-height:720px;max-height:none}.irp-hero--media-only>picture,.irp-hero--media-only>video,.irp-hero--media-only>picture>img{display:block;width:100%;height:100%;object-fit:cover}.irp-hero--media-only>picture,.irp-hero--media-only>video{position:absolute;inset:0}.irp-hero--media-only>picture>img{position:absolute;inset:0;object-position:var(--hero-position-desktop,center)}
+.irp-hero--media-only>picture,.irp-hero--media-only>video{transform:translate3d(0,var(--hero-scroll-y,0px),0);will-change:transform}
 body:has(.irp-hero--media-only) .site-header { opacity: 1; visibility: visible; transform: none; }
-.irp-hero__media { position: absolute; inset: 0; background: #000a13; }
+.irp-hero__media { position: absolute; inset: 0; background: #000a13; transform: translate3d(0,var(--hero-scroll-y,0px),0); will-change: transform; }
 .irp-hero__video, .irp-hero__fallback { position: absolute; inset: 0; display: block; width: 100%; height: 100%; max-width: none; border: 0; }
 .irp-hero__video, .irp-hero__fallback img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%; }
 .irp-hero__fallback { z-index: 0; opacity: 0; }

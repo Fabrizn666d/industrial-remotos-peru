@@ -108,8 +108,12 @@ function normalizeDoorTaxonomy<K extends CmsKey>(key: K, content: CmsContentMap[
     }
     const legacyNeeds = new Set(["Puertas automáticas / Principales", "Puertas a medida", "Puertas de Garaje y Principales a Medida"]);
     const expectedNeedsOrder = defaultCmsContent.home.needs.services.map((item) => item.id);
+    const defaultContraplacada = defaultCmsContent.home.needs.services.find((item) => item.id === "contraplacadas");
+    const defaultSolisombra = defaultCmsContent.home.needs.services.find((item) => item.id === "techos");
     const needsRefresh = home.needs.services.some((item) => legacyNeeds.has(item.title) || item.id === "drywall")
       || !home.needs.services.some((item) => item.id === "contraplacadas")
+      || home.needs.services.some((item) => item.id === "contraplacadas" && defaultContraplacada && (item.image.src !== defaultContraplacada.image.src || item.body !== defaultContraplacada.body))
+      || home.needs.services.some((item) => item.id === "techos" && defaultSolisombra && (item.title !== defaultSolisombra.title || item.image.src !== defaultSolisombra.image.src))
       || home.needs.services.some((item) => item.id === "principales-medida" && item.image.src === "/images/reales/puerta-22.jpg")
       || expectedNeedsOrder.some((id, index) => home.needs.services[index]?.id !== id);
     if (needsRefresh) {
@@ -122,7 +126,9 @@ function normalizeDoorTaxonomy<K extends CmsKey>(key: K, content: CmsContentMap[
       });
     }
     const legacyIntegrated = new Set(["Puertas automáticas / garaje", "Puertas a medida", "Puertas de Garaje y Principales a Medida"]);
-    if (home.integrated.services.some((item) => legacyIntegrated.has(item.title))) {
+    const integratedSolisombra = home.integrated.services.find((item) => item.id === "solisombra");
+    const defaultIntegratedSolisombra = defaultCmsContent.home.integrated.services.find((item) => item.id === "solisombra");
+    if (home.integrated.services.some((item) => legacyIntegrated.has(item.title)) || (integratedSolisombra && defaultIntegratedSolisombra && integratedSolisombra.title !== defaultIntegratedSolisombra.title)) {
       home.integrated.services = structuredClone(defaultCmsContent.home.integrated.services);
     }
     const galleryWebp = (source: string) => source.includes("/NUEVO/0244%20_%20Industrial%20Remotos%20Per%C3%BA/") ? source.replace(/\.jpg$/i, ".webp") : source;

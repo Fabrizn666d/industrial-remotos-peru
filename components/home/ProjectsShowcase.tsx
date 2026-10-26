@@ -2,11 +2,13 @@
 
 import AutoScroll from "embla-carousel-auto-scroll";
 import useEmblaCarousel from "embla-carousel-react";
+import { motion, useInView } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { FadeInUp } from "@/components/ui/motion-presets";
+import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import styles from "./ProjectsShowcase.module.css";
 import type { HomeContent } from "@/lib/cms/content-contracts";
 
@@ -116,6 +118,9 @@ export function ProjectsShowcase({ content }: { content: HomeContent["projects"]
   const contentTopRow = content.topGallery.map(({ src, alt }) => ({ src, alt }));
   const contentBottomRow = content.bottomGallery.map(({ src, alt }) => ({ src, alt }));
   const galleryRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+  const sectionVisible = useInView(sectionRef, { once: true, amount: 0.1, margin: "0px 0px -7% 0px" });
+  const reduceMotion = usePrefersReducedMotion();
   const [topPlugins] = useState(() => [AutoScroll({
     playOnInit: false,
     speed: 0.9,
@@ -234,23 +239,23 @@ export function ProjectsShowcase({ content }: { content: HomeContent["projects"]
   }, [topApi, bottomApi]);
 
   return (
-    <section id="proyectos" className={styles.section} aria-labelledby="projects-showcase-title">
+    <section ref={sectionRef} id="proyectos" className={styles.section} aria-labelledby="projects-showcase-title">
       <div className={styles.ambient} aria-hidden="true" />
 
       <header className={styles.intro}>
-        <FadeInUp as="span" className={styles.kicker} duration={0.54} offset={14}>
+        <FadeInUp as="span" className={styles.kicker} visible={sectionVisible} duration={0.54} offset={14}>
           {content.eyebrow}
         </FadeInUp>
-        <FadeInUp className={styles.titleReveal} duration={0.72} offset={34}>
+        <FadeInUp className={styles.titleReveal} visible={sectionVisible} duration={0.72} offset={34}>
           <h2 id="projects-showcase-title">
             <span>{content.title}</span>
             <span className={styles.accent}>{content.titleAccent}</span>
           </h2>
         </FadeInUp>
-        <FadeInUp as="p" className={styles.description} delay={0.1} duration={0.62} offset={18}>
+        <FadeInUp as="p" className={styles.description} visible={sectionVisible} delay={0.1} duration={0.62} offset={18}>
           {content.description}
         </FadeInUp>
-        <FadeInUp className={styles.ctaReveal} delay={0.18} duration={0.58} offset={14}>
+        <FadeInUp className={styles.ctaReveal} visible={sectionVisible} delay={0.18} duration={0.58} offset={14}>
           <Link href={content.cta.href} className={styles.cta} data-magnetic>
             {content.cta.label} <ArrowUpRight aria-hidden="true" />
           </Link>
@@ -258,7 +263,14 @@ export function ProjectsShowcase({ content }: { content: HomeContent["projects"]
       </header>
 
       {contentTopRow.length > 0 && contentBottomRow.length > 0 ? (
-        <div ref={galleryRef} className={styles.gallery} aria-label="Proyectos de Industrial Remotos Perú">
+        <motion.div
+          ref={galleryRef}
+          className={styles.gallery}
+          aria-label="Proyectos de Industrial Remotos Perú"
+          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 34, scale: 0.992 }}
+          animate={sectionVisible ? { opacity: 1, y: 0, scale: 1 } : undefined}
+          transition={{ duration: reduceMotion ? 0.18 : 0.84, delay: reduceMotion ? 0 : 0.18, ease: [0.16, 1, 0.3, 1] }}
+        >
           <div ref={topRef} className={styles.row} aria-label="Carrusel superior de proyectos" aria-roledescription="carrusel">
             <div className={styles.track}>
               <GallerySlides items={contentTopRow} row="top" variant="landscape" />
@@ -269,7 +281,7 @@ export function ProjectsShowcase({ content }: { content: HomeContent["projects"]
               <GallerySlides items={contentBottomRow} row="bottom" variant="portrait" />
             </div>
           </div>
-        </div>
+        </motion.div>
       ) : null}
     </section>
   );

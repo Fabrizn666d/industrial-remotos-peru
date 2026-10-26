@@ -14,7 +14,7 @@ Por indicación expresa, no se modificó el loader ni la coreografía del hero d
 - La galería pública de Proyectos recibió profundidad real: fondo ambiental, tarjetas con bordes y sombras en capas, zoom moderado, controles de vidrio y un visor más sobrio.
 - El cotizador mantiene exactamente su lógica y datos, pero mejora el tratamiento visual de la vista previa, tarjetas, opciones, imágenes, focos y navegación.
 - Las imágenes editoriales seleccionadas de Nosotros y Soluciones incluyen parallax mínimo fuera del hero.
-- El pie de página fue convertido en un cierre oscuro premium con degradados navy, textura ambiental, divisores discretos, tarjetas translúcidas y mejor contraste en PC y celular.
+- El pie de página conserva su presentación clara original por decisión final del cliente; no participa del rediseño oscuro.
 - Se añadieron estados de foco visibles, brillo en botones principales y una mezcla más suave entre secciones.
 
 ## Piezas reutilizables
@@ -33,7 +33,7 @@ No se agregó ninguna dependencia. Se reutilizaron Framer Motion y GSAP, que ya 
 - Se priorizó un movimiento corto y editorial en celular, sin interacciones dependientes del mouse.
 - El blur solo existe durante la entrada y se elimina al terminar para no mantener capas costosas.
 - El parallax se limitó a imágenes editoriales concretas y queda excluido del hero.
-- El glassmorphism se usa únicamente donde hay un fondo capaz de justificarlo: controles, tarjetas importantes y footer.
+- El glassmorphism se usa únicamente donde hay un fondo capaz de justificarlo: controles y tarjetas importantes.
 - Se conservaron textos, métricas, precios, imágenes administradas, rutas y lógica comercial.
 
 ## Verificación

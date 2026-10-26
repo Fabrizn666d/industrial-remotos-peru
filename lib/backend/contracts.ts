@@ -94,7 +94,7 @@ export const PublicRequestSubmissionSchema = PublicRequestSubmissionObjectSchema
   if (value.source === "CONTACT" && !value.details.notes?.trim()) context.addIssue({ code: "custom", path: ["details", "notes"], message: "Cuéntanos qué necesitas" });
   if (value.source === "CONTACT" && !value.items.some((item) => item.configuration.privacyConsent === true)) context.addIssue({ code: "custom", path: ["items", 0, "configuration", "privacyConsent"], message: "Debes aceptar el aviso de privacidad" });
   value.items.forEach((item, index) => {
-    if (["puertas-a-medida", "puertas-contraplacadas", "seccionales"].includes(item.productId ?? "") && item.configuration.model === "principal-diseno-propio") {
+    if (item.configuration.model === "principal-diseno-propio") {
       for (const field of ["custom_attachmentId", "custom_attachmentToken", "custom_selectedImage"] as const) {
         if (typeof item.configuration[field] !== "string" || !item.configuration[field]) context.addIssue({ code: "custom", path: ["items", index, "configuration", field], message: "El diseño propio debe conservar su imagen subida" });
       }

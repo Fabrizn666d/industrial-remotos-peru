@@ -80,7 +80,7 @@ function normalizeConfiguration(configuration: Partial<QuoteItemConfiguration> =
   const width = optionalText(configuration.dimensions?.width);
   const height = optionalText(configuration.dimensions?.height);
   const simplifiedDrywall = productId === "drywall-cielorrasos";
-  const simplifiedDesignCatalog = productId === "puertas-a-medida" || productId === "puertas-contraplacadas" || productId === "seccionales";
+  const simplifiedDesignCatalog = productId === "puertas-a-medida" || productId === "puertas-contraplacadas" || productId === "seccionales" || productId === "techos-coberturas" || configuration.model === "principal-diseno-propio";
   const simplifiedConfiguration = simplifiedDrywall || simplifiedDesignCatalog;
   const accessories = productId === "cerco-electrico" || simplifiedConfiguration ? [] : Array.from(new Set((configuration.accessories ?? []).map((item) => item.trim()).filter(Boolean)));
   const customFields = Object.fromEntries(

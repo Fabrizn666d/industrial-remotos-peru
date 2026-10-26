@@ -71,7 +71,7 @@ export async function POST(request: Request) {
           const { material: _material, design: _design, finish: _finish, notes: _notes, accessories: _accessories, ...configuration } = item.configuration;
           return { ...item, configuration };
         }
-        if (["puertas-a-medida", "puertas-contraplacadas", "seccionales"].includes(item.productId ?? "")) {
+        if (["puertas-a-medida", "puertas-contraplacadas", "seccionales", "techos-coberturas"].includes(item.productId ?? "") || item.configuration.model === "principal-diseno-propio") {
           const { subtype: _subtype, design: _design, panel: _panel, finish: _finish, automation: _automation, variant: _variant, material: _material, notes: _notes, accessories: _accessories, ...configuration } = item.configuration;
           return { ...item, configuration };
         }

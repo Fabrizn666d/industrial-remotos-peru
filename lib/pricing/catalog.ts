@@ -17,7 +17,7 @@ export type ImportedDoorModel = {
   catalogTypeId?: string;
   subtype?: string;
   openingSystem?: string;
-  openingStatus?: "CONFIRMED";
+  openingStatus?: "CONFIRMED" | "PENDING";
   origin?: "CLIENT_REFERENCE" | "DESIGN_PROPOSAL";
   allowedFinishes?: string[];
   finishImages?: Record<string, string>;
@@ -133,6 +133,7 @@ const garageClientImages = `${serviceImages}/03_Puertas_de_garaje/Basadas_en_fot
 const importedColorImages = `${serviceImages}/02_Puertas_importadas/Colores_propuestos`;
 const importedReferenceImages = `${serviceImages}/02_Puertas_importadas/Referencias_y_variantes_propuestas`;
 const contraplacadaSingapurImage = `${serviceImages}/11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel.webp`;
+const contraplacadaLamborghiniImage = `${serviceImages}/11_Puertas_contraplacadas/Propuestas/Lamborghini/lamborghini-grafito.webp`;
 
 const draftModel = (id: string, name: string, image: string, order: number, openingSystem?: string, subtype?: string): ImportedDoorModel => ({
   id,
@@ -310,23 +311,41 @@ const importedDraftModels: ImportedDoorModel[] = [
   ["nogal-horizontal", "Nogal horizontal"],
 ].map(([id, name], index) => draftModel(`importada-propuesta-${id}`, name, `${importedReferenceImages}/${id}.png`, index + 1, "Batiente"));
 
-const contraplacadaModels: ImportedDoorModel[] = [{
-  id: "contraplacada-pivotante-singapur",
-  name: "Singapur",
-  image: contraplacadaSingapurImage,
-  thumbnail: contraplacadaSingapurImage.replace(/\.webp$/i, "-thumb.webp"),
-  openingSystem: "Pivotante",
-  openingStatus: "CONFIRMED",
-  origin: "DESIGN_PROPOSAL",
-  published: true,
-  order: 0,
-  priceMode: "EVALUATION",
-  commercialStatus: "PENDING",
-  allowedFinishes: [],
-  variants: [],
-  automation: [],
-  accessories: []
-}];
+const contraplacadaModels: ImportedDoorModel[] = [
+  {
+    id: "contraplacada-pivotante-singapur",
+    name: "Singapur",
+    image: contraplacadaSingapurImage,
+    thumbnail: contraplacadaSingapurImage.replace(/\.webp$/i, "-thumb.webp"),
+    openingSystem: "Pivotante",
+    openingStatus: "CONFIRMED",
+    origin: "DESIGN_PROPOSAL",
+    published: true,
+    order: 0,
+    priceMode: "EVALUATION",
+    commercialStatus: "PENDING",
+    allowedFinishes: [],
+    variants: [],
+    automation: [],
+    accessories: []
+  },
+  {
+    id: "contraplacada-lamborghini",
+    name: "Lamborghini",
+    image: contraplacadaLamborghiniImage,
+    thumbnail: contraplacadaLamborghiniImage.replace(/\.webp$/i, "-thumb.webp"),
+    openingStatus: "PENDING",
+    origin: "DESIGN_PROPOSAL",
+    published: true,
+    order: 1,
+    priceMode: "EVALUATION",
+    commercialStatus: "PENDING",
+    allowedFinishes: [],
+    variants: [],
+    automation: [],
+    accessories: []
+  }
+];
 
 const roofSolisombraModels: ImportedDoorModel[] = [{
   id: "techo-solisombra",

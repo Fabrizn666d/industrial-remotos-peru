@@ -6,6 +6,7 @@ const baseUrl = (process.env.SITE_URL || "http://127.0.0.1:3000").replace(/\/$/,
 const outputDirectory = path.join(process.cwd(), ".visual-audit", "all-services");
 const services = [
   ["puertas-a-medida", "puertas-a-medida"],
+  ["puertas-contraplacadas", "puertas-contraplacadas"],
   ["puertas-automatizacion", "seccionales"],
   ["puertas-principales", "puertas-principales"],
   ["techos-coberturas", "techos-coberturas"],
@@ -40,6 +41,7 @@ try {
       const onPageError = (error) => errors.push(error.message);
       page.on("pageerror", onPageError);
       const response = await page.goto(`${baseUrl}/soluciones/${slug}`, { waitUntil: "networkidle", timeout: 60000 });
+      await page.locator(".configurator__controls").waitFor({ state: "attached", timeout: 20000 }).catch(() => undefined);
       await page.evaluate(async () => {
         for (let y = 0; y < document.documentElement.scrollHeight; y += Math.max(500, innerHeight * .9)) {
           scrollTo(0, y);

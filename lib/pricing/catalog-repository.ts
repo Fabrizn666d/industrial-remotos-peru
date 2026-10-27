@@ -11,6 +11,8 @@ export interface PricingCatalogRepository { getPublished(): Promise<PricingCatal
 const importedHomeCard = { title: "Puertas principales importadas", description: "Elige un modelo, una medida disponible y el color.", image: "/images/configurator/catalog/02_Puertas_importadas/Colores_propuestos/nogal.webp", visible: true, order: 3, destination: "/soluciones/puertas-principales" };
 const contraplacadaSingapurImage = "/images/configurator/catalog/11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel.webp";
 const contraplacadaSingapurThumbnail = "/images/configurator/catalog/11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel-thumb.webp";
+const contraplacadaLamborghiniImage = "/images/configurator/catalog/11_Puertas_contraplacadas/Propuestas/Lamborghini/lamborghini-grafito.webp";
+const contraplacadaLamborghiniThumbnail = "/images/configurator/catalog/11_Puertas_contraplacadas/Propuestas/Lamborghini/lamborghini-grafito-thumb.webp";
 const legacyContraplacadaModelIds = new Set([
   "contraplacada-referencia-bloques-miel",
   "contraplacada-batiente-blanco",
@@ -56,6 +58,11 @@ const correctedDoorTypeAssets: Record<string, { image: string; thumbnail: string
   "seccionales-corrediza": { image: "/images/configurator/door-types/garage-corrediza.webp", thumbnail: "/images/configurator/door-types/garage-corrediza-thumb.webp" },
   "puertas-contraplacadas-pivotante": { image: contraplacadaSingapurImage, thumbnail: contraplacadaSingapurThumbnail },
 };
+
+const requiredContraplacadaModels = new Map([
+  ["contraplacada-pivotante-singapur", { image: contraplacadaSingapurImage, thumbnail: contraplacadaSingapurThumbnail, openingSystem: "Pivotante", openingStatus: "CONFIRMED" as const }],
+  ["contraplacada-lamborghini", { image: contraplacadaLamborghiniImage, thumbnail: contraplacadaLamborghiniThumbnail, openingStatus: "PENDING" as const }],
+]);
 
 function normalizeCatalogTypes(types: PricingCatalogDocument["definitions"][number]["catalogTypes"]) {
   return types.map((type) => {
@@ -108,7 +115,12 @@ function normalizeDoorTaxonomy(input: unknown): PricingCatalogDocument {
       normalizedPersistedTypes.some((type) => type.id === "puertas-contraplacadas-batiente" || type.value === "Batiente")
       || (definition.importedModels ?? []).some((model) => legacyContraplacadaModelIds.has(model.id))
     );
-    const existingTypes = hasLegacyContraplacadaCatalog ? structuredClone(seededTypes) : normalizedPersistedTypes;
+    const existingTypes = hasLegacyContraplacadaCatalog
+      ? structuredClone(seededTypes)
+      : definition.productId === "seccionales"
+        ? [...normalizedPersistedTypes, ...seededTypes.filter((seeded) => !normalizedPersistedTypes.some((current) => current.id === seeded.id)).map((seeded) => structuredClone(seeded))]
+          .map((type) => type.id === "seccionales-batiente" && !type.archived ? { ...type, published: true } : type)
+        : normalizedPersistedTypes;
     const correctedCustom = (definition.productId === "puertas-a-medida" || definition.productId === "puertas-contraplacadas") && hasLegacyGarageLimits(definition) && fallback?.custom
       ? structuredClone(fallback.custom)
       : definition.custom;
@@ -136,12 +148,12 @@ function normalizeDoorTaxonomy(input: unknown): PricingCatalogDocument {
           published: model.published !== false,
           openingSystem: model.openingSystem ?? seedModel!.openingSystem,
           subtype: model.subtype ?? seedModel!.subtype,
-          openingStatus: "CONFIRMED",
+          openingStatus: model.openingStatus ?? seedModel!.openingStatus ?? "CONFIRMED",
           origin: seedModel!.origin,
           ...(definition.productId === "puertas-a-medida" ? { allowedFinishes: [], accessories: [] } : {})
         } : supportsCustomDesign(definition.productId) ? {
-          published: Boolean(model.openingSystem) && model.published !== false,
-          openingStatus: "CONFIRMED"
+          published: (model.openingStatus === "PENDING" || Boolean(model.openingSystem)) && model.published !== false,
+          openingStatus: model.openingStatus ?? "CONFIRMED"
         } : { openingStatus: "CONFIRMED" }),
         archived: legacyGarageCorrediza ? true : model.archived ?? false,
         ...(legacyGarageCorrediza ? { published: false } : {}),
@@ -154,7 +166,9 @@ function normalizeDoorTaxonomy(input: unknown): PricingCatalogDocument {
     });
     const completedModels = definition.productId === "seccionales"
       ? [...currentModels, ...(fallback?.importedModels ?? []).filter((model) => model.id === "garaje-corrediza-metalica" && !currentModels.some((current) => current.id === model.id)).map((model) => ({ ...structuredClone(model), catalogTypeId: "seccionales-corrediza", archived: false }))]
-      : currentModels;
+      : definition.productId === "puertas-contraplacadas"
+        ? [...currentModels, ...(fallback?.importedModels ?? []).filter((model) => requiredContraplacadaModels.has(model.id) && !currentModels.some((current) => current.id === model.id)).map((model) => structuredClone(model))]
+        : currentModels;
     return {
       ...definition,
       custom: correctedCustom,

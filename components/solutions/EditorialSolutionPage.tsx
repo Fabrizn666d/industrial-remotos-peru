@@ -7,7 +7,6 @@ import type { SolutionPage } from "@/data/solution-pages";
 import { solutionFinishPresentations, type SolutionEditorialProfile } from "@/data/solution-editorial";
 import { siteConfig } from "@/data/site";
 import { EditorialGallery } from "./EditorialGallery";
-import { ServiceCharacter } from "./ServiceCharacter";
 import { SolutionChoiceShowcase } from "./SolutionChoiceShowcase";
 import { SolutionFinishExplorer } from "./SolutionFinishExplorer";
 import styles from "./EditorialSolutionPage.module.css";
@@ -16,7 +15,6 @@ type Props = { solution: SolutionPage; profile: SolutionEditorialProfile };
 
 export function EditorialSolutionPage({ solution, profile }: Props) {
   const finishPresentation = solutionFinishPresentations[solution.slug];
-  const publicQuoteEnabled = solution.quoteProduct !== "estructuras-especiales";
   const contactHref = `${siteConfig.social.whatsapp}${siteConfig.social.whatsapp.includes("?") ? "&" : "?"}text=${encodeURIComponent(`Hola IRP, quisiera asesoría sobre ${solution.title}.`)}`;
   const quoteProducts = solution.options.map((option) => option.quoteProduct);
   const processImages = [
@@ -43,11 +41,10 @@ export function EditorialSolutionPage({ solution, profile }: Props) {
         <nav className={`${styles.shell} ${styles.breadcrumbs}`} aria-label="Migas de pan" data-motion-hero-item data-motion-direction="up">
           <Link href="/">Inicio</Link><ChevronRight aria-hidden="true" /><Link href="/soluciones">Soluciones</Link><ChevronRight aria-hidden="true" /><span>{solution.shortTitle}</span>
         </nav>
-        <div className={`${styles.shell} ${styles.heroContent} ${profile.visuals.characters.hero.side === "right" ? styles.heroCopyLeft : styles.heroCopyRight}`} data-motion-hero-item data-motion-direction="up">
+        <div className={`${styles.shell} ${styles.heroContent} ${styles.heroCopyLeft}`} data-motion-hero-item data-motion-direction="up">
           <h1>{profile.heroHeading}{profile.heroAccent && <><span aria-hidden="true"> </span><br /><strong>{profile.heroAccent}</strong></>}</h1>
           <p>{profile.heroDescription}</p>
         </div>
-        <ServiceCharacter asset={profile.visuals.characters.hero} placement="hero" />
         <div className={styles.heroWave} aria-hidden="true">
           <svg viewBox="0 0 1440 118" preserveAspectRatio="none">
             <path className={styles.heroWaveFill} d="M0 51C165 86 342 104 525 91C732 76 841 21 1038 22C1196 23 1329 58 1440 84V118H0Z" />
@@ -78,7 +75,7 @@ export function EditorialSolutionPage({ solution, profile }: Props) {
       </section>
 
       <section id="detalles" className={styles.detailBand} aria-labelledby="detail-title" data-motion-section>
-        <div className={`${styles.shell} ${styles.detailInner} ${profile.visuals.characters.middle.side === "left" ? styles.detailCompanionLeft : styles.detailCompanionRight}`}>
+        <div className={`${styles.shell} ${styles.detailInner}`}>
           <header className={styles.detailHeading} data-motion-item data-motion-direction="left">
             <span className={styles.kicker}>Detalles que importan</span>
             <h2 id="detail-title">{profile.detailTitle}</h2>
@@ -88,7 +85,6 @@ export function EditorialSolutionPage({ solution, profile }: Props) {
             <figure><Image src={profile.detailImage} alt={`Detalle ilustrativo de ${solution.title}`} fill sizes="(min-width: 1100px) 28vw, (min-width: 700px) 45vw, 100vw" /><figcaption>Detalle referencial</figcaption></figure>
             <figure><Image src={solution.detailGallery[0] ?? profile.alternatives[0].image} alt={`Componente ilustrativo de ${solution.title}`} fill sizes="(min-width: 1100px) 28vw, (min-width: 700px) 45vw, 100vw" /><figcaption>Componente referencial</figcaption></figure>
           </div>
-          <ServiceCharacter asset={profile.visuals.characters.middle} placement="middle" />
           <ul data-motion-item data-motion-direction="up">{profile.details.slice(0, 3).map((detail) => <li key={detail}><Check aria-hidden="true" /><span>{detail}</span></li>)}</ul>
         </div>
       </section>
@@ -134,20 +130,19 @@ export function EditorialSolutionPage({ solution, profile }: Props) {
 
       <section id="cotizar" className={styles.quoteSection} aria-labelledby="quote-title" data-motion-section>
         <div className={styles.shell}>
-          <div className={`${styles.quoteLead} ${profile.visuals.characters.quote.side === "left" ? styles.companionLeft : styles.companionRight}`} data-motion-item data-motion-direction="up">
+          <div className={`${styles.quoteLead}`} data-motion-item data-motion-direction="up">
             <header className={styles.quoteHeader}>
-              <div><span className={styles.kicker}>{publicQuoteEnabled ? "Cotiza en línea" : "Evaluación técnica"}</span><h2 id="quote-title">Hagamos espacio para tu proyecto.</h2></div>
-              <p>{publicQuoteEnabled ? "Configura esta solución y recibe una propuesta preliminar. El importe final se confirma después de evaluar el proyecto." : "Las estructuras especiales se atienden mediante evaluación técnica directa para definir correctamente su alcance."}</p>
+              <div><span className={styles.kicker}>{solution.quoteProduct === "estructuras-especiales" ? "Evaluación técnica guiada" : "Cotiza en línea"}</span><h2 id="quote-title">Hagamos espacio para tu proyecto.</h2></div>
+              <p>{solution.quoteProduct === "estructuras-especiales" ? "Registra el uso, las medidas y el material de referencia. El dimensionamiento y el precio se confirman después de la evaluación técnica." : "Configura esta solución y recibe una propuesta preliminar. El importe final se confirma después de evaluar el proyecto."}</p>
             </header>
-            <ServiceCharacter asset={profile.visuals.characters.quote} placement="quote" />
           </div>
-          {publicQuoteEnabled ? <div data-motion-item data-motion-direction="up"><Suspense fallback={<div className={styles.quoteLoading}>Preparando el configurador…</div>}>
+          <div data-motion-item data-motion-direction="up"><Suspense fallback={<div className={styles.quoteLoading}>Preparando el configurador…</div>}>
             <Configurator embedded initialProductId={solution.quoteProduct} />
-          </Suspense></div> : <aside className={styles.specialRequest} data-motion-item data-motion-direction="up"><div><strong>Solicita una evaluación técnica</strong><span>Cuéntanos el uso, las medidas aproximadas y las condiciones del espacio para revisar tu proyecto.</span></div><a href={contactHref} target="_blank" rel="noreferrer">Hablar con un asesor <ArrowRight aria-hidden="true" /></a></aside>}
-          {publicQuoteEnabled && <aside className={styles.specialRequest} aria-label="Solicitud de personalización" data-motion-item data-motion-direction="up">
-            <div><strong>¿Necesitas una solución especial?</strong><span>Describe el espacio y tu referencia en el campo Notas. Las configuraciones que no cuentan con reglas suficientes se envían como “Requiere evaluación”.</span></div>
+          </Suspense></div>
+          <aside className={styles.specialRequest} aria-label="Solicitud de personalización" data-motion-item data-motion-direction="up">
+            <div><strong>¿Necesitas una solución especial?</strong><span>Comparte tu referencia y las medidas que tengas. Nuestro equipo revisará contigo el alcance antes de preparar la cotización.</span></div>
             <a href={contactHref} target="_blank" rel="noreferrer">Solicitar personalización <ArrowRight aria-hidden="true" /></a>
-          </aside>}
+          </aside>
         </div>
       </section>
 

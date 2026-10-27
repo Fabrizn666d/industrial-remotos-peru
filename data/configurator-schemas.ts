@@ -366,14 +366,13 @@ export function getConfiguratorSchema(productGroup: ProductGroup, productId?: st
   if (productId === "puertas-contraplacadas") return applyStepOverrides({
     family: "puertas-contraplacadas",
     productGroup: "puertas-contraplacadas",
-    version: 3,
+    version: 4,
     steps: [
       solutionStep,
-      typeStep("contraplacada-opening", "Elige el tipo de apertura", ["Pivotante"]),
-      choice("model", "Diseño", "Elige un diseño compatible o sube tu propia referencia", "model", [...publishedModels.map((model) => model.id), CUSTOM_ENTRY_DESIGN_ID]),
+      choice("model", "Modelo", "Elige Singapur, Lamborghini o sube tu propia referencia", "model", [...publishedModels.map((model) => model.id), CUSTOM_ENTRY_DESIGN_ID], { description: "Singapur conserva apertura pivotante. La apertura de Lamborghini se confirmará durante la evaluación." }),
       dimensionsStep("Ingresa las dimensiones de la puerta", "Ancho (mm)", "Alto (mm)", { required: true }),
     ],
-  }, overrides, ["contraplacada-opening"]);
+  }, overrides);
   if (productId === "techos-coberturas") return applyStepOverrides({
     family: "techos",
     productGroup: "techos",

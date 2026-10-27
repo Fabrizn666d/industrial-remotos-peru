@@ -34,7 +34,7 @@ const ConfigurationValueSchema = z.union([
 
 export const RequestContactSchema = z.object({
   name: shortText(120),
-  email: z.string().trim().email().max(254).transform((value) => value.toLowerCase()),
+  email: z.union([z.string().trim().email().max(254), z.literal("")]).transform((value) => value.toLowerCase()),
   phone,
   whatsapp: phone.optional(),
   documentType: z.enum(["DNI", "RUC", "OTHER"]).optional(),

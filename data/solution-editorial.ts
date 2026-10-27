@@ -87,6 +87,8 @@ const img = {
   drywall: "/NUEVO/I/Cielorraso escalonado con luz cálida-9.png",
   landscape: "/NUEVO/I/Terraza moderna entre jardín y montañas-10.png",
   fence: "/NUEVO/I/Cerco eléctrico sobre muro moderno-11.png",
+  contraplacadaSingapur: "/images/configurator/catalog/11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel.webp",
+  contraplacadaLamborghini: "/images/configurator/catalog/11_Puertas_contraplacadas/Propuestas/Lamborghini/lamborghini-grafito.webp",
   doorInterior: "/images/placeholders/puerta-contraplacada-temporal.png",
   roofPoly: "/images/placeholders/techo-cobertura-temporal.png",
   glassDoor: "/images/placeholders/mampara-instalado-temporal.png",
@@ -184,8 +186,8 @@ export const solutionEditorialProfiles: Record<string, SolutionEditorialProfile>
     alternativesIntro: "El tipo definitivo se selecciona según dimensiones, recorrido, frecuencia de uso y condiciones del lugar.",
     alternatives: [
       { title: "Seccional", description: "Apertura vertical fabricada para las medidas del acceso.", image: img.garage },
-      { title: "Levadiza", description: "Alternativa vertical diseñada según el espacio y recorrido disponibles.", image: img.customDoor },
-      { title: "Corrediza o batiente", description: "Opciones fabricadas para el movimiento y forma de uso del ingreso.", image: img.gate }
+      { title: "Corrediza", description: "Apertura lateral diseñada según el recorrido libre disponible.", image: img.gate },
+      { title: "Batiente", description: "Apertura tradicional de dos hojas para accesos con espacio frontal.", image: img.customDoor }
     ],
     detailTitle: "Diseño, acabado y automatización a tu medida.",
     detailDescription: "El cotizador recoge dimensiones, tipo de apertura, acabado y operación para preparar una propuesta coherente con el garaje.",
@@ -475,19 +477,38 @@ export const solutionEditorialProfiles: Record<string, SolutionEditorialProfile>
 
 solutionEditorialProfiles["puertas-contraplacadas"] = {
   ...solutionEditorialProfiles["puertas-a-medida"],
-  heroHeading: "Singapur, una puerta contraplacada protagonista.",
-  heroDescription: "Un único modelo con apertura pivotante, configurado según las dimensiones de tu ingreso.",
-  ctaTitle: "Solicita la evaluación de tu Singapur.",
-  ctaDescription: "Puedes continuar aunque aún no conozcas las medidas definitivas."
+  heroHeading: "Diseño por fuera. Refuerzo por dentro.",
+  heroAccent: undefined,
+  heroDescription: "Singapur y Lamborghini son modelos independientes. Elige el diseño y configura las medidas de tu ingreso.",
+  visuals: {
+    ...solutionEditorialProfiles["puertas-a-medida"].visuals,
+    hero: { src: img.contraplacadaLamborghini, objectPosition: "50% 50%", mobileObjectPosition: "50% 50%" }
+  },
+  alternativesTitle: "Nuestros modelos contraplacados.",
+  alternativesIntro: "El catálogo publicado distingue cada diseño y conserva únicamente la información técnica confirmada.",
+  alternatives: [
+    { title: "Singapur", description: "Modelo únicamente pivotante, fabricado a medida.", image: img.contraplacadaSingapur },
+    { title: "Lamborghini", description: "Diseño grafito facetado con apertura y precio por confirmar.", image: img.contraplacadaLamborghini }
+  ],
+  detailTitle: "Calidad en cada componente.",
+  detailDescription: "Las puertas contraplacadas integran refuerzo interior de acero. Los demás detalles se confirman según el modelo y la evaluación.",
+  details: ["Refuerzo interior de acero", "Diseño seleccionado", "Medidas del ingreso"],
+  detailImage: img.contraplacadaLamborghini,
+  inspirationTitle: "Dos diseños con identidad propia.",
+  gallery: [img.contraplacadaLamborghini, img.contraplacadaSingapur],
+  ctaTitle: "Cotiza tu puerta contraplacada.",
+  ctaDescription: "Puedes continuar aunque aún no conozcas las medidas definitivas.",
+  ctaImage: img.contraplacadaLamborghini
 };
 
 export const solutionFinishPresentations: Record<string, SolutionFinishPresentation> = {
   "puertas-contraplacadas": {
-    eyebrow: "Modelo disponible",
-    title: "Singapur con apertura pivotante.",
-    description: "La fabricación, dimensiones y precio se confirman durante la evaluación comercial del proyecto.",
+    eyebrow: "Modelos disponibles",
+    title: "Singapur y Lamborghini.",
+    description: "Singapur conserva apertura pivotante. La apertura, fabricación, dimensiones y precio de Lamborghini se confirman durante la evaluación comercial.",
     options: [
-      { name: "Singapur", color: "#7a4328", description: "Modelo contraplacado pivotante mostrado en la fotografía aprobada." }
+      { name: "Singapur", color: "#7a4328", description: "Modelo contraplacado únicamente pivotante." },
+      { name: "Lamborghini", color: "#323438", description: "Diseño grafito facetado; apertura y precio por confirmar." }
     ]
   },
   "puertas-a-medida": {

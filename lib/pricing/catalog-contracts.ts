@@ -37,7 +37,7 @@ const importedModel = z.object({
   catalogTypeId: z.string().min(1).max(120).optional(),
   subtype: z.string().min(1).optional(),
   openingSystem: z.string().min(1).optional(),
-  openingStatus: z.literal("CONFIRMED").default("CONFIRMED"),
+  openingStatus: z.enum(["CONFIRMED", "PENDING"]).default("CONFIRMED"),
   origin: z.enum(["CLIENT_REFERENCE", "DESIGN_PROPOSAL"]).default("CLIENT_REFERENCE"),
   allowedFinishes: z.array(z.string().min(1)).default([]),
   finishImages: z.record(z.string(), z.string().min(1)).default({}),
@@ -85,7 +85,7 @@ export const PublishedPricingDefinitionSchema = z.object({ productId: z.string()
     typeValues.add(type.value.toLocaleLowerCase("es-PE"));
   });
   value.importedModels?.forEach((model, modelIndex) => {
-    if (!model.archived && model.published && !model.openingSystem && (value.classification === "IMPORTED" || ["puertas-a-medida", "puertas-contraplacadas", "seccionales"].includes(value.productId))) context.addIssue({ code: "custom", path: ["importedModels", modelIndex, "openingSystem"], message: "El modelo debe indicar una apertura compatible" });
+    if (!model.archived && model.published && model.openingStatus === "CONFIRMED" && !model.openingSystem && (value.classification === "IMPORTED" || ["puertas-a-medida", "puertas-contraplacadas", "seccionales"].includes(value.productId))) context.addIssue({ code: "custom", path: ["importedModels", modelIndex, "openingSystem"], message: "El modelo debe indicar una apertura compatible" });
     if (!model.archived && model.published && model.catalogTypeId && !typeIds.has(model.catalogTypeId)) context.addIssue({ code: "custom", path: ["importedModels", modelIndex, "catalogTypeId"], message: "El tipo asignado al modelo no existe" });
     if (!model.archived && model.published && model.priceMode === "FIXED" && !model.fixedPriceMinor && value.classification !== "IMPORTED") context.addIssue({ code: "custom", path: ["importedModels", modelIndex, "fixedPriceMinor"], message: "Falta la tarifa fija del modelo" });
     if (!model.archived && model.published && (model.priceMode === "AREA" || model.priceMode === "LINEAR") && !model.unitPriceMinor) context.addIssue({ code: "custom", path: ["importedModels", modelIndex, "unitPriceMinor"], message: "Falta la tarifa unitaria del modelo" });

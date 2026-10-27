@@ -24,13 +24,16 @@ const dimensions = [
 
 export const solutionPages: SolutionPage[] = [
   {
-    slug: "puertas-contraplacadas", title: "Puertas contraplacadas", shortTitle: "Contraplacadas", eyebrow: "Modelo Singapur",
-    summary: "Puerta contraplacada modelo Singapur con apertura pivotante y fabricación a medida.", description: "Registramos las dimensiones del ingreso para evaluar la fabricación e instalación del modelo Singapur con sistema pivotante.",
-    heroImage: "/NUEVO/IRP-imagenes-por-servicio/11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel.png", gallery: ["/NUEVO/IRP-imagenes-por-servicio/11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel.png"], detailGallery: ["/NUEVO/IRP-imagenes-por-servicio/11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel.png"], verifiedReal: false,
-    benefits: ["Modelo Singapur", "Apertura pivotante", "Dimensiones en milímetros", "Evaluación comercial"], uses: ["Viviendas", "Oficinas", "Ingresos principales", "Proyectos a medida"], quoteProduct: "puertas-contraplacadas",
-    options: [{ title: "Singapur", description: "Puerta contraplacada con apertura pivotante y fabricación según el ingreso.", image: "/NUEVO/IRP-imagenes-por-servicio/11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel.png", quoteProduct: "puertas-contraplacadas", features: ["Apertura pivotante", "Fabricación a medida"] }],
-    miniFields: [{ key: "openingSystem", label: "Apertura", type: "select", options: ["Pivotante"] }, { key: "width", label: "Ancho aproximado (mm)", type: "number" }, { key: "height", label: "Alto aproximado (mm)", type: "number" }],
-    faqs: [{ question: "¿Qué modelo está disponible?", answer: "Actualmente la categoría ofrece únicamente el modelo Singapur con apertura pivotante." }, { question: "¿Se puede cotizar sin medidas?", answer: "Sí. La solicitud queda pendiente de medición y no muestra un total definitivo." }]
+    slug: "puertas-contraplacadas", title: "Puertas contraplacadas", shortTitle: "Contraplacadas", eyebrow: "Diseño y refuerzo",
+    summary: "Modelos Singapur y Lamborghini para accesos principales, fabricados a medida.", description: "Elige el diseño y registra las dimensiones del ingreso. Singapur conserva su apertura pivotante; la apertura de Lamborghini se confirma durante la evaluación.",
+    heroImage: "/images/configurator/catalog/11_Puertas_contraplacadas/Propuestas/Lamborghini/lamborghini-grafito.webp", gallery: ["/images/configurator/catalog/11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel.webp", "/images/configurator/catalog/11_Puertas_contraplacadas/Propuestas/Lamborghini/lamborghini-grafito.webp"], detailGallery: ["/images/configurator/catalog/11_Puertas_contraplacadas/Propuestas/Lamborghini/lamborghini-grafito.webp", "/images/configurator/catalog/11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel.webp"], verifiedReal: false,
+    benefits: ["Dos modelos independientes", "Refuerzo interior de acero", "Dimensiones en milímetros", "Evaluación comercial"], uses: ["Viviendas", "Oficinas", "Ingresos principales", "Proyectos a medida"], quoteProduct: "puertas-contraplacadas",
+    options: [
+      { title: "Singapur", description: "Puerta contraplacada con apertura pivotante y fabricación según el ingreso.", image: "/images/configurator/catalog/11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel.webp", quoteProduct: "puertas-contraplacadas", features: ["Apertura pivotante", "Fabricación a medida"] },
+      { title: "Lamborghini", description: "Diseño grafito facetado. Apertura y precio pendientes de evaluación.", image: "/images/configurator/catalog/11_Puertas_contraplacadas/Propuestas/Lamborghini/lamborghini-grafito.webp", quoteProduct: "puertas-contraplacadas", features: ["Diseño aprobado", "Apertura por confirmar"] }
+    ],
+    miniFields: [{ key: "width", label: "Ancho aproximado (mm)", type: "number" }, { key: "height", label: "Alto aproximado (mm)", type: "number" }],
+    faqs: [{ question: "¿Qué modelos están disponibles?", answer: "Singapur y Lamborghini. Singapur es únicamente pivotante; la apertura de Lamborghini se confirma durante la evaluación." }, { question: "¿Se puede cotizar sin medidas?", answer: "Sí. La solicitud queda pendiente de medición y no muestra un total definitivo." }]
   },
   {
     slug: "puertas-a-medida", title: "Puertas principales a medida", shortTitle: "Principales a medida", eyebrow: "Fabricación personalizada",
@@ -49,10 +52,10 @@ export const solutionPages: SolutionPage[] = [
     benefits: ["Dimensiones a medida", "Tipos de apertura", "Automatización compatible", "Instalación evaluada"], uses: ["Viviendas", "Comercios", "Condominios", "Accesos vehiculares"], quoteProduct: "seccionales",
     options: [
       { title: "Seccional", description: "Apertura vertical fabricada para las dimensiones del garaje.", image: "/images/reales/portada-puerta-seccional.jpg", quoteProduct: "seccionales", features: ["Fabricación a medida", "Acabados configurables"] },
-      { title: "Levadiza", description: "Alternativa vertical diseñada según el espacio disponible.", image: "/images/reales/puerta-22.jpg", quoteProduct: "levadizas", features: ["Dimensiones configurables", "Uso por evaluar"] },
-      { title: "Corrediza o batiente", description: "Opciones fabricadas para el recorrido y la forma de uso del acceso.", image: "/images/reales/puerta-17.jpg", quoteProduct: "corredizas", features: ["Diseño a medida", "Automatización compatible"] }
+      { title: "Corrediza", description: "Apertura lateral diseñada según el recorrido libre disponible.", image: "/images/configurator/door-types/garage-corrediza.webp", quoteProduct: "seccionales", features: ["Diseño a medida", "Recorrido lateral"] },
+      { title: "Batiente", description: "Dos hojas con apertura lateral tradicional.", image: "/images/configurator/cotri/option-6.webp", quoteProduct: "seccionales", features: ["Diseño a medida", "Apertura clásica"] }
     ],
-    miniFields: [...dimensions, { key: "subtype", label: "Tipo de puerta", type: "select", options: ["Seccional", "Levadiza", "Corrediza", "Batiente", "Por definir"] }, { key: "finish", label: "Acabado", type: "text", placeholder: "Color o referencia" }, { key: "automation", label: "Operación", type: "select", options: ["Automatizada", "Manual", "Por definir"] }, { key: "use", label: "Uso", type: "select", options: ["Residencial", "Comercial", "Industrial"] }],
+    miniFields: [...dimensions, { key: "subtype", label: "Tipo de puerta", type: "select", options: ["Seccional", "Corrediza", "Batiente", "Por definir"] }],
     faqs: [{ question: "¿Se fabrica según las medidas de mi garaje?", answer: "Sí. El cotizador recoge medidas aproximadas y el equipo confirma el vano antes de fabricar." }, { question: "¿Todas incluyen automatización?", answer: "No necesariamente. Puedes solicitar operación manual o automatizada; la compatibilidad se confirma técnicamente." }, { question: "¿Pueden automatizar una puerta existente?", answer: "Primero se revisan estructura, peso, recorrido y estado para determinar compatibilidad." }]
   },
   {

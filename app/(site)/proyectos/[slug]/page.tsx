@@ -12,7 +12,7 @@ const solutionByCategory = {
   levadizas: { href: "/soluciones/puertas-automatizacion", label: "Puertas de garaje a medida" },
   corredizas: { href: "/soluciones/puertas-automatizacion", label: "Puertas de garaje a medida" },
   automatizacion: { href: "/soluciones/puertas-automatizacion", label: "Automatización de accesos" },
-  estructuras: { href: "/soluciones/estructuras-metalicas", label: "Estructuras metálicas" }
+  estructuras: { href: "/soluciones", label: "Soluciones disponibles" }
 } as const;
 
 function projectSolution(project: Project) {

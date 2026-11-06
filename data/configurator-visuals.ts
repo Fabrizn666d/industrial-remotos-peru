@@ -107,9 +107,6 @@ export const defaultConfiguratorVisuals: ConfiguratorVisualSlot[] = [
   slot("baranda-grafito", "acero-barandas", "finish", "Baranda · Gris grafito", "baranda-gris-grafito", "Baranda con acabado gris grafito", { subtype: "Baranda", finish: "Gris grafito" }),
   slot("baranda-negro", "acero-barandas", "finish", "Baranda · Negro mate", "baranda-negro-mate", "Baranda arquitectónica con acabado negro mate", { subtype: "Baranda", finish: "Negro mate" }),
 
-  { ...slot("solution-estructuras", "estructuras-especiales", "solution", "Imagen de la solución", "estructura-especial-gris-grafito", "Estructura de acero para taller"), imageSrc: catalogImage("07_Estructuras_metalicas/Propuestas/estructura-negra.png"), thumbnailSrc: catalogThumb("07_Estructuras_metalicas/Propuestas/estructura-negra.png"), referenceLabel: "Propuesta referencial" },
-  slot("estructura-blanco", "estructuras-especiales", "finish", "Estructura · Blanco texturado", "estructura-especial-blanco-texturado", "Estructura metálica con acabado blanco texturado", { finish: "Blanco texturado" }),
-  slot("estructura-negro", "estructuras-especiales", "finish", "Estructura · Negro mate", "estructura-especial-negro-mate", "Estructura metálica con acabado negro mate", { finish: "Negro mate" }),
   slot("solution-cerco", "cerco-electrico", "solution", "Imagen de la solución", "cerco-assets/cerco-inmueble-vivienda", "Vivienda contemporánea protegida con cerco eléctrico"),
   slot("cerco-inmueble-vivienda", "cerco-electrico", "type", "Inmueble · Vivienda", "cerco-assets/cerco-inmueble-vivienda", "Vivienda contemporánea protegida con cerco eléctrico", { subtype: "Vivienda" }),
   slot("cerco-inmueble-comercio", "cerco-electrico", "type", "Inmueble · Comercio", "cerco-assets/cerco-inmueble-comercio", "Comercio moderno protegido con cerco eléctrico", { subtype: "Comercio" }),

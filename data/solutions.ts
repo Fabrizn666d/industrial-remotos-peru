@@ -3,7 +3,7 @@ import type { Solution } from "@/types/catalog";
 
 const icons: Record<string, Solution["icon"]> = {
   "puertas-automatizacion": "door", "puertas-principales": "entry", "techos-coberturas": "roof",
-  "ventanas-mamparas": "window", "acero-barandas": "rail", "estructuras-metalicas": "structure",
+  "ventanas-mamparas": "window", "acero-barandas": "rail",
   "cerco-electrico": "fence", "drywall-cielorrasos": "drywall", "puertas-a-medida": "door"
 };
 

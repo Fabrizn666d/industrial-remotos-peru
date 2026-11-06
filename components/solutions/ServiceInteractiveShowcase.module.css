@@ -1,0 +1,406 @@
+.showcase {
+  --navy: #031b43;
+  --blue: #0875ff;
+  width: 100%;
+  margin: 0;
+  overflow: clip;
+  color: var(--navy);
+  background: #fff;
+}
+
+.showcase *,
+.showcase *::before,
+.showcase *::after { box-sizing: border-box; }
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 13px;
+  color: var(--blue);
+  font-size: clamp(.64rem, .72vw, .78rem);
+  font-weight: 800;
+  letter-spacing: .19em;
+  text-transform: uppercase;
+}
+
+.eyebrow::before {
+  width: 38px;
+  height: 2px;
+  flex: none;
+  background: currentColor;
+  content: "";
+}
+
+.showcase h2,
+.showcase h3,
+.showcase p { overflow-wrap: normal; word-break: normal; hyphens: none; }
+
+.showcase h2 {
+  margin: 19px 0 18px;
+  font-size: clamp(2.7rem, 4.45vw, 5.15rem);
+  font-weight: 800;
+  letter-spacing: -.065em;
+  line-height: .95;
+}
+
+.showcase h2 strong { color: var(--blue); font: inherit; }
+
+.quoteLink {
+  display: inline-flex;
+  width: max-content;
+  min-height: 44px;
+  align-items: center;
+  gap: 9px;
+  margin-top: 22px;
+  border-bottom: 2px solid var(--blue);
+  padding: 7px 0;
+  color: var(--blue);
+  font-weight: 800;
+}
+
+.quoteLink svg { width: 18px; transition: transform .2s ease; }
+.quoteLink:hover svg { transform: translate(3px,-3px); }
+
+.swapImage {
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity .28s ease;
+}
+
+.swapImage[data-active="true"] { z-index: 1; opacity: 1; }
+
+.switcher { display: flex; flex-wrap: wrap; gap: 12px; }
+.switcher button {
+  position: relative;
+  isolation: isolate;
+  min-height: 48px;
+  overflow: hidden;
+  border: 1px solid rgb(8 117 255 / 32%);
+  border-radius: 999px;
+  background: linear-gradient(180deg,#fff 0%,#f2f7ff 100%);
+  padding: 11px 22px;
+  color: #075bc9;
+  box-shadow: 0 8px 22px rgb(8 117 255 / 10%);
+  font: 800 .84rem var(--font-jakarta);
+  cursor: pointer;
+  transition: color .22s ease, border-color .22s ease, background .22s ease, box-shadow .22s ease, transform .22s ease;
+}
+.switcher button::before { position: absolute; z-index: -1; inset: 0; background: linear-gradient(110deg,transparent 15%,rgb(255 255 255 / 38%) 48%,transparent 78%); content: ""; opacity: 0; transform: translateX(-65%); transition: opacity .22s ease, transform .42s ease; }
+.switcher button:hover { border-color: #50a1ff; background: linear-gradient(135deg,#0875ff 0%,#1267ef 100%); color: #fff; box-shadow: 0 0 0 4px rgb(8 117 255 / 12%),0 12px 28px rgb(8 117 255 / 28%); transform: translateY(-2px); }
+.switcher button:hover::before { opacity: 1; transform: translateX(65%); }
+.switcher button:active { transform: translateY(0) scale(.97); }
+.switcher button[data-active="true"] { border-color: var(--blue); background: linear-gradient(135deg,#0875ff 0%,#1267ef 100%); color: #fff; box-shadow: 0 0 0 3px rgb(8 117 255 / 12%),0 9px 24px rgb(8 117 255 / 22%); }
+.switcher button:focus-visible,
+.hotspot:focus-visible,
+.imageTabs button:focus-visible,
+.structureButtons button:focus-visible,
+.wireOptions button:focus-visible,
+.drywallAccordion button:focus-visible { outline: 3px solid rgb(8 117 255 / 34%); outline-offset: 3px; }
+
+/* Garage: stable full-width photograph with an informational opening switcher. */
+.garage { padding-top: 0; }
+.garageHeader {
+  display: grid;
+  width: 100%;
+  justify-items: center;
+  gap: 13px;
+  background: #fff;
+  padding: clamp(54px,6vw,96px) clamp(20px,5vw,88px) clamp(38px,4.5vw,72px);
+  text-align: center;
+}
+.garageHeader > span { color: var(--blue); font-size: clamp(.68rem,.78vw,.82rem); font-weight: 800; letter-spacing: .28em; line-height: 1.2; }
+.garageHeader h2 { max-width: 980px; margin: 0; color: var(--navy); font-size: clamp(2.55rem,5vw,5.2rem); line-height: .96; letter-spacing: -.055em; text-wrap: balance; }
+.garageHeader h2 strong { display: block; color: var(--blue); }
+.garageHeader p { max-width: 720px; margin: 3px 0 0; color: #5b6980; font-size: clamp(.95rem,1.15vw,1.16rem); line-height: 1.55; text-wrap: balance; }
+.garageMedia { position: relative; width: 100%; aspect-ratio: 16 / 7.25; overflow: hidden; background: #e9eef4; }
+.garageMedia img { object-fit: cover; object-position: center; }
+.garageControls { display: flex; align-items: center; justify-content: center; min-height: clamp(108px, 9vw, 144px); background: #fff; padding: 24px; }
+.garageControls .switcher { display: grid; width: min(900px, 100%); grid-template-columns: repeat(3, 1fr); gap: clamp(10px, 1.4vw, 22px); }
+.garageControls .switcher button { min-height: clamp(56px, 5vw, 72px); border-radius: 15px; font-size: clamp(.9rem, 1.25vw, 1.15rem); }
+
+/* Sol y sombra: full-bleed scene with copy and applications over the photograph. */
+.shade { position: relative; }
+.shadeStage { position: relative; min-height: clamp(620px, 59vw, 940px); overflow: hidden; background: #edf2f7; }
+.shadeStage::after { position: absolute; z-index: 2; inset: 0; background: linear-gradient(90deg,#fff 0%,rgb(255 255 255 / 96%) 27%,rgb(255 255 255 / 12%) 58%,transparent 76%); content: ""; pointer-events: none; }
+.shadeStage > img { object-position: center; }
+.shadeCopy { position: absolute; z-index: 3; top: 50%; left: clamp(24px, 6vw, 116px); width: min(570px, 39vw); transform: translateY(-50%); }
+.shadeCopy h2 strong { display: block; }
+.shadeCopy p { max-width: 500px; margin: 0; color: #53637b; font-size: clamp(1rem, 1.2vw, 1.25rem); line-height: 1.55; }
+.shadeChoices { display: grid; grid-template-columns: minmax(250px,.55fr) minmax(0,1.45fr); gap: clamp(32px,5vw,90px); align-items: center; padding: clamp(30px,4vw,62px) clamp(24px,6vw,112px); }
+.shadeChoices > div:first-child > span { color: var(--blue); font-size: .7rem; font-weight: 800; letter-spacing: .18em; }
+.shadeChoices h3 { margin: 8px 0 6px; font-size: clamp(1.8rem,2.6vw,3.1rem); }
+.shadeChoices p { margin: 0; color: #607087; }
+.imageTabs { display: grid; grid-template-columns: repeat(3,1fr); gap: clamp(10px,1.5vw,22px); }
+.imageTabs button { display: grid; grid-template-columns: minmax(72px,110px) 1fr; align-items: center; gap: 14px; min-width: 0; border: 1px solid #d3deea; background: #fff; padding: 8px; color: var(--navy); text-align: left; cursor: pointer; transition: border-color .18s ease, transform .18s ease; }
+.imageTabs button:hover { border-color: #82b6ff; transform: translateY(-3px); }
+.imageTabs button[data-active="true"] { border-color: var(--blue); box-shadow: inset 0 -3px var(--blue); }
+.choiceImage { position: relative; width: 100%; aspect-ratio: 4 / 3; overflow: hidden; }
+.choiceImage img { object-fit: cover; }
+
+@media (min-width: 1121px) {
+  .shade { margin-top: -22px; }
+  .shadeStage { min-height: clamp(650px, 57vw, 920px); }
+  .shadeStage::after { background: linear-gradient(270deg,#fff 0%,rgb(255 255 255 / 97%) 27%,rgb(255 255 255 / 72%) 43%,rgb(255 255 255 / 9%) 66%,transparent 82%); }
+  .shadeStage > img { object-position: 50% center; }
+  .shadeCopy { right: clamp(42px,6vw,116px); left: auto; width: min(570px,38vw); }
+  .shadeChoices {
+    position: absolute;
+    z-index: 4;
+    top: 50%;
+    left: clamp(38px,5vw,96px);
+    display: flex;
+    width: clamp(300px,23vw,390px);
+    flex-direction: column;
+    gap: 24px;
+    border: 1px solid rgb(255 255 255 / 74%);
+    border-radius: 24px;
+    background: rgb(255 255 255 / 88%);
+    padding: clamp(22px,2.2vw,36px);
+    box-shadow: 0 22px 54px rgb(3 27 67 / 16%);
+    transform: translateY(-50%);
+    backdrop-filter: blur(14px);
+  }
+  .shadeChoices h3 { font-size: clamp(1.8rem,2.25vw,2.7rem); }
+  .shadeChoices p { line-height: 1.5; }
+  .imageTabs { grid-template-columns: 1fr; gap: 10px; }
+  .imageTabs button {
+    grid-template-columns: 76px minmax(0,1fr);
+    min-height: 74px;
+    border-radius: 14px;
+    padding: 7px;
+    background: rgb(255 255 255 / 92%);
+    font-size: .9rem;
+    font-weight: 800;
+    box-shadow: 0 7px 20px rgb(3 27 67 / 7%);
+  }
+  .imageTabs button:hover { transform: translateX(4px); }
+  .imageTabs button[data-active="true"] { background: #eef6ff; box-shadow: inset 4px 0 var(--blue),0 8px 24px rgb(8 117 255 / 13%); }
+  .choiceImage { aspect-ratio: 4 / 3; border-radius: 9px; }
+}
+
+/* Glass: large centered heading and offset gallery with a dedicated information rail. */
+.glass { padding-top: clamp(44px,5vw,86px); }
+.glassHeader { display: grid; grid-template-columns: minmax(0,1.3fr) minmax(300px,.7fr); align-items: end; gap: clamp(36px,8vw,150px); padding: 0 clamp(24px,6vw,112px) clamp(32px,4vw,62px); }
+.glassHeader h2 { max-width: 780px; margin-bottom: 0; }
+.glassHeader h2 strong { display: block; }
+.glassHeader p { max-width: 520px; margin: 0; color: #596a82; font-size: clamp(1rem,1.2vw,1.2rem); line-height: 1.55; }
+.glassGallery { display: grid; grid-template-columns: minmax(0,2.1fr) minmax(310px,.9fr); min-height: clamp(580px,50vw,840px); }
+.glassMain { position: relative; min-width: 0; overflow: hidden; background: #edf2f7; }
+.glassMain img { object-position: center; }
+.glassAside { display: flex; min-width: 0; flex-direction: column; justify-content: space-between; gap: 30px; padding: clamp(30px,4vw,68px); border-top: 1px solid #d8e2ed; border-bottom: 1px solid #d8e2ed; background: #fff; }
+.glassAside .switcher { display: grid; grid-template-columns: 1fr; }
+.glassAside .switcher button { width: 100%; text-align: center; }
+.glassAside > div:nth-child(2) > span { color: var(--blue); font-size: .68rem; font-weight: 800; letter-spacing: .18em; }
+.glassAside h3 { margin: 12px 0 9px; font-size: clamp(2rem,3.3vw,3.8rem); letter-spacing: -.05em; }
+.glassAside p { margin: 0; color: #5f7087; line-height: 1.55; }
+
+/* Railings: three editorial photographs, full width and without product controls. */
+.railings { padding: 0; background: #fff; }
+.railGalleryItem { position: relative; isolation: isolate; aspect-ratio: 16/9; margin: 0; overflow: hidden; background: #dfe8f2; }
+.railGalleryItem::after { position: absolute; z-index: 1; inset: auto 0 0; height: 40%; background: linear-gradient(0deg,rgb(0 91 255 / 82%) 0%,rgb(0 91 255 / 47%) 40%,transparent 100%); content: ""; pointer-events: none; }
+.railGalleryItem img { object-fit: cover; object-position: center; }
+.railGalleryPrimary img { object-position: 50% 48%; }
+.railGalleryItem figcaption { position: absolute; z-index: 2; right: clamp(22px,4vw,76px); bottom: clamp(20px,3vw,58px); left: clamp(22px,4vw,76px); color: #fff; font-size: clamp(1.85rem,3.3vw,4.1rem); font-weight: 800; letter-spacing: -.045em; line-height: 1; text-shadow: 0 3px 16px rgb(0 32 83 / 28%); }
+.railGalleryPair { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 2px; padding-top: 2px; }
+.railGalleryPair .railGalleryItem figcaption { font-size: clamp(1.55rem,2.55vw,3.3rem); }
+.hotspot { position: absolute; z-index: 4; display: grid; width: 46px; height: 46px; place-items: center; border: 4px solid #fff; border-radius: 50%; background: var(--navy); color: #fff; box-shadow: 0 8px 24px rgb(3 27 67 / 25%); cursor: pointer; transition: background-color .18s ease, transform .18s ease; }
+.hotspot:hover,.hotspot[data-active="true"] { background: var(--blue); transform: scale(1.08); }
+.hotspot span { font-size: .78rem; font-weight: 800; }
+
+/* Structures: headline above an asymmetrical image/detail pairing. */
+.structures { padding-top: clamp(44px,5vw,88px); }
+.structureHeader { position: relative; padding: 0 clamp(24px,6vw,112px) clamp(36px,4vw,66px); }
+.structureHeader h2 { max-width: 850px; }
+.structureHeader h2 strong { display: block; }
+.structureHeader > p { max-width: 570px; margin: 0; color: #586981; font-size: clamp(1rem,1.2vw,1.2rem); line-height: 1.55; }
+.structureHeader .quoteLink { position: absolute; right: clamp(24px,6vw,112px); bottom: clamp(36px,4vw,66px); }
+.structureLayout { display: grid; grid-template-columns: minmax(0,1.7fr) minmax(330px,.8fr); min-height: clamp(610px,54vw,900px); }
+.structureMain { position: relative; min-width: 0; margin: 0; overflow: hidden; background: #edf2f7; }
+.structureMain img { object-fit: cover; }
+.structureInspector { display: grid; min-width: 0; grid-template-rows: minmax(270px,1.2fr) auto auto; border-left: 1px solid #d5dfeb; background: #fff; }
+.structureDetailImage { position: relative; min-height: 0; overflow: hidden; }
+.structureDetailImage img { object-fit: cover; }
+.structureInspector > div:nth-child(2) { padding: clamp(24px,3vw,48px); }
+.structureInspector small { color: var(--blue); font-size: .67rem; font-weight: 800; letter-spacing: .16em; }
+.structureInspector h3 { margin: 11px 0 8px; font-size: clamp(2rem,3vw,3.3rem); letter-spacing: -.05em; }
+.structureInspector p { margin: 0; color: #5a6a81; line-height: 1.5; }
+.structureButtons { display: grid; grid-template-columns: repeat(2,1fr); border-top: 1px solid #d5dfeb; }
+.structureButtons button { min-height: 74px; border: 0; border-right: 1px solid #d5dfeb; background: #fff; color: var(--navy); font: 750 .9rem var(--font-jakarta); cursor: pointer; }
+.structureButtons button span { margin-right: 8px; color: var(--blue); font-size: .68rem; }
+.structureButtons button[data-active="true"] { background: var(--blue); color: #fff; }
+.structureButtons button[data-active="true"] span { color: #fff; }
+
+/* Fence: environmental photograph remains fixed; only the separate exact SVG diagram changes. */
+.fence { padding-top: clamp(44px,5vw,86px); }
+.fenceHeader { display: grid; grid-template-columns: minmax(0,1.25fr) minmax(310px,.75fr); align-items: end; gap: clamp(40px,7vw,130px); padding: 0 clamp(24px,6vw,112px) clamp(34px,4vw,62px); }
+.fenceHeader h2 { max-width: 880px; margin-bottom: 0; font-size: clamp(2.55rem,4.2vw,4.9rem); }
+.fenceHeader h2 strong { display: block; }
+.fenceHeader > p { margin: 0; color: #596a82; line-height: 1.55; }
+.fenceHeader .quoteLink { grid-column: 2; }
+@media (min-width: 1121px) {
+  .glassHeader { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+  .glassHeader > div { display: grid; justify-items: center; }
+  .glassHeader h2 { width: 100%; max-width: none; }
+  .glassHeader p { max-width: 680px; }
+
+  .fenceHeader { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+  .fenceHeader .eyebrow { display: none; }
+  .fenceHeader h2 { width: 100%; max-width: none; }
+  .fenceHeader > p { max-width: 680px; }
+  .fenceHeader .quoteLink { grid-column: auto; }
+
+}
+.fenceLayout { display: grid; grid-template-columns: minmax(0,1.6fr) minmax(380px,.8fr); min-height: clamp(590px,52vw,870px); }
+.fencePhoto { position: relative; min-width: 0; margin: 0; overflow: hidden; background: #edf2f7; }
+.fencePhoto > img { object-fit: cover; }
+.fencePhoto > span { position: absolute; z-index: 2; right: clamp(18px,3vw,52px); bottom: clamp(18px,3vw,52px); width: clamp(130px,18vw,260px); aspect-ratio: 1; overflow: hidden; border: 7px solid #fff; border-radius: 50%; box-shadow: 0 16px 42px rgb(3 27 67 / 24%); }
+.fencePhoto > span img { object-fit: cover; }
+.wireInspector { display: flex; min-width: 0; flex-direction: column; justify-content: space-between; border-left: 1px solid #d5dfeb; background: #f7faff; }
+.selectedWire { display: grid; justify-items: center; padding: clamp(28px,4vw,64px) clamp(22px,3vw,50px); text-align: center; }
+.selectedWire > span { color: var(--blue); font-size: .65rem; font-weight: 800; letter-spacing: .17em; }
+.selectedWire h3 { margin: 10px 0 8px; font-size: clamp(1.8rem,2.8vw,3.2rem); letter-spacing: -.04em; }
+.selectedWire p { max-width: 420px; margin: 0; color: #5a6a81; line-height: 1.5; }
+.wireDiagram { width: 74px; height: 66px; fill: #fff; stroke: currentColor; stroke-linecap: round; stroke-width: 2.1; }
+.wireDiagram circle { fill: #fff; }
+.wireDiagramLarge { width: min(340px,100%); height: auto; margin-bottom: 22px; color: var(--blue); stroke-width: 2.3; }
+.wirePost { stroke: var(--navy); }
+.wireOptions { display: grid; grid-template-columns: repeat(4,1fr); border-top: 1px solid #d5dfeb; }
+.wireOptions button { display: grid; min-width: 0; min-height: 112px; place-items: center; border: 0; border-right: 1px solid #d5dfeb; background: #fff; padding: 9px 3px; color: var(--navy); cursor: pointer; }
+.wireOptions button[data-active="true"] { background: var(--blue); color: #fff; }
+.wireOptions button[data-active="true"] .wirePost { stroke: #fff; }
+.wireOptions strong { font-size: .95rem; line-height: 1; }
+.wireOptions small { font-size: .64rem; }
+
+/* Drywall: photo-first composition with labeled hotspots and synchronized lower accordion. */
+.drywallTop { display: grid; grid-template-columns: minmax(0,1.65fr) minmax(360px,.75fr); min-height: clamp(630px,55vw,920px); }
+.drywallMedia { position: relative; min-width: 0; overflow: hidden; background: #edf2f7; }
+.drywallMedia > img { object-fit: cover; }
+.drywallHeader { align-self: center; min-width: 0; padding: clamp(34px,5vw,82px); }
+.drywallHeader h2 { max-width: 590px; font-size: clamp(2.6rem,4.2vw,4.8rem); }
+.drywallHeader h2 strong { display: block; }
+.drywallHeader p { margin: 0; color: #596a82; line-height: 1.55; }
+.drywallMedia .hotspot { width: auto; min-width: 46px; padding: 0 10px; grid-template-columns: 22px auto; gap: 5px; border-radius: 999px; }
+.drywallMedia .hotspot small { font-size: .68rem; font-weight: 750; }
+.drywallSpot1 { left: 43%; top: 54%; }
+.drywallSpot2 { left: 57%; top: 17%; }
+.drywallSpot3 { left: 25%; top: 48%; }
+.drywallDetails { display: grid; grid-template-columns: minmax(0,.85fr) minmax(0,1.15fr); min-height: 430px; border-top: 1px solid #d7e1eb; }
+.installation { position: relative; min-width: 0; min-height: 430px; margin: 0; overflow: hidden; }
+.installation img { object-fit: cover; }
+.drywallInfo { display: grid; grid-template-columns: minmax(250px,.8fr) minmax(340px,1.2fr); align-items: center; min-width: 0; padding: clamp(26px,4vw,64px); background: #f8faff; }
+.drywallActive { padding-right: clamp(22px,4vw,64px); }
+.drywallActive > span { color: var(--blue); font-size: .67rem; font-weight: 800; letter-spacing: .16em; }
+.drywallActive h3 { margin: 11px 0 7px; font-size: clamp(2rem,3vw,3.4rem); letter-spacing: -.05em; }
+.drywallActive > strong { font-size: .92rem; }
+.drywallActive p { margin: 9px 0 0; color: #5a6b82; line-height: 1.5; }
+.drywallAccordion button { display: flex; width: 100%; min-height: 64px; align-items: center; justify-content: space-between; border: 0; border-bottom: 1px solid #cad6e2; background: transparent; padding: 15px 6px; color: var(--navy); text-align: left; cursor: pointer; }
+.drywallAccordion button[data-active="true"] { border: 1px solid var(--blue); background: #fff; padding: 18px; }
+.drywallAccordion strong,.drywallAccordion small { display: block; }
+.drywallAccordion strong { font-size: 1rem; }
+.drywallAccordion small { margin-top: 6px; color: #5d6d84; line-height: 1.4; }
+.drywallAccordion svg { width: 18px; flex: none; transition: transform .18s ease; }
+.drywallAccordion button[data-active="true"] svg { color: var(--blue); transform: rotate(180deg); }
+
+@media (max-width: 1120px) {
+  .showcase h2 { font-size: clamp(2.55rem,5.8vw,4.5rem); }
+  .glassHeader,.fenceHeader { grid-template-columns: 1fr; gap: 22px; }
+  .glassGallery,.structureLayout,.fenceLayout { grid-template-columns: minmax(0,1.45fr) minmax(310px,.75fr); }
+  .glassAside { padding: 30px; }
+  .shadeCopy { width: min(520px,48vw); }
+  .structureHeader .quoteLink { position: static; }
+  .fenceHeader .quoteLink { grid-column: auto; }
+  .drywallTop { grid-template-columns: minmax(0,1.45fr) minmax(320px,.75fr); }
+  .drywallInfo { grid-template-columns: 1fr; gap: 26px; }
+  .drywallActive { padding-right: 0; }
+}
+
+@media (max-width: 800px) {
+  .showcase h2 { font-size: clamp(2.4rem,9vw,4rem); }
+  .garageHeader { gap: 10px; padding: 46px 20px 32px; }
+  .garageHeader h2 { font-size: clamp(2.3rem,9vw,4rem); }
+  .glassHeader,.fenceHeader,.structureHeader { padding-inline: 24px; }
+  .glassGallery,.structureLayout,.fenceLayout,.drywallTop { grid-template-columns: 1fr; }
+  .glassMain,.structureMain,.fencePhoto,.drywallMedia { min-height: 67vw; }
+  .garageMedia { aspect-ratio: 4 / 3; }
+  .shadeStage { min-height: 720px; }
+  .shadeStage::after { background: linear-gradient(180deg,#fff 0%,rgb(255 255 255 / 96%) 34%,rgb(255 255 255 / 10%) 67%,transparent 82%); }
+  .shadeCopy { top: 0; left: 0; width: 100%; padding: 44px 24px; transform: none; }
+  .shadeChoices { grid-template-columns: 1fr; padding-inline: 24px; }
+  .glassAside .switcher { grid-template-columns: repeat(3,1fr); }
+  .railGalleryPair { grid-template-columns: 1fr; }
+  .structureInspector { grid-template-columns: minmax(230px,.9fr) minmax(0,1.1fr); grid-template-rows: auto auto; border-left: 0; }
+  .structureDetailImage { grid-row: 1/3; min-height: 390px; }
+  .structureButtons { grid-column: 2; }
+  .wireInspector { border-left: 0; }
+  .selectedWire { grid-template-columns: minmax(170px,.65fr) minmax(0,1fr); grid-template-rows: auto auto auto; gap: 4px 28px; justify-items: start; text-align: left; }
+  .selectedWire .wireDiagram { grid-row: 1/4; }
+  .drywallHeader { grid-row: 1; padding: 45px 24px 32px; }
+  .drywallMedia { grid-row: 2; }
+  .drywallDetails { grid-template-columns: 1fr; }
+  .installation { min-height: 62vw; }
+}
+
+@media (max-width: 560px) {
+  .eyebrow { gap: 9px; font-size: .58rem; letter-spacing: .15em; }
+  .eyebrow::before { width: 26px; }
+  .showcase h2 { margin: 15px 0 14px; font-size: clamp(2.25rem,11.6vw,3.25rem); line-height: .97; }
+  .quoteLink { margin-top: 16px; font-size: .86rem; }
+  .garage { padding-top: 0; }
+  .garageHeader { padding: 38px 18px 27px; }
+  .garageHeader > span { font-size: .64rem; letter-spacing: .23em; }
+  .garageHeader h2 { margin: 0; font-size: clamp(2.15rem,11vw,3.1rem); line-height: .98; }
+  .garageHeader p { max-width: 330px; margin-top: 2px; font-size: .9rem; }
+  .glass,.structures,.fence { padding-top: 36px; }
+  .glassHeader,.fenceHeader,.structureHeader { padding-right: 18px; padding-left: 18px; padding-bottom: 28px; }
+  .glassMain,.structureMain,.fencePhoto,.drywallMedia { min-height: 88vw; }
+  .garageMedia { aspect-ratio: 4 / 3; }
+  .garageControls { min-height: 0; padding: 16px 12px 20px; }
+  .garageControls .switcher { gap: 7px; }
+  .garageControls .switcher button { min-height: 50px; padding-inline: 8px; border-radius: 12px; font-size: .76rem; }
+  .shadeStage { min-height: 660px; }
+  .shadeStage > img { object-position: 58% center; }
+  .shadeCopy { padding: 36px 18px; }
+  .shadeCopy p { font-size: .9rem; }
+  .shadeChoices { gap: 22px; padding: 26px 18px 34px; }
+  .imageTabs { grid-template-columns: repeat(3,1fr); gap: 6px; }
+  .imageTabs button { display: block; padding: 5px; font-size: .68rem; }
+  .choiceImage { margin-bottom: 6px; }
+  .glassAside { gap: 23px; padding: 24px 18px 30px; }
+  .glassAside .switcher button { padding-inline: 6px; font-size: .69rem; }
+  .hotspot { width: 42px; height: 42px; }
+  .railGalleryItem figcaption,.railGalleryPair .railGalleryItem figcaption { right: 18px; bottom: 18px; left: 64px; font-size: clamp(1.55rem,8vw,2.25rem); }
+  .structureInspector { display: block; }
+  .structureDetailImage { display: block; min-height: 72vw; }
+  .structureInspector > div:nth-child(2) { padding: 25px 18px; }
+  .structureButtons { grid-template-columns: repeat(2,1fr); }
+  .fencePhoto > span { width: 31%; border-width: 4px; }
+  .selectedWire { display: grid; grid-template-columns: 1fr; justify-items: center; padding: 28px 18px; text-align: center; }
+  .selectedWire .wireDiagram { grid-row: auto; width: 76%; }
+  .wireOptions button { min-height: 96px; }
+  .wireDiagram { width: 55px; height: 52px; }
+  .drywallHeader { padding: 36px 18px 28px; }
+  .drywallMedia { min-height: 96vw; }
+  .drywallMedia .hotspot { min-width: 42px; grid-template-columns: 1fr; padding: 0; }
+  .drywallMedia .hotspot small { position: absolute; top: 45px; left: 50%; border-radius: 999px; background: #fff; padding: 4px 8px; color: var(--navy); white-space: nowrap; transform: translateX(-50%); box-shadow: 0 5px 18px rgb(3 27 67 / 14%); }
+  .drywallSpot1 { left: 47%; top: 53%; }
+  .drywallSpot2 { left: 58%; top: 15%; }
+  .drywallSpot3 { left: 18%; top: 46%; }
+  .installation { min-height: 78vw; }
+  .drywallInfo { padding: 26px 18px 34px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .swapImage,.quoteLink svg,.switcher button,.imageTabs button,.hotspot,.drywallAccordion svg { transition: none; }
+  .switcher button:hover,.switcher button:active { transform: none; }
+  .switcher button::before { display: none; }
+}

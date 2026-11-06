@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { BadgeCheck, Handshake, MapPin, MessageCircle, Navigation, Phone, ShieldCheck, Target, TrendingUp } from "lucide-react";
+import { BadgeCheck, Handshake, ShieldCheck, Target, TrendingUp } from "lucide-react";
 import Image from "next/image";
 import { AboutHero } from "@/components/about/AboutHero";
 import { AboutPresentationMedia } from "@/components/about/AboutPresentationMedia";
 import { AboutWorkVideos } from "@/components/about/AboutWorkVideos";
 import { ExperienceImpactMetrics } from "@/components/home/ExperienceImpactSection";
+import { HomeContactSection } from "@/components/home/HomeContactSection";
 import { getAdminSession } from "@/lib/backend/auth";
 import { getCmsDocument } from "@/lib/cms/content-repository";
-import { googleMapsEmbedUrl, safeGoogleMapsHref } from "@/lib/maps";
 import styles from "./AboutPage.module.css";
 
 export const metadata: Metadata = {
@@ -19,15 +19,12 @@ const objectPosition = { center: "center", top: "center top", bottom: "center bo
 const valueIcons = [ShieldCheck, BadgeCheck, Target, Handshake] as const;
 
 export default async function AboutPage({ searchParams }: { searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
-  const [{ content }, { content: company }, { content: home }] = await Promise.all([getCmsDocument("about"), getCmsDocument("company"), getCmsDocument("home")]);
+  const [{ content }, { content: home }] = await Promise.all([getCmsDocument("about"), getCmsDocument("home")]);
   const query = await searchParams;
   const previewRequested = query?.preview === "videos";
   const previewEnabled = previewRequested && Boolean(await getAdminSession());
   const workVideos = content.workVideos.items.filter((item) => item.videoSrc && item.poster.src && (item.published || previewEnabled));
   const showWorkVideos = content.workVideos.visible && workVideos.length > 0;
-  const mapHref = safeGoogleMapsHref(company.mapUrl);
-  const mapEmbed = googleMapsEmbedUrl(company.mapUrl, company.location || company.address);
-  const whatsappHref = `https://wa.me/${company.whatsappNumber}?text=${encodeURIComponent("Hola, Industrial Remotos Perú. Quisiera conversar sobre mi proyecto.")}`;
 
   return (
     <main id="contenido" className={styles.page} data-about-sticky={content.hero.visible && content.hero.stickyEnabled ? "true" : "false"}>
@@ -57,13 +54,12 @@ export default async function AboutPage({ searchParams }: { searchParams?: Promi
         <Image src={content.purpose.image.src} alt={content.purpose.image.alt} fill sizes="100vw" className={`${styles.cover} ${styles.desktopImage}`} style={{ objectPosition: objectPosition[content.purpose.image.position] }} />
         <Image src={content.purpose.mobileImage.src} alt={content.purpose.mobileImage.alt} fill sizes="100vw" className={`${styles.cover} ${styles.mobileImage}`} style={{ objectPosition: objectPosition[content.purpose.mobileImage.position] }} />
         <div className={styles.purposeShade} />
+        <div className={styles.purposeFade} aria-hidden="true" />
         <div className={styles.purposeGrid}>
           <article data-motion-item data-motion-direction="left"><Target aria-hidden="true" /><i /><h2>{content.purpose.missionTitle}</h2><p>{content.purpose.missionBody}</p></article>
           <article data-motion-item data-motion-direction="right"><TrendingUp aria-hidden="true" /><i /><h2>{content.purpose.visionTitle}</h2><p>{content.purpose.visionBody}</p></article>
         </div>
       </section>}
-
-      {content.purpose.visible && content.values.visible && <div className="irp-section-blend" aria-hidden="true" />}
 
       {content.values.visible && <section className={styles.values} aria-labelledby="values-title" data-about-values data-motion-section>
         <div className={styles.valuesGrid}>
@@ -77,24 +73,7 @@ export default async function AboutPage({ searchParams }: { searchParams?: Promi
 
       {content.values.visible && content.cta.visible && <div className="irp-section-blend" aria-hidden="true" />}
 
-      {content.cta.visible && <section className={styles.visit} aria-labelledby="visit-title" data-about-contact data-motion-section>
-        <div className={styles.visitGrid}>
-          <div className={styles.mapColumn} data-motion-item data-motion-direction="left">
-            <h2 id="visit-title">Visítanos y conversemos</h2>
-            <div className={styles.mapFrame}>{mapEmbed ? <iframe title="Mapa de ubicación de Industrial Remotos Perú" src={mapEmbed} loading="lazy" referrerPolicy="no-referrer-when-downgrade" /> : <div className={styles.mapEmpty}><MapPin aria-hidden="true" /><span>Ubicación por configurar</span></div>}</div>
-            <p><MapPin aria-hidden="true" />{company.location || company.address || "Ubicación por configurar"}</p>
-            {mapHref && <a className={styles.directions} href={mapHref} target="_blank" rel="noreferrer" data-magnetic><Navigation aria-hidden="true" />Cómo llegar</a>}
-          </div>
-          <div className={styles.contactColumn} data-motion-item data-motion-direction="right">
-            <div className={styles.speech}>{content.cta.title}</div>
-            <Image src={content.cta.image.src} alt={content.cta.image.alt} width={1024} height={1536} sizes="(min-width: 760px) 330px, 230px" className={styles.character} />
-            <div className={styles.contactActions}>
-              <a className={styles.whatsapp} href={whatsappHref} target="_blank" rel="noreferrer" data-magnetic><MessageCircle aria-hidden="true" />{content.cta.label}</a>
-              <a className={styles.phone} href={`tel:+${company.whatsappNumber}`}><Phone aria-hidden="true" />{company.phoneDisplay}</a>
-            </div>
-          </div>
-        </div>
-      </section>}
+      {content.cta.visible && <HomeContactSection id="contacto" originPage="/nosotros#contacto" titleId="about-contact-title" descriptionId="about-contact-description" />}
     </main>
   );
 }

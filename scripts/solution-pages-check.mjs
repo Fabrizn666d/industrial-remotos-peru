@@ -8,7 +8,6 @@ const routes = [
   "techos-coberturas",
   "ventanas-mamparas",
   "acero-barandas",
-  "estructuras-metalicas",
   "cerco-electrico",
   "drywall-cielorrasos"
 ];

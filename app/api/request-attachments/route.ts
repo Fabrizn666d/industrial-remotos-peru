@@ -10,17 +10,17 @@ export const dynamic = "force-dynamic";
 export async function POST(request: Request) {
   if (!hasAllowedOrigin(request)) return NextResponse.json({ error: "Origen no permitido" }, { status: 403 });
   const contentLength = Number(request.headers.get("content-length") || 0);
-  if (contentLength > 9 * 1024 * 1024) return NextResponse.json({ error: "La imagen debe pesar hasta 8 MB." }, { status: 413 });
+  if (contentLength > 37 * 1024 * 1024) return NextResponse.json({ error: "El archivo supera el límite permitido." }, { status: 413 });
   const rate = consumeRateLimit(`request-attachment:${requestClientKey(request)}`, 12, 30 * 60 * 1000);
   if (!rate.allowed) return NextResponse.json({ error: "Demasiadas subidas. Intenta más tarde." }, { status: 429, headers: { "Retry-After": String(rate.retryAfterSeconds) } });
   try {
     const form = await request.formData();
     const file = form.get("file");
     const draftId = z.string().uuid().parse(form.get("draftId"));
-    if (!(file instanceof File)) return NextResponse.json({ error: "Selecciona una imagen." }, { status: 400 });
+    if (!(file instanceof File)) return NextResponse.json({ error: "Selecciona una foto o video." }, { status: 400 });
     const item = await createRequestAttachment(file, draftId);
     return NextResponse.json({ item }, { status: 201, headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "No se pudo subir la imagen." }, { status: 400 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : "No se pudo subir el archivo." }, { status: 400 });
   }
 }

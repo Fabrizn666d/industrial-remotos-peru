@@ -6,11 +6,11 @@ import styles from "./SolutionsPage.module.css";
 
 export const metadata: Metadata = {
   title: "Soluciones",
-  description: "Accesos, cerramientos y estructuras para proyectos residenciales, comerciales e industriales.",
+  description: "Accesos, cerramientos, protección y acabados para proyectos residenciales, comerciales e industriales.",
   alternates: { canonical: "/soluciones" },
   openGraph: {
     title: "Soluciones | Industrial Remotos Perú",
-    description: "Soluciones en accesos, vidrio, estructuras y acabados.",
+    description: "Soluciones en accesos, vidrio, protección y acabados.",
     url: "/soluciones"
   }
 };
@@ -68,7 +68,7 @@ const editorialSolutions: readonly EditorialSolution[] = [
     title: "Techo solisombra",
     description: "Un único modelo solisombra fabricado a medida para crear espacios exteriores cómodos y protegidos.",
     image: "/images/configurator/catalog/04_Pergolas_y_techos/Basadas_en_fotos_cliente/pergola-modular.webp",
-    categoryId: "estructuras",
+    categoryId: "exteriores",
     layout: "panorama"
   },
   {
@@ -90,35 +90,27 @@ const editorialSolutions: readonly EditorialSolution[] = [
   },
   {
     number: "08",
-    id: "estructuras-metalicas",
-    title: "Estructuras metálicas",
-    description: "Diseño y montaje de estructuras metálicas para necesidades específicas de cada proyecto.",
-    image: "/NUEVO/I/Estructura de acero negro en vivienda moderna-8.png",
-    layout: "third"
-  },
-  {
-    number: "09",
     id: "cerco-electrico",
     title: "Cerco eléctrico",
     description: "Protección perimetral configurada según el inmueble, el recorrido y sus accesos.",
     image: "/NUEVO/I/Cerco eléctrico sobre muro moderno-11.png",
-    layout: "third"
+    layout: "half"
   },
   {
-    number: "10",
+    number: "09",
     id: "drywall-cielorrasos",
     title: "Drywall y cielorrasos",
     description: "Divisiones, cielorrasos y revestimientos que aportan confort, orden y versatilidad.",
     image: "/NUEVO/I/Cielorraso escalonado con luz cálida-9.png",
     categoryId: "acabados",
-    layout: "third"
+    layout: "half"
   }
 ];
 
 const categories = [
   { label: "Accesos", href: "#accesos" },
   { label: "Vidrio", href: "#vidrio" },
-  { label: "Estructuras", href: "#estructuras" },
+  { label: "Exteriores", href: "#exteriores" },
   { label: "Acabados", href: "#acabados" }
 ] as const;
 
@@ -129,7 +121,7 @@ export default function SolutionsPage() {
         <div className={styles.heroCopy} data-motion-hero-item data-motion-direction="left">
           <p className={styles.eyebrow}>Ingeniería · Diseño · Instalación</p>
           <h1 id="solutions-title">Cada espacio.<br /><span>Una solución propia.</span></h1>
-          <p className={styles.heroDescription}>Soluciones en accesos, cerramientos y estructuras que integran diseño, funcionalidad y durabilidad para proyectos residenciales, comerciales e industriales.</p>
+          <p className={styles.heroDescription}>Soluciones en accesos, cerramientos, protección y acabados que integran diseño, funcionalidad y durabilidad para proyectos residenciales, comerciales e industriales.</p>
           <a className={styles.textLink} href="#galeria">Explorar soluciones <ArrowRight aria-hidden="true" /></a>
         </div>
         <div className={styles.heroMedia} data-motion-hero-item data-motion-direction="right" data-motion-mask>

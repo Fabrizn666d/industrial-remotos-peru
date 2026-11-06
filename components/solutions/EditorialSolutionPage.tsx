@@ -1,31 +1,30 @@
-import { ArrowRight, Check, ChevronDown, ChevronRight } from "lucide-react";
+import { ArrowRight, ChevronDown, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense, type CSSProperties } from "react";
 import { Configurator } from "@/components/Configurator";
 import type { SolutionPage } from "@/data/solution-pages";
-import { solutionFinishPresentations, type SolutionEditorialProfile } from "@/data/solution-editorial";
+import type { SolutionEditorialProfile } from "@/data/solution-editorial";
 import { siteConfig } from "@/data/site";
 import { EditorialGallery } from "./EditorialGallery";
-import { SolutionChoiceShowcase } from "./SolutionChoiceShowcase";
-import { SolutionFinishExplorer } from "./SolutionFinishExplorer";
+import { ContraplacadaConstructionShowcase } from "./ContraplacadaConstructionShowcase";
+import { MadeToMeasureDoorCarousel, type MadeToMeasureDoorModel } from "./MadeToMeasureDoorCarousel";
+import { ImportedDoorColorExplorer } from "./ImportedDoorColorExplorer";
+import { ServiceInteractiveShowcase, type SupportedSlug } from "./ServiceInteractiveShowcase";
+import { ServiceApplicationsShowcase } from "./ServiceApplicationsShowcase";
+import { ServiceScrollStability } from "./ServiceScrollStability";
 import styles from "./EditorialSolutionPage.module.css";
 
-type Props = { solution: SolutionPage; profile: SolutionEditorialProfile };
+type Props = { solution: SolutionPage; profile: SolutionEditorialProfile; madeToMeasureDoorModels?: MadeToMeasureDoorModel[] };
 
-export function EditorialSolutionPage({ solution, profile }: Props) {
-  const finishPresentation = solutionFinishPresentations[solution.slug];
+export function EditorialSolutionPage({ solution, profile, madeToMeasureDoorModels = [] }: Props) {
+  const isImported = solution.slug === "puertas-principales";
+  const isContraplacada = solution.slug === "puertas-contraplacadas";
+  const isMadeToMeasureDoor = solution.slug === "puertas-a-medida";
   const contactHref = `${siteConfig.social.whatsapp}${siteConfig.social.whatsapp.includes("?") ? "&" : "?"}text=${encodeURIComponent(`Hola IRP, quisiera asesoría sobre ${solution.title}.`)}`;
-  const quoteProducts = solution.options.map((option) => option.quoteProduct);
-  const processImages = [
-    profile.alternatives[0]?.image,
-    profile.gallery[0],
-    profile.alternatives[1]?.image ?? profile.gallery[1],
-    solution.detailGallery[0] ?? profile.gallery[2]
-  ].filter((image): image is string => Boolean(image));
-
   return (
     <main id="contenido" className={`${styles.page} ${styles[profile.variant] ?? ""}`} data-solution={solution.slug}>
+      <ServiceScrollStability />
       <section
         className={styles.hero}
         data-motion-hero
@@ -42,8 +41,14 @@ export function EditorialSolutionPage({ solution, profile }: Props) {
           <Link href="/">Inicio</Link><ChevronRight aria-hidden="true" /><Link href="/soluciones">Soluciones</Link><ChevronRight aria-hidden="true" /><span>{solution.shortTitle}</span>
         </nav>
         <div className={`${styles.shell} ${styles.heroContent} ${styles.heroCopyLeft}`} data-motion-hero-item data-motion-direction="up">
+          {isContraplacada && <span className={styles.contraplacadaHeroLabel}>Puertas contraplacadas</span>}
           <h1>{profile.heroHeading}{profile.heroAccent && <><span aria-hidden="true"> </span><br /><strong>{profile.heroAccent}</strong></>}</h1>
           <p>{profile.heroDescription}</p>
+          {isContraplacada && (
+            <a className={styles.contraplacadaHeroLink} href="#modelos">
+              Descubre los diseños <ArrowRight aria-hidden="true" />
+            </a>
+          )}
         </div>
         <div className={styles.heroWave} aria-hidden="true">
           <svg viewBox="0 0 1440 118" preserveAspectRatio="none">
@@ -53,78 +58,24 @@ export function EditorialSolutionPage({ solution, profile }: Props) {
         </div>
       </section>
 
-      <nav className={styles.sectionNav} aria-label={`Secciones de ${solution.title}`}>
-        <a href="#modelos">Alternativas</a>
-        <a href="#detalles">Detalles</a>
-        <a href="#acabados">{solution.slug === "cerco-electrico" ? "Componentes" : "Acabados"}</a>
-        <a href="#galeria">Inspiración</a>
-        <a href="#cotizar">Cotizar</a>
-      </nav>
+      {isMadeToMeasureDoor ? (
+        <MadeToMeasureDoorCarousel models={madeToMeasureDoorModels} />
+      ) : isContraplacada ? (
+        <ContraplacadaConstructionShowcase />
+      ) : isImported ? (
+        <ImportedDoorColorExplorer />
+      ) : (
+        <ServiceInteractiveShowcase slug={solution.slug as SupportedSlug} />
+      )}
 
-      <section id="modelos" className={`${styles.section} ${styles.models}`} aria-labelledby="models-title" data-motion-section>
-        <div className={styles.shell}>
-          <header className={styles.splitHeader} data-motion-item data-motion-direction="up">
-            <div><span className={styles.kicker}>Soluciones para tu espacio</span><h2 id="models-title">{profile.alternativesTitle}</h2></div>
-            <p>{profile.alternativesIntro}</p>
-          </header>
-          <div data-motion-item data-motion-direction="up"><SolutionChoiceShowcase items={profile.alternatives} quoteProducts={quoteProducts} solutionSlug={solution.slug} /></div>
-          <div className={styles.useStrip} aria-label="Aplicaciones frecuentes" data-motion-item data-motion-direction="up">
-            {solution.uses.map((use) => <span key={use}>{use}</span>)}
-          </div>
-        </div>
-      </section>
-
-      <section id="detalles" className={styles.detailBand} aria-labelledby="detail-title" data-motion-section>
-        <div className={`${styles.shell} ${styles.detailInner}`}>
-          <header className={styles.detailHeading} data-motion-item data-motion-direction="left">
-            <span className={styles.kicker}>Detalles que importan</span>
-            <h2 id="detail-title">{profile.detailTitle}</h2>
-            <p>{profile.detailDescription}</p>
-          </header>
-          <div className={styles.detailVisualGrid} data-motion-item data-motion-direction="right" data-motion-mask>
-            <figure><Image src={profile.detailImage} alt={`Detalle ilustrativo de ${solution.title}`} fill sizes="(min-width: 1100px) 28vw, (min-width: 700px) 45vw, 100vw" /><figcaption>Detalle referencial</figcaption></figure>
-            <figure><Image src={solution.detailGallery[0] ?? profile.alternatives[0].image} alt={`Componente ilustrativo de ${solution.title}`} fill sizes="(min-width: 1100px) 28vw, (min-width: 700px) 45vw, 100vw" /><figcaption>Componente referencial</figcaption></figure>
-          </div>
-          <ul data-motion-item data-motion-direction="up">{profile.details.slice(0, 3).map((detail) => <li key={detail}><Check aria-hidden="true" /><span>{detail}</span></li>)}</ul>
-        </div>
-      </section>
-
-      <section id="acabados" className={`${styles.section} ${styles.finishes}`} aria-labelledby="finishes-title" data-motion-section>
-        <div className={styles.shell}>
-          <header className={styles.splitHeader} data-motion-item data-motion-direction="up">
-            <div><span className={styles.kicker}>{finishPresentation.eyebrow}</span><h2 id="finishes-title">{finishPresentation.title}</h2></div>
-          </header>
-          <div data-motion-item data-motion-direction="up"><SolutionFinishExplorer {...finishPresentation} previewImage={profile.detailImage} serviceTitle={solution.title} /></div>
-        </div>
-      </section>
-
-      <section className={`${styles.section} ${styles.process}`} aria-labelledby="process-title" data-motion-section>
-        <div className={styles.shell}>
-          <header className={styles.splitHeader} data-motion-item data-motion-direction="up">
-            <div><span className={styles.kicker}>Nuestro proceso</span><h2 id="process-title">{profile.processTitle}</h2></div>
-            <p>El alcance de fabricación, suministro, traslado, instalación y complementos se detalla en cada propuesta.</p>
-          </header>
-          <ol className={styles.processGrid}>
-            {profile.process.map((step, index) => (
-              <li key={step.title} data-motion-item data-motion-direction="up">
-                <figure>
-                  <Image src={processImages[index % processImages.length]} alt={`Referencia visual del paso ${step.title} para ${solution.title}`} fill sizes="(min-width: 900px) 24vw, (min-width: 620px) 48vw, 100vw" />
-                  <small>Referencia visual</small>
-                </figure>
-                <div><span>{String(index + 1).padStart(2, "0")}</span><h3>{step.title}</h3><p>{step.description}</p></div>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
+      {!isContraplacada && <ServiceApplicationsShowcase slug={solution.slug} applications={profile.applications} />}
 
       <section id="galeria" className={`${styles.section} ${styles.inspiration}`} aria-labelledby="gallery-title" data-motion-section>
-        <div className={styles.shell}>
-          <header className={styles.splitHeader} data-motion-item data-motion-direction="up">
-            <div><span className={styles.kicker}>Inspiración</span><h2 id="gallery-title">{profile.inspirationTitle}</h2></div>
-            <p>Estas imágenes sirven como referencia visual y no se presentan como obras ejecutadas por Industrial Remotos Perú.</p>
-          </header>
-        </div>
+        <header className={styles.galleryHeader} data-motion-item data-motion-direction="up">
+          <span className={styles.kicker}>INSPÍRATE</span>
+          <h2 id="gallery-title"><span>Tu próximo proyecto</span>{" "}<strong>empieza aquí.</strong></h2>
+          <p>Explora diseños y encuentra el estilo que imaginas para tu espacio.</p>
+        </header>
         <div data-motion-item data-motion-direction="up"><EditorialGallery images={profile.gallery} title={solution.title} /></div>
       </section>
 
@@ -132,8 +83,8 @@ export function EditorialSolutionPage({ solution, profile }: Props) {
         <div className={styles.shell}>
           <div className={`${styles.quoteLead}`} data-motion-item data-motion-direction="up">
             <header className={styles.quoteHeader}>
-              <div><span className={styles.kicker}>{solution.quoteProduct === "estructuras-especiales" ? "Evaluación técnica guiada" : "Cotiza en línea"}</span><h2 id="quote-title">Hagamos espacio para tu proyecto.</h2></div>
-              <p>{solution.quoteProduct === "estructuras-especiales" ? "Registra el uso, las medidas y el material de referencia. El dimensionamiento y el precio se confirman después de la evaluación técnica." : "Configura esta solución y recibe una propuesta preliminar. El importe final se confirma después de evaluar el proyecto."}</p>
+              <div><span className={styles.kicker}>Cotiza en línea</span><h2 id="quote-title">Hagamos espacio para tu proyecto.</h2></div>
+              <p>Configura esta solución y recibe una propuesta preliminar. El importe final se confirma después de evaluar el proyecto.</p>
             </header>
           </div>
           <div data-motion-item data-motion-direction="up"><Suspense fallback={<div className={styles.quoteLoading}>Preparando el configurador…</div>}>

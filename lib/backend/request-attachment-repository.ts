@@ -22,10 +22,12 @@ export class RequestAttachmentValidationError extends Error {
   constructor(message: string) { super(message); this.name = "RequestAttachmentValidationError"; }
 }
 
-const allowed = new Map([["image/jpeg", ".jpg"], ["image/png", ".png"], ["image/webp", ".webp"], ["image/avif", ".avif"]]);
-const maximumBytes = 8 * 1024 * 1024;
+const allowed = new Map([["image/jpeg", ".jpg"], ["image/png", ".png"], ["image/webp", ".webp"], ["image/avif", ".avif"], ["video/mp4", ".mp4"], ["video/webm", ".webm"], ["video/quicktime", ".mov"]]);
+const imageMaximumBytes = 8 * 1024 * 1024;
+const videoMaximumBytes = 35 * 1024 * 1024;
 
 function driver() { return process.env.IRP_REPOSITORY_DRIVER?.trim().toLowerCase() || (process.env.NODE_ENV === "production" ? "" : "json"); }
+function jsonDriverAllowed() { return driver() === "json" && (process.env.NODE_ENV !== "production" || process.env.IRP_ALLOW_JSON_IN_PRODUCTION === "true"); }
 function uploadsDirectory() { return path.resolve(/*turbopackIgnore: true*/ process.env.IRP_UPLOADS_DIR?.trim() || path.join(process.cwd(), ".data", "uploads"), "request-attachments"); }
 function jsonPath() { return path.resolve(/*turbopackIgnore: true*/ process.env.IRP_REQUEST_ATTACHMENTS_JSON_DATA_PATH?.trim() || path.join(process.cwd(), ".data", "irp-request-attachments.json")); }
 function tokenHash(token: string) { return createHash("sha256").update(token).digest("hex"); }
@@ -36,6 +38,8 @@ function signatureMatches(mimeType: string, buffer: Buffer) {
   if (mimeType === "image/png") return buffer.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
   if (mimeType === "image/webp") return buffer.subarray(0, 4).toString("ascii") === "RIFF" && buffer.subarray(8, 12).toString("ascii") === "WEBP";
   if (mimeType === "image/avif") return buffer.subarray(4, 12).toString("ascii").startsWith("ftyp") && /avif|avis/.test(buffer.subarray(8, 32).toString("ascii"));
+  if (mimeType === "video/mp4" || mimeType === "video/quicktime") return buffer.subarray(4, 8).toString("ascii") === "ftyp";
+  if (mimeType === "video/webm") return buffer.subarray(0, 4).equals(Buffer.from([0x1a, 0x45, 0xdf, 0xa3]));
   return false;
 }
 
@@ -43,7 +47,7 @@ async function readJson(): Promise<RequestAttachment[]> { try { return JSON.pars
 async function writeJson(items: RequestAttachment[]) { const file = jsonPath(); await mkdir(path.dirname(file), { recursive: true }); const temporary = `${file}.${process.pid}.${randomUUID()}.tmp`; await writeFile(temporary, JSON.stringify(items, null, 2), { encoding: "utf8", mode: 0o600 }); await rename(temporary, file); }
 
 async function storedById(id: string): Promise<RequestAttachment | null> {
-  if (driver() === "json" && process.env.NODE_ENV !== "production") return (await readJson()).find((item) => item.id === id) ?? null;
+  if (jsonDriverAllowed()) return (await readJson()).find((item) => item.id === id) ?? null;
   if (driver() === "postgres") {
     const result = await getPostgresPool().query<RequestAttachment>(`SELECT id, draft_id AS "draftId", quote_request_id AS "requestId", original_name AS name, mime_type AS "mimeType", byte_size AS "byteSize", storage_name AS "storageName", token_hash AS "tokenHash", created_at AS "createdAt" FROM irp_request_attachments WHERE id=$1::uuid LIMIT 1`, [id]);
     return result.rows[0] ? { ...result.rows[0], createdAt: new Date(result.rows[0].createdAt).toISOString() } : null;
@@ -53,8 +57,9 @@ async function storedById(id: string): Promise<RequestAttachment | null> {
 
 export async function createRequestAttachment(file: File, draftId: string) {
   const extension = allowed.get(file.type);
-  if (!extension) throw new Error("Formato no permitido. Usa JPG, PNG, WebP o AVIF.");
-  if (file.size < 1 || file.size > maximumBytes) throw new Error("La imagen debe pesar hasta 8 MB.");
+  if (!extension) throw new Error("Formato no permitido. Usa JPG, PNG, WebP, AVIF, MP4, WebM o MOV.");
+  const maximumBytes = file.type.startsWith("video/") ? videoMaximumBytes : imageMaximumBytes;
+  if (file.size < 1 || file.size > maximumBytes) throw new Error(file.type.startsWith("video/") ? "El video debe pesar hasta 35 MB." : "La imagen debe pesar hasta 8 MB.");
   const buffer = Buffer.from(await file.arrayBuffer());
   if (!signatureMatches(file.type, buffer)) throw new Error("El contenido del archivo no coincide con su formato declarado.");
   const id = randomUUID();
@@ -64,7 +69,7 @@ export async function createRequestAttachment(file: File, draftId: string) {
   await mkdir(uploadsDirectory(), { recursive: true });
   await writeFile(/*turbopackIgnore: true*/ path.join(uploadsDirectory(), storageName), buffer, { flag: "wx", mode: 0o600 });
   try {
-    if (driver() === "json" && process.env.NODE_ENV !== "production") await writeJson([item, ...(await readJson())]);
+    if (jsonDriverAllowed()) await writeJson([item, ...(await readJson())]);
     else if (driver() === "postgres") await getPostgresPool().query(`INSERT INTO irp_request_attachments (id,draft_id,original_name,mime_type,byte_size,storage_name,token_hash,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`, [item.id, item.draftId, item.name, item.mimeType, item.byteSize, item.storageName, item.tokenHash, item.createdAt]);
     else throw new Error("Configura IRP_REPOSITORY_DRIVER para almacenar adjuntos");
   } catch (error) { await unlink(/*turbopackIgnore: true*/ path.join(uploadsDirectory(), storageName)).catch(() => undefined); throw error; }
@@ -85,7 +90,7 @@ export async function authorizeRequestAttachment(id: string, token: string) {
 export async function deleteUnclaimedRequestAttachment(id: string, token: string) {
   const item = await authorizeRequestAttachment(id, token);
   if (!item || item.requestId) return false;
-  if (driver() === "json" && process.env.NODE_ENV !== "production") await writeJson((await readJson()).filter((entry) => entry.id !== id));
+  if (jsonDriverAllowed()) await writeJson((await readJson()).filter((entry) => entry.id !== id));
   else if (driver() === "postgres") await getPostgresPool().query("DELETE FROM irp_request_attachments WHERE id=$1::uuid AND quote_request_id IS NULL", [id]);
   await unlink(/*turbopackIgnore: true*/ path.join(uploadsDirectory(), item.storageName)).catch(() => undefined);
   return true;
@@ -93,7 +98,7 @@ export async function deleteUnclaimedRequestAttachment(id: string, token: string
 
 type AttachmentCredential = { id: string; token: string; source?: string };
 function credentials(input: PublicRequestSubmission): AttachmentCredential[] {
-  return input.items.flatMap((item) => {
+  const customDesigns = input.items.flatMap((item) => {
     return ["", "2", "3", "4"].flatMap((suffix) => {
       const id = item.configuration[`custom_attachmentId${suffix}`];
       const token = item.configuration[`custom_attachmentToken${suffix}`];
@@ -101,21 +106,22 @@ function credentials(input: PublicRequestSubmission): AttachmentCredential[] {
       return typeof id === "string" && typeof token === "string" ? [{ id, token, source: typeof source === "string" ? source : undefined }] : [];
     });
   });
+  return [...customDesigns, ...input.referenceAttachments.map((item) => ({ id: item.id, token: item.token, source: item.url }))];
 }
 
 export async function validateRequestAttachments(input: PublicRequestSubmission) {
   for (const credential of credentials(input)) {
     const expected = `/api/request-attachments/${credential.id}?token=${encodeURIComponent(credential.token)}`;
-    if (credential.source !== expected || !await authorizeRequestAttachment(credential.id, credential.token)) throw new RequestAttachmentValidationError("La imagen de diseño propio ya no está disponible. Vuelve a subirla.");
+    if (credential.source !== expected || !await authorizeRequestAttachment(credential.id, credential.token)) throw new RequestAttachmentValidationError("El archivo adjunto ya no está disponible. Vuelve a subirlo.");
   }
 }
 
 export async function claimRequestAttachments(input: PublicRequestSubmission, requestId: string) {
   for (const credential of credentials(input)) {
     const item = await authorizeRequestAttachment(credential.id, credential.token);
-    if (!item || (item.requestId && item.requestId !== requestId)) throw new RequestAttachmentValidationError("No se pudo asociar la imagen de diseño propio con la solicitud.");
+    if (!item || (item.requestId && item.requestId !== requestId)) throw new RequestAttachmentValidationError("No se pudo asociar el archivo adjunto con la solicitud.");
     if (item.requestId === requestId) continue;
-    if (driver() === "json" && process.env.NODE_ENV !== "production") await writeJson((await readJson()).map((entry) => entry.id === item.id ? { ...entry, requestId } : entry));
+    if (jsonDriverAllowed()) await writeJson((await readJson()).map((entry) => entry.id === item.id ? { ...entry, requestId } : entry));
     else if (driver() === "postgres") await getPostgresPool().query("UPDATE irp_request_attachments SET quote_request_id=$1::uuid WHERE id=$2::uuid AND (quote_request_id IS NULL OR quote_request_id=$1::uuid)", [requestId, item.id]);
   }
 }

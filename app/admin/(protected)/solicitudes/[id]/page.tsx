@@ -39,6 +39,7 @@ export default async function AdminRequestDetailPage({ params }: { params: Promi
   const request = await repository.findById(id);
   if (!request) notFound();
   const activity = await repository.activity(id);
+  const referenceAttachments = request.originalPayload.referenceAttachments ?? [];
 
   return (
     <>
@@ -92,7 +93,7 @@ export default async function AdminRequestDetailPage({ params }: { params: Promi
             <div><dt>Origen</dt><dd>{request.source === "CONFIGURATOR" ? "Cotizador inteligente" : request.source === "ASSISTANT" ? "IRP Asistente" : request.source === "CONTACT" ? "Formulario de contacto" : "Importación administrativa"}</dd></div>
             <div><dt>Última actualización</dt><dd>{formatAdminDate(request.updatedAt, true)}</dd></div>
           </dl><RequestOperations requestId={request.id} code={request.code} customerName={request.contact.name} phone={request.contact.whatsapp || request.contact.phone} initialStatus={request.status} initialAssignee={request.assignedTo} statuses={Object.entries(REQUEST_STATUS_LABELS).map(([value, label]) => ({ value: value as keyof typeof REQUEST_STATUS_LABELS, label }))} /></section>
-          <section className={styles.panel}><h2><Paperclip size={18} /> Adjuntos</h2>{request.attachmentNames.length ? <ul className={styles.attachmentList}>{request.attachmentNames.map((name) => <li key={name}>{name}</li>)}</ul> : <p className={styles.muted}>No se registraron adjuntos.</p>}{request.attachmentNames.length > 0 && <p className={styles.pendingNote}>Las imágenes privadas se abren desde el elemento correspondiente de la solicitud.</p>}</section>
+          <section className={styles.panel}><h2><Paperclip size={18} /> Adjuntos</h2>{referenceAttachments.length ? <ul className={styles.attachmentList}>{referenceAttachments.map((item) => <li key={item.id}><a href={item.url} target="_blank" rel="noreferrer">{item.name}</a></li>)}</ul> : request.attachmentNames.length ? <ul className={styles.attachmentList}>{request.attachmentNames.map((name) => <li key={name}>{name}</li>)}</ul> : <p className={styles.muted}>No se registraron adjuntos.</p>}{referenceAttachments.length > 0 && <p className={styles.pendingNote}>Archivos privados asociados a esta solicitud.</p>}</section>
           <section className={styles.evidenceCard}><ShieldCheck size={21} /><h2>Evidencia preservada</h2><p>El payload original, los items y el código fueron creados juntos. Los cambios operativos futuros se registrarán aparte.</p></section>
         </aside>
       </div>

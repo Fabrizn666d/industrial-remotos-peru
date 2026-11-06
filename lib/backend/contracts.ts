@@ -76,12 +76,22 @@ export const RequestAttributionSchema = z.object({
 
 export const RequestSourceSchema = z.enum(["CONFIGURATOR", "ASSISTANT", "CONTACT", "ADMIN_IMPORT"]);
 
+export const PublicReferenceAttachmentSchema = z.object({
+  id: z.string().uuid(),
+  token: z.string().min(32).max(160),
+  name: shortText(240),
+  mimeType: z.enum(["image/jpeg", "image/png", "image/webp", "image/avif", "video/mp4", "video/webm", "video/quicktime"]),
+  byteSize: z.number().int().positive().max(35 * 1024 * 1024),
+  url: z.string().trim().startsWith("/api/request-attachments/").max(600)
+}).strict();
+
 const PublicRequestSubmissionObjectSchema = z.object({
   clientSubmissionId: z.string().uuid(),
   contact: RequestContactSchema,
   details: RequestDetailsSchema,
   items: z.array(RequestItemInputSchema).min(1).max(50),
   attachmentNames: z.array(shortText(240)).max(8).default([]),
+  referenceAttachments: z.array(PublicReferenceAttachmentSchema).max(8).default([]),
   attribution: RequestAttributionSchema.optional(),
   source: RequestSourceSchema.default("CONFIGURATOR")
 }).strict();
@@ -93,6 +103,8 @@ export const PublicRequestSubmissionSchema = PublicRequestSubmissionObjectSchema
   if (value.contact.documentType === "RUC" && !value.contact.businessName?.trim()) context.addIssue({ code: "custom", path: ["contact", "businessName"], message: "Ingresa la razón social" });
   if (value.source === "CONTACT" && !value.details.notes?.trim()) context.addIssue({ code: "custom", path: ["details", "notes"], message: "Cuéntanos qué necesitas" });
   if (value.source === "CONTACT" && !value.items.some((item) => item.configuration.privacyConsent === true)) context.addIssue({ code: "custom", path: ["items", 0, "configuration", "privacyConsent"], message: "Debes aceptar el aviso de privacidad" });
+  if (["CONFIGURATOR", "ASSISTANT"].includes(value.source) && !value.details.region?.trim()) context.addIssue({ code: "custom", path: ["details", "region"], message: "Indica la ciudad" });
+  if (["CONFIGURATOR", "ASSISTANT"].includes(value.source) && !value.details.district?.trim()) context.addIssue({ code: "custom", path: ["details", "district"], message: "Indica el distrito" });
   value.items.forEach((item, index) => {
     if (item.configuration.model === "principal-diseno-propio") {
       for (const field of ["custom_attachmentId", "custom_attachmentToken", "custom_selectedImage"] as const) {

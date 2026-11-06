@@ -47,8 +47,8 @@ export const viewport: Viewport = {
   themeColor: "#000A13"
 };
 
-const introPreflight = `try{const h=document.documentElement,k="${HOME_INTRO_SESSION_KEY}",c="${HOME_INTRO_SEEN_CLASS}";if(location.pathname!=="/"){if(sessionStorage.getItem(k)==="seen")h.classList.add(c)}else if(new URLSearchParams(location.search).get("intro")==="1"){h.dataset.irpIntroCurrent="play"}else if(sessionStorage.getItem(k)==="seen"){h.classList.add(c)}else{h.dataset.irpIntroCurrent="play"}}catch{}`;
-const introFirstPaintCss = `html[data-irp-intro-current="play"],html[data-irp-intro-current="play"] body{background:#000a13!important}`;
+const introPreflight = `try{const h=document.documentElement,k="${HOME_INTRO_SESSION_KEY}",c="${HOME_INTRO_SEEN_CLASS}";if(location.pathname!=="/"){sessionStorage.setItem(k,"seen");h.classList.add(c)}else if(new URLSearchParams(location.search).get("intro")==="1"){h.dataset.irpIntroCurrent="play"}else if(sessionStorage.getItem(k)==="seen"){h.classList.add(c)}else{sessionStorage.setItem(k,"seen");h.dataset.irpIntroCurrent="play"}}catch{}`;
+const introFirstPaintCss = `html[data-irp-intro-current="play"],html[data-irp-intro-current="play"] body{background:#fff!important}`;
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (

@@ -95,9 +95,9 @@ function visibleConfiguration([key, value]: [string, unknown]) {
   return !Array.isArray(value) || value.length > 0;
 }
 
-function configurationValue(productId: string | undefined, key: string, value: unknown) {
+function configurationValue(productId: string | undefined, key: string, value: unknown, unit?: unknown) {
   if (key === "measurementsUnknown") return "Pendientes de medición";
-  if (productId === "puertas-contraplacadas" && (key === "width" || key === "height")) return `${Math.round(Number(value) * 1000)} mm`;
+  if (productId === "puertas-contraplacadas" && (key === "width" || key === "height")) return `${unit === "mm" ? value : Math.round(Number(value) * 1000)} mm`;
   if (productId === "puertas-contraplacadas" && key === "unit") return "mm";
   return Array.isArray(value) ? value.join(", ") : String(value);
 }
@@ -130,7 +130,7 @@ export function PublicProposalPdfDocument({ request, resolvedImages = {} }: { re
         return <View key={item.id} style={styles.item} wrap={false}>
           <View style={styles.itemHead}><Text style={styles.itemName}>{item.quantity} × {item.name}</Text><Text>{itemPrice?.status === "ESTIMATED" ? formatPublicPrice(itemPrice.totalMinor) : "Requiere evaluación"}</Text></View>
           <View style={styles.itemBody}>{selectedImage ? <Image src={selectedImage} style={styles.itemImage}/> : null}<View style={styles.itemDetails}>
-            {Object.entries(item.configuration).filter(([key, value]) => visibleConfiguration([key, value]) && !(key === "model" && hasModelSnapshot) && !(key === "variant" && hasVariantSnapshot)).map(([key, value]) => <View style={styles.row} key={key}><Text>{readable(key)}</Text><Text>{configurationValue(item.productId, key, value)}</Text></View>)}
+            {Object.entries(item.configuration).filter(([key, value]) => visibleConfiguration([key, value]) && !(key === "model" && hasModelSnapshot) && !(key === "variant" && hasVariantSnapshot)).map(([key, value]) => <View style={styles.row} key={key}><Text>{readable(key)}</Text><Text>{configurationValue(item.productId, key, value, item.configuration.unit)}</Text></View>)}
             <View style={styles.row}><Text>Alcance incluido</Text><Text>{imported ? "Suministro e instalación" : item.productId === "seccionales" ? "Fabricación, automatización e instalación" : "Ejecución e instalación"}</Text></View>
             {itemPrice?.status === "ESTIMATED" ? itemPrice.breakdown.map((line) => <View style={styles.row} key={line.key}><Text>{line.label}</Text><Text>{line.amountMinor ? formatPublicPrice(line.amountMinor) : "Incluida"}</Text></View>) : <Text style={styles.notice}>{itemPrice?.reason ?? "Partida pendiente de evaluación."}</Text>}
           </View></View>

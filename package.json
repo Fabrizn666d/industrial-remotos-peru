@@ -11,6 +11,8 @@
     "visual-check": "node scripts/visual-check.mjs",
     "functional-check": "node scripts/functional-check.mjs",
     "all-services-check": "node scripts/all-services-flow-check.mjs",
+    "catalog-checkout-check": "node scripts/catalog-checkout-regression-check.mjs",
+    "checkout-visual-check": "node scripts/checkout-visual-regression-check.mjs",
     "platform-check": "node scripts/platform-integration-check.mjs",
     "flow-visual-check": "node scripts/flow-visual-check.mjs",
     "final-visual-audit": "node scripts/final-visual-audit.mjs",

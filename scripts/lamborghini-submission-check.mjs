@@ -1,4 +1,4 @@
-import { cp, mkdtemp, readFile } from "node:fs/promises";
+import { mkdtemp, readFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { spawn } from "node:child_process";
@@ -19,11 +19,6 @@ const port = await new Promise((resolve, reject) => {
   });
 });
 const baseUrl = `http://127.0.0.1:${port}`;
-await Promise.all([
-  cp(path.join(root, ".data", "irp-pricing.json"), pricingPath),
-  cp(path.join(root, ".data", "irp-cms.json"), cmsPath),
-]);
-
 const server = spawn(process.execPath, ["node_modules/next/dist/bin/next", "dev", "--webpack", "--hostname", "127.0.0.1", "--port", String(port)], {
   cwd: root,
   windowsHide: true,
@@ -37,6 +32,8 @@ const server = spawn(process.execPath, ["node_modules/next/dist/bin/next", "dev"
     IRP_JSON_DATA_PATH: requestsPath,
     IRP_PRICING_JSON_DATA_PATH: pricingPath,
     IRP_CMS_JSON_DATA_PATH: cmsPath,
+    IRP_REQUEST_ATTACHMENTS_JSON_DATA_PATH: path.join(temporaryRoot, "request-attachments.json"),
+    IRP_UPLOADS_DIR: path.join(temporaryRoot, "uploads"),
   },
 });
 

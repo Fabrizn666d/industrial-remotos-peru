@@ -1,0 +1,8 @@
+Puertas de garaje
+
+Explorar aperturas, no cotizar. Seccional y corrediza tienen imagen independiente; batiente usar solo imagen publicada verificada en proyecto. No inventar foto batiente ni reactivar levadiza. Movimiento explicado mediante trazado SVG conceptual correcto o animacion validada; no usar la imagen del mockup con la puerta duplicada como fondo.
+
+REFERENCIAS: solo orientan composicion. IMAGENES: recursos limpios para la interfaz.
+Fondo blanco en PC y celular tiene prioridad sobre cualquier zona oscura del mockup.
+PC: composicion horizontal aproximada 16:9 sin recortar textos. Celular: altura automatica, nunca achicar captura PC.
+Estos recursos son ilustraciones editoriales generadas salvo los identificados como catalogo. No declararlos obras realizadas.

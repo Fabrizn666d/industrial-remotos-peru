@@ -356,45 +356,6 @@ export const solutionEditorialProfiles: Record<string, SolutionEditorialProfile>
     ctaDescription: "Indícanos el recorrido, la ubicación y el estilo que buscas para iniciar la evaluación.",
     ctaImage: img.glassRail
   },
-  "estructuras-metalicas": {
-    variant: "industrial",
-    heroHeading: "Estructuras",
-    heroAccent: "metálicas",
-    heroDescription: "Estructuras, soportes, coberturas y cerramientos desarrollados para una necesidad concreta y dentro del alcance confirmado por IRP.",
-    visuals: {
-      hero: { src: `${serviceMedia}/hero-estructuras-metalicas.webp`, objectPosition: "50% 50%", mobileObjectPosition: "50% 50%" },
-      characters: {
-        hero: character("estructuras-metalicas-hero.webp", "Cada estructura responde a una necesidad.", "right"),
-        middle: character("estructuras-metalicas-medio.webp", "Demos forma a tu próximo proyecto.", "left"),
-        quote: character("estructuras-metalicas-cotizador.webp", "Describe tu proyecto y solicita tu propuesta.", "left")
-      }
-    },
-    applicationsTitle: "Aplicaciones confirmadas.",
-    applicationsIntro: "El dimensionamiento se realiza después de revisar uso, medidas, apoyos y condiciones del lugar.",
-    applications: [
-      { title: "Soportes", description: "Estructuras auxiliares para soluciones y equipos compatibles.", image: img.steelFrame },
-      { title: "Coberturas", description: "Marcos y apoyos para techos o pérgolas evaluadas.", image: img.structure },
-      { title: "Cerramientos", description: "Estructuras para delimitar y organizar espacios.", image: img.gate }
-    ],
-    alternativesTitle: "Alternativas para cada necesidad.",
-    alternativesIntro: "No ampliamos el alcance a naves industriales u obras no confirmadas; cada solicitud se revisa antes de ofrecer una solución.",
-    alternatives: [
-      { title: "Coberturas ligeras", description: "Estructura coordinada con el sistema de techo elegido.", image: img.structure },
-      { title: "Pérgolas", description: "Marcos para áreas exteriores dentro del alcance evaluado.", image: img.pergola },
-      { title: "Fabricación especial", description: "Piezas o soportes sujetos a revisión técnica y comercial.", image: img.steelFrame }
-    ],
-    detailTitle: "Uniones y acabados que importan.",
-    detailDescription: "La geometría, las conexiones y la terminación dependen de la propuesta técnica; las imágenes ilustran posibilidades y no especificaciones finales.",
-    details: ["Uso y cargas por evaluar", "Apoyos existentes", "Uniones definidas por proyecto", "Acabado coordinado"],
-    detailImage: img.structure,
-    inspirationTitle: "Inspiración referencial.",
-    gallery: [img.structure, img.steelFrame, img.pergola, img.roof],
-    processTitle: "Del diseño a la instalación.",
-    process: standardProcess,
-    ctaTitle: "¿Tienes una estructura en mente?",
-    ctaDescription: "Cuéntanos la necesidad concreta y revisaremos si se encuentra dentro de nuestro alcance.",
-    ctaImage: img.structure
-  },
   "cerco-electrico": {
     variant: "security",
     heroHeading: "Cerco",
@@ -477,9 +438,9 @@ export const solutionEditorialProfiles: Record<string, SolutionEditorialProfile>
 
 solutionEditorialProfiles["puertas-contraplacadas"] = {
   ...solutionEditorialProfiles["puertas-a-medida"],
-  heroHeading: "Diseño por fuera. Refuerzo por dentro.",
-  heroAccent: undefined,
-  heroDescription: "Singapur y Lamborghini son modelos independientes. Elige el diseño y configura las medidas de tu ingreso.",
+  heroHeading: "Diseño exterior.",
+  heroAccent: "Refuerzo interior.",
+  heroDescription: "Diseños con carácter, refuerzo interior de acero y medidas adaptadas a tu ingreso.",
   visuals: {
     ...solutionEditorialProfiles["puertas-a-medida"].visuals,
     hero: { src: img.contraplacadaLamborghini, objectPosition: "50% 50%", mobileObjectPosition: "50% 50%" }
@@ -572,16 +533,6 @@ export const solutionFinishPresentations: Record<string, SolutionFinishPresentat
       { name: "Acero", color: "#aeb5bb", description: "Referencia de acero inoxidable para barandas y pasamanos." },
       { name: "Acero y vidrio", color: "#b9d8e6", description: "Combinación sujeta a compatibilidad con anclajes y dimensiones." },
       { name: "Negro", color: "#20252a", description: "Acabado oscuro para alternativas metálicas cuando corresponda." }
-    ]
-  },
-  "estructuras-metalicas": {
-    eyebrow: "Protección y acabado",
-    title: "La terminación se define con el uso y la exposición.",
-    description: "Perfiles, uniones y protección superficial se especifican después de la evaluación técnica del proyecto.",
-    options: [
-      { name: "Grafito", color: "#343b42", description: "Referencia oscura para estructuras arquitectónicas." },
-      { name: "Negro", color: "#16191d", description: "Alternativa de acabado sujeta al sistema de protección definido." },
-      { name: "Blanco", color: "#e7e7e2", description: "Referencia clara para proyectos donde resulte compatible." }
     ]
   },
   "cerco-electrico": {

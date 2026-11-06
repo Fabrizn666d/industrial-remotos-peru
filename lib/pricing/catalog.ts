@@ -2,7 +2,7 @@ import type { DoorClassification } from "@/lib/pricing/contracts";
 
 export const PUBLIC_CATALOG_VERSION = "2026.10-demo-1";
 export const CUSTOM_ENTRY_DESIGN_ID = "principal-diseno-propio";
-const customDesignProductIds = new Set(["puertas-a-medida", "puertas-contraplacadas", "seccionales", "puertas-principales", "techos-coberturas"]);
+const customDesignProductIds = new Set(["puertas-a-medida", "puertas-contraplacadas", "seccionales", "techos-coberturas"]);
 export function supportsCustomDesign(productId: string) { return customDesignProductIds.has(productId); }
 
 export type ImportedDoorModel = {

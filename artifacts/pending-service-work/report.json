@@ -1,0 +1,45 @@
+{
+  "failures": [],
+  "report": [
+    {
+      "slug": "puertas-a-medida",
+      "width": 390,
+      "status": 200,
+      "documentOverflow": false,
+      "imageCount": 2,
+      "brokenImages": 0,
+      "viewportWidth": 390,
+      "errors": []
+    },
+    {
+      "slug": "puertas-automatizacion",
+      "width": 390,
+      "status": 200,
+      "documentOverflow": false,
+      "imageCount": 3,
+      "brokenImages": 0,
+      "viewportWidth": 390,
+      "errors": []
+    },
+    {
+      "slug": "puertas-a-medida",
+      "width": 1440,
+      "status": 200,
+      "documentOverflow": false,
+      "imageCount": 2,
+      "brokenImages": 0,
+      "viewportWidth": 1440,
+      "errors": []
+    },
+    {
+      "slug": "puertas-automatizacion",
+      "width": 1440,
+      "status": 200,
+      "documentOverflow": false,
+      "imageCount": 3,
+      "brokenImages": 0,
+      "viewportWidth": 1440,
+      "errors": []
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "passed": true,
+  "legacyStatus": 404,
+  "results": [
+    {
+      "viewport": "desktop",
+      "status": 200,
+      "layout": {
+        "count": 9,
+        "overflow": false,
+        "structureText": false,
+        "garageAligned": true,
+        "lastWidths": [
+          676,
+          676
+        ]
+      },
+      "fence": {
+        "eyebrowDisplay": "none",
+        "headingOffset": 0,
+        "overflow": false
+      },
+      "errors": []
+    },
+    {
+      "viewport": "mobile",
+      "status": 200,
+      "layout": {
+        "count": 9,
+        "overflow": false,
+        "structureText": false,
+        "garageAligned": false,
+        "lastWidths": [
+          366,
+          366
+        ]
+      },
+      "fence": {
+        "eyebrowDisplay": "flex",
+        "headingOffset": 0,
+        "overflow": false
+      },
+      "errors": []
+    }
+  ]
+}

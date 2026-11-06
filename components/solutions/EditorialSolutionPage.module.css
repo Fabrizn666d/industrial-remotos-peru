@@ -157,29 +157,44 @@
 .processGrid h3 { margin: 3px 0 7px; font-size: 17px; font-weight: 760; letter-spacing: -.025em; }
 .processGrid p { margin: 0; color: #5a6a83; font-size: 12px; line-height: 1.55; }
 
-.inspiration { position: relative; border-top: 1px solid #edf1f6; background: #fff; padding-bottom: 64px; }
-.galleryShell { position: relative; width: 100%; overflow: hidden; }
+.inspiration { position: relative; overflow: hidden; border: 0; background: #fff; padding: clamp(58px,6vw,92px) 0 clamp(42px,5vw,72px); }
+.page[data-solution="puertas-automatizacion"] .inspiration { padding-top: clamp(18px, 1.4vw, 24px); }
+.galleryHeader { display: grid; width: min(100%,1120px); justify-items: center; gap: 0; margin: 0 auto clamp(28px,3.2vw,48px); padding-inline: clamp(20px,5vw,72px); text-align: center; }
+.galleryHeader .kicker { margin: 0 0 clamp(14px,1.5vw,22px); color: var(--blue); font-size: clamp(10px,.78vw,13px); letter-spacing: .42em; }
+.galleryHeader .kicker::before { display: none; }
+.galleryHeader h2 { margin: 0; color: var(--ink); font-size: clamp(3rem,5vw,5.35rem); font-weight: 790; letter-spacing: -.065em; line-height: .88; text-wrap: balance; }
+.galleryHeader h2 span,.galleryHeader h2 strong { display: block; }
+.galleryHeader h2 strong { color: var(--blue); font-weight: inherit; }
+.galleryHeader p { max-width: 880px; margin: clamp(18px,2vw,28px) 0 0; color: #52627c; font-size: clamp(14px,1.2vw,19px); line-height: 1.55; text-wrap: balance; }
+.galleryShell { position: relative; width: 100%; max-width: none; margin: 0; overflow: hidden; border: 0; background: #fff; box-shadow: none; }
 .galleryViewport { overflow: hidden; cursor: grab; touch-action: pan-y pinch-zoom; }
 .galleryViewport:active { cursor: grabbing; }
 .galleryViewport.galleryDragging { cursor: grabbing; }
 .galleryTrack { display: flex; backface-visibility: hidden; will-change: transform; }
-.gallerySlide { position: relative; width: min(920px, calc(50vw - 5.5px)); min-width: 0; flex: 0 0 min(920px, calc(50vw - 5.5px)); aspect-ratio: 4 / 3; margin-right: 11px; overflow: hidden; border: 0; background: #dce6ee; padding: 0; cursor: zoom-in; }
+.gallerySlide { position: relative; width: min(980px,52vw); min-width: 0; flex: 0 0 min(980px,52vw); aspect-ratio: 16 / 9; margin-right: clamp(10px,1vw,18px); overflow: hidden; border: 0; border-radius: clamp(12px,1.2vw,22px); background: #dce6ee; padding: 0; cursor: zoom-in; }
 .gallerySlide img { display: block; object-fit: cover; pointer-events: none; transform: scale(1); transform-origin: center; transition: transform 820ms cubic-bezier(.16,1,.3,1); will-change: transform; }
 .gallerySlide:hover img { transform: scale(1.09); }
+.galleryPause { position: absolute; z-index: 4; right: clamp(16px,2.2vw,42px); bottom: clamp(14px,1.8vw,30px); display: inline-flex; min-height: 46px; align-items: center; gap: 10px; border: 1px solid rgba(255,255,255,.48); border-radius: 999px; background: rgba(3,20,51,.82); padding: 0 17px 0 13px; color: #fff; font: 730 11px var(--font-jakarta); box-shadow: 0 10px 28px rgba(2,18,43,.2); cursor: pointer; backdrop-filter: blur(10px); transition: background .2s ease,transform .2s ease; }
+.galleryPause:hover { background: var(--blue); transform: translateY(-2px); }
+.galleryPause svg { width: 18px; height: 18px; }
 
 .quoteSection { background: linear-gradient(135deg,#eef8ff 0%,#dceeff 100%); padding: 72px 0; }
 .quoteLead { display: grid; grid-template-columns: minmax(0,900px); align-items: end; gap: 44px; margin-bottom: 28px; }
 
-.page[data-solution="puertas-contraplacadas"] .hero { background: #f3f4f4; color: var(--ink); }
-.page[data-solution="puertas-contraplacadas"] .heroImage { right: 0 !important; left: auto !important; width: 57% !important; object-fit: cover; object-position: center; }
-.page[data-solution="puertas-contraplacadas"] .heroOverlay { background: linear-gradient(90deg,#f7f8f8 0%,#f7f8f8 42%,rgba(247,248,248,.92) 50%,rgba(247,248,248,0) 72%); }
+.page[data-solution="puertas-contraplacadas"] .hero { min-height: clamp(700px,calc(100svh - 84px),900px); background: #f7f8f8; padding: 154px 0 104px; color: var(--ink); }
+.page[data-solution="puertas-contraplacadas"] .heroImage { right: 0 !important; left: auto !important; width: 64% !important; object-fit: cover; object-position: 50% 50%; }
+.page[data-solution="puertas-contraplacadas"] .heroOverlay { background: linear-gradient(90deg,#f7f8f8 0%,#f7f8f8 31%,rgba(247,248,248,.98) 38%,rgba(247,248,248,.84) 45%,rgba(247,248,248,.42) 52%,rgba(247,248,248,0) 63%); }
 .page[data-solution="puertas-contraplacadas"] .heroTitleGlow { display: none; }
-.page[data-solution="puertas-contraplacadas"] .heroContent { padding-right: 55%; }
-.page[data-solution="puertas-contraplacadas"] .hero h1 { max-width: 610px; color: var(--ink); text-shadow: none; }
-.page[data-solution="puertas-contraplacadas"] .heroContent > p { max-width: 520px; color: #51617a; text-shadow: none; }
+.page[data-solution="puertas-contraplacadas"] .heroContent { padding-right: 54%; }
+.page[data-solution="puertas-contraplacadas"] .hero h1 { max-width: 690px; margin-bottom: 25px; color: var(--ink); font-size: clamp(3.65rem,5.15vw,5.75rem); line-height: .96; text-shadow: none; }
+.page[data-solution="puertas-contraplacadas"] .heroContent > p { max-width: 560px; color: #51617a; font-size: clamp(1rem,1.28vw,1.28rem); text-shadow: none; }
 .page[data-solution="puertas-contraplacadas"] .breadcrumbs { color: #60708a; }
 .page[data-solution="puertas-contraplacadas"] .breadcrumbs span,.page[data-solution="puertas-contraplacadas"] .breadcrumbs a:hover { color: var(--ink); }
 .page[data-solution="puertas-contraplacadas"] .heroWave { display: none; }
+.contraplacadaHeroLabel { display: inline-block; margin-bottom: 26px; color: var(--blue); font-size: clamp(.7rem,.82vw,.86rem); font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
+.contraplacadaHeroLink { display: inline-flex; width: max-content; min-height: 44px; align-items: center; gap: 13px; margin-top: 34px; border-bottom: 2px solid #5ba0ff; color: var(--blue); font-size: clamp(.92rem,1.08vw,1.08rem); font-weight: 760; transition: border-color .22s ease,color .22s ease,transform .22s ease; }
+.contraplacadaHeroLink svg { width: 19px; }
+.contraplacadaHeroLink:hover { border-color: var(--blue); color: #004bd9; transform: translateY(-2px); }
 .quoteLead.companionLeft { grid-template-columns: minmax(320px,410px) minmax(0,1fr); }
 .quoteLead.companionLeft .characterQuote { grid-column: 1; grid-row: 1; }
 .quoteLead.companionLeft .quoteHeader { grid-column: 2; grid-row: 1; }
@@ -263,15 +278,17 @@
   .finishMedia { min-height: 410px; }
   .finishPanel { border-top: 0; padding: 38px 0 0; }
   .processGrid { grid-template-columns: repeat(2,1fr); }
+  .galleryHeader { margin-bottom: 32px; }
   .gallerySlide { width: 72vw; flex-basis: 72vw; }
   .faqLayout { grid-template-columns: 1fr; gap: 32px; }
   .contact > .shell > div { grid-template-columns: 1fr; gap: 22px; }
-  .page[data-solution="puertas-contraplacadas"] .hero { min-height: 720px; padding: 104px 0 330px; }
-  .page[data-solution="puertas-contraplacadas"] .heroImage { top: auto !important; bottom: 0 !important; width: 100% !important; height: 54% !important; object-position: center 26%; }
-  .page[data-solution="puertas-contraplacadas"] .heroOverlay { background: linear-gradient(180deg,#f7f8f8 0%,#f7f8f8 42%,rgba(247,248,248,.9) 52%,rgba(247,248,248,0) 69%); }
+  .page[data-solution="puertas-contraplacadas"] .hero { min-height: 900px; padding: 155px 0 420px; }
+  .page[data-solution="puertas-contraplacadas"] .heroImage { top: auto !important; bottom: 0 !important; width: 100% !important; height: 48% !important; object-position: center 50%; }
+  .page[data-solution="puertas-contraplacadas"] .heroOverlay { background: linear-gradient(180deg,#f7f8f8 0%,#f7f8f8 47%,rgba(247,248,248,.94) 52%,rgba(247,248,248,.48) 59%,rgba(247,248,248,0) 68%); }
   .page[data-solution="puertas-contraplacadas"] .heroContent { align-items: center; padding: 0; text-align: center; }
   .page[data-solution="puertas-contraplacadas"] .hero h1 { max-width: 650px; }
   .page[data-solution="puertas-contraplacadas"] .breadcrumbs { color: #60708a; }
+  .page[data-solution="puertas-contraplacadas"] .contraplacadaHeroLink { margin-top: 24px; }
 }
 
 @media (max-width: 620px) {
@@ -311,7 +328,15 @@
   .finishTabs i { aspect-ratio: 1.6; }
   .processGrid { grid-template-columns: 1fr; }
   .processGrid figure { min-height: 220px; }
-  .gallerySlide { width: 88vw; flex-basis: 88vw; }
+  .inspiration { padding: 54px 0 40px; }
+  .galleryHeader { margin-bottom: 26px; padding-inline: 18px; }
+  .galleryHeader .kicker { margin-bottom: 13px; font-size: 9px; }
+  .galleryHeader h2 { font-size: clamp(2rem,8.3vw,2.5rem); line-height: .94; }
+  .galleryHeader h2 span,.galleryHeader h2 strong { white-space: nowrap; }
+  .galleryHeader p { margin-top: 16px; font-size: 13px; }
+  .gallerySlide { width: 86vw; flex-basis: 86vw; aspect-ratio: 4 / 3; }
+  .galleryPause { right: 12px; bottom: 12px; min-height: 44px; padding-inline: 12px; }
+  .galleryPause span { font-size: 10px; }
   .quoteSection { padding: 64px 0; }
   .specialRequest { align-items: stretch; flex-direction: column; padding: 18px; }
   .specialRequest > a { justify-content: center; }
@@ -324,13 +349,16 @@
   .lightboxNav { top: auto; bottom: 15px; transform: none; }
   .lightboxPrevious { left: calc(50% - 56px); }
   .lightboxNext { right: calc(50% - 56px); }
-  .page[data-solution="puertas-contraplacadas"] .hero { min-height: 700px; padding: 94px 0 345px; }
-  .page[data-solution="puertas-contraplacadas"] .hero h1 { font-size: clamp(2.6rem,13.5vw,3.8rem); }
+  .page[data-solution="puertas-contraplacadas"] .hero { min-height: 890px; padding: 154px 0 410px; }
+  .page[data-solution="puertas-contraplacadas"] .breadcrumbs { top: 92px; }
+  .page[data-solution="puertas-contraplacadas"] .contraplacadaHeroLabel { margin-bottom: 18px; font-size: .62rem; }
+  .page[data-solution="puertas-contraplacadas"] .hero h1 { margin-bottom: 22px; font-size: clamp(2.45rem,11.5vw,3.3rem); }
   .page[data-solution="puertas-contraplacadas"] .heroContent > p { font-size: 13px; }
-  .page[data-solution="puertas-contraplacadas"] .heroImage { height: 52% !important; object-position: center 20%; }
+  .page[data-solution="puertas-contraplacadas"] .heroImage { height: 46% !important; object-position: center 50%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .page,.page *,.page *::before,.page *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
   .character { opacity: 1 !important; transform: none !important; }
+  .gallerySlide:hover img { transform: none; }
 }

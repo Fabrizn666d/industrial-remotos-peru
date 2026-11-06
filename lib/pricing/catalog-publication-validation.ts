@@ -9,7 +9,7 @@ const publicRoot = path.resolve(process.cwd(), "public");
 const publicProductIds = new Set([
   "puertas-a-medida", "seccionales", "puertas-principales", "puertas-contraplacadas",
   "automatizacion", "techos-coberturas", "ventanas-mamparas", "acero-barandas",
-  "estructuras-especiales", "cerco-electrico", "drywall-cielorrasos",
+  "cerco-electrico", "drywall-cielorrasos",
 ]);
 
 async function mediaExists(source: string) {

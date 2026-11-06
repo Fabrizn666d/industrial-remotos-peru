@@ -2,23 +2,26 @@
 
 import AutoScroll from "embla-carousel-auto-scroll";
 import useEmblaCarousel from "embla-carousel-react";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Pause, Play, X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import styles from "./EditorialSolutionPage.module.css";
 
 type EditorialGalleryProps = { images: string[]; title: string };
 
 export function EditorialGallery({ images, title }: EditorialGalleryProps) {
+  const reduceMotion = usePrefersReducedMotion();
   const [active, setActive] = useState<number | null>(null);
+  const [manualPaused, setManualPaused] = useState(false);
   const galleryShellRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const openerRef = useRef<HTMLButtonElement | null>(null);
   const [autoScrollPlugins] = useState(() => [AutoScroll({
-    playOnInit: false,
+    playOnInit: true,
     speed: 0.72,
     startDelay: 0,
-    direction: "backward",
+    direction: "forward",
     stopOnInteraction: false,
     stopOnMouseEnter: false,
     stopOnFocusIn: false
@@ -33,51 +36,57 @@ export function EditorialGallery({ images, title }: EditorialGalleryProps) {
     const gallery = galleryShellRef.current;
     if (!gallery || !emblaApi) return;
 
-    let galleryIsVisible = false;
-    const playVisibleCarousel = () => {
-      if (!galleryIsVisible || document.hidden || active !== null) return;
-      const autoScroll = emblaApi.plugins().autoScroll;
-      if (!autoScroll?.isPlaying()) autoScroll?.play(0);
-    };
-    const stopCarousel = () => {
-      emblaApi.plugins().autoScroll?.stop();
-    };
-
-    const observer = new IntersectionObserver(([entry]) => {
-      galleryIsVisible = entry.isIntersecting;
-      if (galleryIsVisible) playVisibleCarousel();
-      else stopCarousel();
-    }, {
-      threshold: 0.12,
-      rootMargin: "0px 0px -8% 0px"
-    });
-
-    observer.observe(gallery);
-
     const root = emblaApi.rootNode();
     const autoScroll = emblaApi.plugins().autoScroll;
     let resumeTimer = 0;
+    let startFrame = 0;
+    let dragging = false;
+    let stalledChecks = 0;
+    let lastProgress = emblaApi.scrollProgress();
 
+    const canPlay = () => !reduceMotion && !manualPaused && !document.hidden && active === null && !dragging;
     const ensurePlaying = () => {
       window.clearTimeout(resumeTimer);
-      if (galleryIsVisible && !document.hidden && active === null && !autoScroll?.isPlaying()) {
-        autoScroll?.play(0);
-      }
+      if (!canPlay()) return autoScroll?.stop();
+      if (!autoScroll?.isPlaying()) autoScroll?.play(0);
     };
     const beginDrag = () => {
+      dragging = true;
       root.classList.add(styles.galleryDragging);
       window.clearTimeout(resumeTimer);
       autoScroll?.stop();
     };
     const finishDrag = () => {
+      if (!dragging) return;
+      dragging = false;
       root.classList.remove(styles.galleryDragging);
       window.clearTimeout(resumeTimer);
-      resumeTimer = window.setTimeout(ensurePlaying, 260);
+      resumeTimer = window.setTimeout(ensurePlaying, 420);
     };
     const handleVisibility = () => {
       if (document.hidden) autoScroll?.stop();
       else ensurePlaying();
     };
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) ensurePlaying();
+    }, { threshold: 0, rootMargin: "30% 0px" });
+    const watchdog = window.setInterval(() => {
+      if (!canPlay()) {
+        autoScroll?.stop();
+        return;
+      }
+      const progress = emblaApi.scrollProgress();
+      const moved = Math.abs(progress - lastProgress) > 0.00001;
+      lastProgress = progress;
+      stalledChecks = moved ? 0 : stalledChecks + 1;
+      if (!autoScroll?.isPlaying()) {
+        ensurePlaying();
+        stalledChecks = 0;
+      } else if (stalledChecks >= 2) {
+        autoScroll.reset();
+        stalledChecks = 0;
+      }
+    }, 900);
 
     root.addEventListener("pointerdown", beginDrag);
     root.addEventListener("pointerup", finishDrag);
@@ -85,11 +94,17 @@ export function EditorialGallery({ images, title }: EditorialGalleryProps) {
     root.addEventListener("pointerleave", finishDrag);
     document.addEventListener("visibilitychange", handleVisibility);
     window.addEventListener("focus", ensurePlaying);
+    window.addEventListener("pageshow", ensurePlaying);
     emblaApi.on("reInit", ensurePlaying);
+    observer.observe(gallery);
+    startFrame = window.requestAnimationFrame(ensurePlaying);
+    resumeTimer = window.setTimeout(ensurePlaying, 80);
 
     return () => {
       observer.disconnect();
+      window.clearInterval(watchdog);
       window.clearTimeout(resumeTimer);
+      window.cancelAnimationFrame(startFrame);
       autoScroll?.stop();
       root.classList.remove(styles.galleryDragging);
       root.removeEventListener("pointerdown", beginDrag);
@@ -98,9 +113,10 @@ export function EditorialGallery({ images, title }: EditorialGalleryProps) {
       root.removeEventListener("pointerleave", finishDrag);
       document.removeEventListener("visibilitychange", handleVisibility);
       window.removeEventListener("focus", ensurePlaying);
+      window.removeEventListener("pageshow", ensurePlaying);
       emblaApi.off("reInit", ensurePlaying);
     };
-  }, [active, emblaApi]);
+  }, [active, emblaApi, manualPaused, reduceMotion]);
 
   useEffect(() => {
     if (active === null) return;
@@ -128,9 +144,9 @@ export function EditorialGallery({ images, title }: EditorialGalleryProps) {
 
   return (
     <>
-      <div ref={galleryShellRef} className={styles.galleryShell}>
+      <div ref={galleryShellRef} className={styles.galleryShell} data-editorial-gallery>
         <div className={styles.galleryViewport} ref={viewportRef}>
-          <div className={styles.galleryTrack}>
+          <div className={styles.galleryTrack} data-editorial-gallery-track>
             {loopImages.map(({ cycle, index, src }) => (
               <button
                 className={styles.gallerySlide}
@@ -146,6 +162,15 @@ export function EditorialGallery({ images, title }: EditorialGalleryProps) {
             ))}
           </div>
         </div>
+        <button
+          className={styles.galleryPause}
+          type="button"
+          aria-pressed={manualPaused}
+          onClick={() => setManualPaused((paused) => !paused)}
+        >
+          {manualPaused ? <Play aria-hidden="true" /> : <Pause aria-hidden="true" />}
+          <span>{manualPaused ? "Reanudar recorrido" : "Pausar recorrido"}</span>
+        </button>
       </div>
 
       {active !== null && (

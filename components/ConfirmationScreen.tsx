@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Copy, Download, MessageCircle, Search } from "lucide-react";
+import { Check, Download, MessageCircle, Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -28,7 +28,6 @@ export function ConfirmationScreen({ code }: { code?: string }) {
   const urlToken = params.get("token") || "";
   const [request, setRequest] = useState<SubmittedRequest | null>(null);
   const [loaded, setLoaded] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -49,7 +48,7 @@ export function ConfirmationScreen({ code }: { code?: string }) {
             const restored: SubmittedRequest = {
               requestId: proposal.id, code: proposal.code, createdAt: proposal.createdAt, accessToken: token,
               contact: proposal.contact, details: { region: "", province: "", district: "", address: "", ...proposal.details }, files: [], pricing: proposal.pricingSnapshot,
-              items: proposal.items.map((item: any) => { const product = products.find((entry) => entry.id === item.productId); return { id: item.id, productId: item.productId || "", name: item.name, image: item.configuration.custom_selectedImage || product?.image || "/images/reales/puerta-22.jpg", quantity: item.quantity, configuration: { accessories: [], ...item.configuration, measurementsUnknown: item.configuration.measurementsUnknown === true, dimensions: item.configuration.width || item.configuration.height ? { width: item.configuration.width, height: item.configuration.height, unit: "m" } : undefined }, price: { status: "pending" }, createdAt: proposal.createdAt, updatedAt: proposal.updatedAt }; })
+              items: proposal.items.map((item: any) => { const product = products.find((entry) => entry.id === item.productId); return { id: item.id, productId: item.productId || "", name: item.name, image: item.configuration.custom_selectedImage || product?.image || "/images/reales/puerta-22.jpg", quantity: item.quantity, configuration: { accessories: [], ...item.configuration, measurementsUnknown: item.configuration.measurementsUnknown === true, dimensions: item.configuration.width || item.configuration.height ? { width: item.configuration.width, height: item.configuration.height, unit: item.configuration.unit === "mm" ? "mm" : "m" } : undefined }, price: { status: "pending" }, createdAt: proposal.createdAt, updatedAt: proposal.updatedAt }; })
             };
             setRequest(restored);
             sessionStorage.setItem(LAST_REQUEST_KEY, JSON.stringify(restored));
@@ -80,10 +79,6 @@ export function ConfirmationScreen({ code }: { code?: string }) {
     );
   }
 
-  const copyCode = async () => {
-    await navigator.clipboard?.writeText(request.code);
-    setCopied(true);
-  };
   const total = request.pricing.status === "ESTIMATED" ? request.pricing.estimatedTotalMinor : null;
   const privateQuery = request.accessToken ? `?token=${encodeURIComponent(request.accessToken)}` : "";
   const summary = request.items.slice(0, 3).map((item) => `${item.quantity}× ${item.name}`).join(", ");
@@ -97,8 +92,8 @@ export function ConfirmationScreen({ code }: { code?: string }) {
         <span className="eyebrow eyebrow--light">Guardado confirmado</span>
         <h1>Propuesta enviada</h1>
         <p>Industrial Remotos Perú se pondrá en contacto contigo lo antes posible para revisar los detalles de tu proyecto.</p>
-        <div className="confirmation-code"><small>Código de propuesta</small><strong>{request.code}</strong><button type="button" onClick={copyCode} aria-label="Copiar código"><Copy size={17} /></button><span>{copied ? "Código copiado" : "Guarda también este enlace privado"}</span></div>
-        <div className="confirmation-actions"><a className="button button--primary" href={`/api/proposals/${encodeURIComponent(request.code)}/pdf${privateQuery}`}><Download size={17} /> Descargar propuesta PDF</a><a className="button button--secondary" href={whatsapp} target="_blank" rel="noreferrer"><MessageCircle size={17} /> Hablar con IRP</a><Link className="button button--secondary" href="/">Volver al sitio</Link></div>
+        <div className="confirmation-code"><small>Código de propuesta</small><strong>{request.code}</strong><span>Guarda este enlace privado para volver a consultar tu solicitud.</span></div>
+        <div className="confirmation-actions"><Link className="button button--secondary" href="/">Salir</Link><a className="button button--secondary" href={whatsapp} target="_blank" rel="noreferrer"><MessageCircle size={17} /> WhatsApp</a><a className="button button--primary" href={`/api/proposals/${encodeURIComponent(request.code)}/pdf${privateQuery}`}><Download size={17} /> Descargar PDF</a></div>
         <small>{PROPOSAL_DISCLAIMER}</small>
       </section>
       <aside className="confirmation-order">

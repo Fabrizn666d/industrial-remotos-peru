@@ -59,11 +59,6 @@ const correctedDoorTypeAssets: Record<string, { image: string; thumbnail: string
   "puertas-contraplacadas-pivotante": { image: contraplacadaSingapurImage, thumbnail: contraplacadaSingapurThumbnail },
 };
 
-const requiredContraplacadaModels = new Map([
-  ["contraplacada-pivotante-singapur", { image: contraplacadaSingapurImage, thumbnail: contraplacadaSingapurThumbnail, openingSystem: "Pivotante", openingStatus: "CONFIRMED" as const }],
-  ["contraplacada-lamborghini", { image: contraplacadaLamborghiniImage, thumbnail: contraplacadaLamborghiniThumbnail, openingStatus: "PENDING" as const }],
-]);
-
 function normalizeCatalogTypes(types: PricingCatalogDocument["definitions"][number]["catalogTypes"]) {
   return types.map((type) => {
     if (type.id === "seccionales-levadiza") return { ...type, published: false, archived: true };
@@ -117,10 +112,7 @@ function normalizeDoorTaxonomy(input: unknown): PricingCatalogDocument {
     );
     const existingTypes = hasLegacyContraplacadaCatalog
       ? structuredClone(seededTypes)
-      : definition.productId === "seccionales"
-        ? [...normalizedPersistedTypes, ...seededTypes.filter((seeded) => !normalizedPersistedTypes.some((current) => current.id === seeded.id)).map((seeded) => structuredClone(seeded))]
-          .map((type) => type.id === "seccionales-batiente" && !type.archived ? { ...type, published: true } : type)
-        : normalizedPersistedTypes;
+      : normalizedPersistedTypes;
     const correctedCustom = (definition.productId === "puertas-a-medida" || definition.productId === "puertas-contraplacadas") && hasLegacyGarageLimits(definition) && fallback?.custom
       ? structuredClone(fallback.custom)
       : definition.custom;
@@ -164,16 +156,11 @@ function normalizeDoorTaxonomy(input: unknown): PricingCatalogDocument {
         finishImages: Object.fromEntries(Object.entries(model.finishImages ?? {}).map(([finish, source]) => [finish, optimizedCatalogSource(source)]))
       };
     });
-    const completedModels = definition.productId === "seccionales"
-      ? [...currentModels, ...(fallback?.importedModels ?? []).filter((model) => model.id === "garaje-corrediza-metalica" && !currentModels.some((current) => current.id === model.id)).map((model) => ({ ...structuredClone(model), catalogTypeId: "seccionales-corrediza", archived: false }))]
-      : definition.productId === "puertas-contraplacadas"
-        ? [...currentModels, ...(fallback?.importedModels ?? []).filter((model) => requiredContraplacadaModels.has(model.id) && !currentModels.some((current) => current.id === model.id)).map((model) => structuredClone(model))]
-        : currentModels;
     return {
       ...definition,
       custom: correctedCustom,
       catalogTypes: existingTypes,
-      importedModels: completedModels
+      importedModels: currentModels
     };
   });
   for (const productId of modelProducts) {

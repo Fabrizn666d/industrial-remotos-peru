@@ -20,7 +20,7 @@ function optionsFor(step: ConfiguratorStep, override?: ConfiguratorStepOverride)
 }
 
 export function ConfiguratorFlowManager({ overrides, definitions, onChange, productId }: Props) {
-  const publicProductIds = new Set(["puertas-a-medida", "seccionales", "puertas-principales", "puertas-contraplacadas", "automatizacion", "techos-coberturas", "ventanas-mamparas", "acero-barandas", "estructuras-especiales", "cerco-electrico", "drywall-cielorrasos"]);
+  const publicProductIds = new Set(["puertas-a-medida", "seccionales", "puertas-principales", "puertas-contraplacadas", "automatizacion", "techos-coberturas", "ventanas-mamparas", "acero-barandas", "cerco-electrico", "drywall-cielorrasos"]);
   const effectiveSchemas = products
     .filter((product) => publicProductIds.has(product.id) && (!productId || product.id === productId))
     .map((product) => ({ product, schema: getConfiguratorSchema(product.group, product.id, definitions, []) }));

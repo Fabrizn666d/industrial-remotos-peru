@@ -5,6 +5,21 @@ import { findSolutionEditorialProfile } from "@/data/solution-editorial";
 import { findSolutionPage, solutionPages } from "@/data/solution-pages";
 import { siteConfig } from "@/data/site";
 import { getCmsDocument } from "@/lib/cms/content-repository";
+import { publishedPricingCatalog } from "@/lib/pricing/catalog";
+import { getPricingCatalogRepository } from "@/lib/pricing/catalog-repository";
+
+async function getMadeToMeasureDoorModels() {
+  let definitions = publishedPricingCatalog;
+  try {
+    definitions = (await getPricingCatalogRepository().getPublished()).definitions;
+  } catch {
+    // The static catalog keeps the public page usable if the configured repository is unavailable.
+  }
+  return (definitions.find((definition) => definition.productId === "puertas-a-medida")?.importedModels ?? [])
+    .filter((model) => model.published !== false && !model.archived && Boolean(model.image))
+    .sort((left, right) => (left.order ?? 0) - (right.order ?? 0))
+    .map((model) => ({ id: model.id, name: model.name, image: model.image, openingSystem: model.openingSystem }));
+}
 
 export function generateStaticParams() {
   return solutionPages.map((solution) => ({ slug: solution.slug }));
@@ -39,6 +54,7 @@ export default async function SolutionDetailPage({ params }: { params: Promise<{
   const configured = (await getCmsDocument("services")).content.items.find((item) => item.slug === slug);
   const publicSolution = configured ? { ...solution, title: configured.title, faqs: configured.faqs.map(({ question, answer }) => ({ question, answer })) } : solution;
   const publicProfile = configured ? { ...profile, heroHeading: configured.heroHeading, heroAccent: configured.heroAccent || undefined, heroDescription: configured.heroDescription, visuals: { ...profile.visuals, hero: { ...profile.visuals.hero, src: configured.heroImage.src } } } : profile;
+  const madeToMeasureDoorModels = slug === "puertas-a-medida" ? await getMadeToMeasureDoorModels() : [];
 
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
@@ -53,7 +69,7 @@ export default async function SolutionDetailPage({ params }: { params: Promise<{
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }} />
-      <EditorialSolutionPage solution={publicSolution} profile={publicProfile} />
+      <EditorialSolutionPage solution={publicSolution} profile={publicProfile} madeToMeasureDoorModels={madeToMeasureDoorModels} />
     </>
   );
 }

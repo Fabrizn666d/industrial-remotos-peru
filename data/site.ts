@@ -32,12 +32,13 @@ export const navItems = [
 ] as const;
 
 export const serviceNavItems = [
-  { label: "Puertas y automatización", href: "/soluciones/puertas-automatizacion" },
+  { label: "Puertas de garaje a medida", href: "/soluciones/puertas-automatizacion" },
+  { label: "Puertas principales a medida", href: "/soluciones/puertas-a-medida" },
   { label: "Puertas principales importadas", href: "/soluciones/puertas-principales" },
+  { label: "Puertas contraplacadas", href: "/soluciones/puertas-contraplacadas" },
   { label: "Techo solisombra", href: "/soluciones/techos-coberturas" },
-  { label: "Ventanas y mamparas", href: "/soluciones/ventanas-mamparas" },
+  { label: "Mamparas y ventanas", href: "/soluciones/ventanas-mamparas" },
   { label: "Acero inoxidable y barandas", href: "/soluciones/acero-barandas" },
-  { label: "Estructuras metálicas", href: "/soluciones/estructuras-metalicas" },
   { label: "Cerco eléctrico", href: "/soluciones/cerco-electrico" },
   { label: "Drywall y cielorrasos", href: "/soluciones/drywall-cielorrasos" }
 ] as const;

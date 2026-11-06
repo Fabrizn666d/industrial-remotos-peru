@@ -36,7 +36,7 @@ export type Solution = {
 export type ApproximateDimensions = {
   width?: string;
   height?: string;
-  unit: "m";
+  unit: "m" | "mm";
 };
 
 export type QuoteItemConfiguration = {

@@ -22,6 +22,10 @@ function driver() {
   return process.env.IRP_REPOSITORY_DRIVER?.trim().toLowerCase() || (process.env.NODE_ENV === "production" ? "" : "json");
 }
 
+function jsonDriverAllowed() {
+  return driver() === "json" && (process.env.NODE_ENV !== "production" || process.env.IRP_ALLOW_JSON_IN_PRODUCTION === "true");
+}
+
 function jsonPath() {
   return path.resolve(/*turbopackIgnore: true*/ process.env.IRP_CMS_JSON_DATA_PATH?.trim() || path.join(process.cwd(), ".data", "irp-cms.json"));
 }
@@ -265,21 +269,21 @@ async function savePostgresDocument<K extends CmsKey>(key: K, content: CmsConten
 }
 
 export async function getPublishedCmsDocument<K extends CmsKey>(key: K): Promise<CmsDocument<K>> {
-  if (driver() === "json" && process.env.NODE_ENV !== "production") return getJsonDocument(key);
+  if (jsonDriverAllowed()) return getJsonDocument(key);
   if (driver() === "postgres") return getPostgresDocument(key);
   throw new Error("Configura IRP_REPOSITORY_DRIVER para consultar el contenido");
 }
 
 export async function saveCmsDocument<K extends CmsKey>(key: K, value: unknown, actor: string, expectedVersion: number): Promise<CmsDocument<K>> {
   const content = parseCmsContent(key, value);
-  if (driver() === "json" && process.env.NODE_ENV !== "production") return saveJsonDocument(key, content, actor, expectedVersion);
+  if (jsonDriverAllowed()) return saveJsonDocument(key, content, actor, expectedVersion);
   if (driver() === "postgres") return savePostgresDocument(key, content, actor, expectedVersion);
   throw new Error("Configura IRP_REPOSITORY_DRIVER para guardar el contenido");
 }
 
 export async function listCmsActivity(limit = 100): Promise<CmsActivity[]> {
   const safeLimit = Math.max(1, Math.min(500, Math.trunc(limit)));
-  if (driver() === "json" && process.env.NODE_ENV !== "production") {
+  if (jsonDriverAllowed()) {
     return (await readStore()).activity.slice(0, safeLimit).map((item) => ({ ...item, summary: `Actualizó ${item.key} a la versión ${item.version}` }));
   }
   if (driver() === "postgres") {

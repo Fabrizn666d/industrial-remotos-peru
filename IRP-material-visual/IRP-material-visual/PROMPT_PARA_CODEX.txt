@@ -1,0 +1,12 @@
+Implementa el apartado informativo situado inmediatamente debajo del hero de los diez servicios usando este paquete.
+Lee 00_LEER_PRIMERO.txt y cada LEEME. Revisa el catalogo publicado actual por identificadores antes de relacionar modelos o aperturas. No cambies datos comerciales para hacerlos coincidir con un mockup.
+Usa referencias/mockup-pc.png y mockup-celular.png para composicion; usa imagenes/ como recursos limpios. No insertes la captura entera ni extraigas texto generado como especificacion tecnica.
+Fondo blanco en todas las interfaces. Fuente existente Plus Jakarta Sans, titulos gruesos navy y acentos electricos, sombras/transparencias ligeras. Mantener estructura particular de cada servicio.
+Reemplaza el showcase generico con componentes propios; elimina navegaciones duplicadas y tags. Una interaccion principal por apartado. Texto esencial visible antes de tocar.
+El apartado es informativo: explorar imagen, aplicacion o detalle nunca altera cotizador/carrito. Conserva hero loader y animaciones aprobadas, cotizador y envio.
+PC composicion horizontal16:9 como referencia, adaptable a textos reales; movil altura automatica y controles44px. Sin overflow ni producto cortado.
+Principales: loop infinito continuo con mascaras romboides y fotos rectas, pausa persistente arrastre y movimiento reducido. Importadas: cinco escenas incluidas en mismo contenedor, transicion sin saltos. Contraplacadas: usar modelos exactos entregados, Singapur pivotante, Lamborghini sin apertura inventada. Otros: seguir LEEME por servicio.
+Marcadores y acordeones sincronizan un estado, soportan teclado y foco visible, sin depender hover. Visor con Escape y gestion de foco. Animaciones pausadas fuera viewport y reducidas por preferencia.
+No simules funciones con recursos faltantes: resuelve imagenes existentes del proyecto donde indica LEEME o informa el faltante concreto. No inventes datos.
+Optimiza PNG a WebP/AVIF en el proyecto conservando originales de este paquete. Las coordenadas de hotspots se ajustan a foto real incluida, no al mockup. Ajustar en movil.
+Revisa diez paginas en390,768,1440,1920, todos controles y imagenes. Ejecuta typecheck y build. Entrega capturas reales PC/celular y grabacion del loop. No push ni despliegue.

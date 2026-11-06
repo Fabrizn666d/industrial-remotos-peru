@@ -36,7 +36,7 @@ function uploadCustomDesign(file: File, draftId: string, progress: (value: numbe
 }
 
 const featuredDoorIds = ["seccionales", "puertas-a-medida", "puertas-principales", "puertas-contraplacadas"];
-const hiddenProductIds = new Set(["automatizacion", "levadizas", "corredizas", "batientes", "peatonales", "estructuras-especiales"]);
+const hiddenProductIds = new Set(["automatizacion", "levadizas", "corredizas", "batientes", "peatonales"]);
 const baseSelectableProducts = [
   ...featuredDoorIds.map((id) => products.find((item) => item.id === id)).filter((item): item is (typeof products)[number] => Boolean(item)),
   ...products.filter((item) => !featuredDoorIds.includes(item.id) && !hiddenProductIds.has(item.id))
@@ -207,6 +207,25 @@ export function Configurator({ embedded = false, initialProductId, initialNotes,
 
   useEffect(() => setActive((current) => Math.min(current, schema.steps.length)), [schema.steps.length]);
   useEffect(() => {
+    if (editingId) return;
+    const requestedProduct = products.find((candidate) => candidate.id === (params.get("producto") || initialProductId));
+    const requested = initialAnswers(params);
+    if (requestedProduct && requestedProduct.id !== productId) setProductId(requestedProduct.id);
+    setAnswers((current) => {
+      const changed = (["subtype", "design", "model", "variant", "openingSystem", "material", "finish"] as const)
+        .some((key) => requested[key] && requested[key] !== current[key]);
+      const explicit = Object.fromEntries(Object.entries(requested).filter(([, value]) => typeof value === "string" && value));
+      const requestedModel = definition?.importedModels?.find((candidate) => candidate.id === requested.model && !candidate.archived && candidate.published !== false);
+      if (requestedModel?.openingSystem) explicit.openingSystem = requestedModel.openingSystem;
+      return changed ? pruneConfiguratorAnswers(baseSchema, { ...current, ...explicit, ...(requested.model ? { finish: "", variant: "", accessories: [] } : {}) }) : current;
+    });
+    const requestedKey = (["model", "openingSystem", "subtype", "design", "material", "finish"] as const).find((key) => params.get(key));
+    if (requestedKey) {
+      const requestedStep = schema.steps.findIndex((candidate) => candidate.kind === "choice" && candidate.answerKey === requestedKey);
+      if (requestedStep >= 0) setActive(requestedStep);
+    }
+  }, [baseSchema, definition?.importedModels, editingId, initialProductId, params, productId, schema.steps]);
+  useEffect(() => {
     const publishedModels = definition?.importedModels?.filter((model) => !model.archived && model.published !== false) ?? [];
     if (publishedModels.length !== 1 || answers.model === publishedModels[0].id || answers.model === CUSTOM_ENTRY_DESIGN_ID) return;
     const model = publishedModels[0];
@@ -217,7 +236,7 @@ export function Configurator({ embedded = false, initialProductId, initialNotes,
     const item = items.find((candidate) => candidate.id === editingId);
     if (item) {
       setProductId(item.productId);
-      const dimensionFactor = item.productId === "puertas-contraplacadas" ? 1000 : 1;
+      const dimensionFactor = item.productId === "puertas-contraplacadas" && item.configuration.dimensions?.unit !== "mm" ? 1000 : 1;
       const simplifiedItem = ["puertas-a-medida", "puertas-contraplacadas", "seccionales", "techos-coberturas"].includes(item.productId) || item.configuration.model === CUSTOM_ENTRY_DESIGN_ID;
       const customDesignAttachments = storedDesignAttachments(item.configuration.customFields);
       const primaryAttachment = customDesignAttachments[0];
@@ -271,7 +290,7 @@ export function Configurator({ embedded = false, initialProductId, initialNotes,
     const existingCustomFields = editingId ? items.find((item) => item.id === editingId)?.configuration.customFields : undefined;
     const cleanExistingCustomFields = Object.fromEntries(Object.entries(existingCustomFields ?? {}).filter(([key]) => !/^(attachment(Id|Token|Name|DraftId)|selectedImage)\d*$/.test(key)));
     const customFields = { ...cleanExistingCustomFields, ...(source ? { source } : {}), ...(answers.model === CUSTOM_ENTRY_DESIGN_ID ? { ...attachmentCustomFields(answers.customDesignAttachments, answers.customDesignDraftId), modelLabel: "Referencia propia", designOrigin: "VISITOR", ...(answers.notes.trim() ? { referenceText: answers.notes.trim() } : {}) } : { selectedImage: previewVisual.imageSrc }), ...(selectedModel ? { modelLabel: selectedModel.name, included: (selectedModel.included ?? []).join(", "), designOrigin: selectedModel.origin === "DESIGN_PROPOSAL" ? "PROPOSAL" : "CLIENT_REFERENCE" } : {}), ...(selectedVariant ? { variantLabel: selectedVariant.label } : {}) };
-    const configuration = { subtype: compactDesignConfiguration ? undefined : answers.subtype || undefined, measurementsUnknown: answers.measurementsUnknown, dimensions: !answers.measurementsUnknown && (answers.width || answers.height) ? { width: pricingWidth || undefined, height: pricingHeight || undefined, unit: "m" as const } : undefined, design: compactDesignConfiguration ? undefined : answers.design || undefined, panel: compactDesignConfiguration ? undefined : answers.panel || undefined, finish: compactDesignConfiguration ? undefined : answers.finish || undefined, automation: compactDesignConfiguration ? undefined : answers.automation || undefined, model: answers.model || undefined, variant: compactDesignConfiguration ? undefined : answers.variant || undefined, openingSystem: answers.openingSystem || undefined, material: compactDesignConfiguration ? undefined : answers.material || undefined, accessories: product.id === "cerco-electrico" || compactDesignConfiguration ? [] : answers.accessories, notes: compactDesignConfiguration ? undefined : answers.notes || undefined, ...(Object.keys(customFields).length ? { customFields } : {}) };
+    const configuration = { subtype: compactDesignConfiguration ? undefined : answers.subtype || undefined, measurementsUnknown: answers.measurementsUnknown, dimensions: !answers.measurementsUnknown && (answers.width || answers.height) ? { width: answers.width || undefined, height: answers.height || undefined, unit: product.id === "puertas-contraplacadas" ? "mm" as const : "m" as const } : undefined, design: compactDesignConfiguration ? undefined : answers.design || undefined, panel: compactDesignConfiguration ? undefined : answers.panel || undefined, finish: compactDesignConfiguration ? undefined : answers.finish || undefined, automation: compactDesignConfiguration ? undefined : answers.automation || undefined, model: answers.model || undefined, variant: compactDesignConfiguration ? undefined : answers.variant || undefined, openingSystem: answers.openingSystem || undefined, material: compactDesignConfiguration ? undefined : answers.material || undefined, accessories: product.id === "cerco-electrico" || compactDesignConfiguration ? [] : answers.accessories, notes: compactDesignConfiguration ? undefined : answers.notes || undefined, ...(Object.keys(customFields).length ? { customFields } : {}) };
     if (editingId && items.some((item) => item.id === editingId)) { updateItem(editingId, product, configuration); router.push("/mi-proyecto"); }
     else { addProduct(product, configuration); setAdded(true); }
     window.dispatchEvent(new CustomEvent("irp:analytics", { detail: { name: "configurator_complete", parameters: { service: product.group } } }));

@@ -1,0 +1,605 @@
+[
+  {
+    "archivo": "01_principales_medida/referencias/mockup-pc.png",
+    "origen": "upload/Tu entrada, tu firma arquitectónica-1.png",
+    "uso": "Referencia de composicion PC; NO insertar como fondo",
+    "ancho": 1672,
+    "alto": 941,
+    "bytes": 3204447,
+    "sha256": "8c1484a2f83371441e7538b0ad7f6289c54ee680eeada12a36655cafe5c30a93"
+  },
+  {
+    "archivo": "01_principales_medida/referencias/mockup-celular.png",
+    "origen": "upload/Puertas pivotantes a medida-1.png",
+    "uso": "Referencia movil; NO insertar como fondo",
+    "ancho": 940,
+    "alto": 1672,
+    "bytes": 2363339,
+    "sha256": "257bdacb261204b04a1b1d7306cf7d8ef40e4232b0e4556b849ad80809047006"
+  },
+  {
+    "archivo": "02_importadas/referencias/mockup-pc.png",
+    "origen": "upload/Una puerta, cinco personalidades-2.png",
+    "uso": "Referencia de composicion PC; NO insertar como fondo",
+    "ancho": 1672,
+    "alto": 941,
+    "bytes": 3243391,
+    "sha256": "1129044ef6d4edb8a523c51d2354bf67a9a38ba58ee29bed2cdfc36a7d59cb7a"
+  },
+  {
+    "archivo": "02_importadas/referencias/mockup-celular.png",
+    "origen": "upload/Una puerta, cinco acabados-2.png",
+    "uso": "Referencia movil; NO insertar como fondo",
+    "ancho": 941,
+    "alto": 1672,
+    "bytes": 2998609,
+    "sha256": "a0ac562c1dd0f716c881ee6acebd256980047d64ecf131bd6047b9e91be5b365"
+  },
+  {
+    "archivo": "03_contraplacadas/referencias/mockup-pc.png",
+    "origen": "upload/Singapur y Lamborghini_ dos diseños, cero indiferencia-4.png",
+    "uso": "Referencia de composicion PC; NO insertar como fondo",
+    "ancho": 1672,
+    "alto": 941,
+    "bytes": 3332535,
+    "sha256": "02fc49f4f3700407fec8698ce75ffc776570ac6ea0fc5aa53ac0b3d590c9fd41"
+  },
+  {
+    "archivo": "03_contraplacadas/referencias/mockup-celular.png",
+    "origen": "upload/Dos puertas, una entrada con carácter-4.png",
+    "uso": "Referencia movil; NO insertar como fondo",
+    "ancho": 940,
+    "alto": 1672,
+    "bytes": 2499163,
+    "sha256": "a89312b5986658af258fc2419c2451e5cbeeb4e1d68f178a65589fbf05e619a8"
+  },
+  {
+    "archivo": "04_garaje/referencias/mockup-pc.png",
+    "origen": "upload/Movimiento vertical de tu puerta seccional-3.png",
+    "uso": "Referencia de composicion PC; NO insertar como fondo",
+    "ancho": 1672,
+    "alto": 941,
+    "bytes": 2978291,
+    "sha256": "dbdb4a49f107042af8460b0125721c252481e654b2e9a1b3f6d1e8ae802a29f1"
+  },
+  {
+    "archivo": "04_garaje/referencias/mockup-celular.png",
+    "origen": "upload/Descubre el movimiento de tu garaje-3.png",
+    "uso": "Referencia movil; NO insertar como fondo",
+    "ancho": 941,
+    "alto": 1672,
+    "bytes": 2615589,
+    "sha256": "f893ae5923b71c4f56e739f0bdd0a661a6304fa162af01e7b2771dfcf2e29dca"
+  },
+  {
+    "archivo": "05_sol_sombra/referencias/mockup-pc.png",
+    "origen": "upload/La luz transforma tu espacio-5.png",
+    "uso": "Referencia de composicion PC; NO insertar como fondo",
+    "ancho": 1672,
+    "alto": 941,
+    "bytes": 3256387,
+    "sha256": "813fb5db2a4315f884d31c515629be56919398458dad9b695aad8d98a452bca9"
+  },
+  {
+    "archivo": "05_sol_sombra/referencias/mockup-celular.png",
+    "origen": "upload/Patio luminoso bajo pérgola-6.png",
+    "uso": "Referencia movil; NO insertar como fondo",
+    "ancho": 941,
+    "alto": 1672,
+    "bytes": 2905949,
+    "sha256": "ea4e07aeb383ed70bb5133eddc25120e01ae336024693ce6b52f8242916a1982"
+  },
+  {
+    "archivo": "06_vidrios/referencias/mockup-pc.png",
+    "origen": "upload/Haz espacio para la luz-6.png",
+    "uso": "Referencia de composicion PC; NO insertar como fondo",
+    "ancho": 1672,
+    "alto": 941,
+    "bytes": 3239632,
+    "sha256": "94c2ae9bb32bfaf2de53f7568c6b3d845bcf6956458397dd87e96df2571905e7"
+  },
+  {
+    "archivo": "06_vidrios/referencias/mockup-celular.png",
+    "origen": "upload/Navegación móvil con tres secciones-11.png",
+    "uso": "Referencia movil; NO insertar como fondo",
+    "ancho": 941,
+    "alto": 1672,
+    "bytes": 2813945,
+    "sha256": "e6a39f83b2ef56a8b3a77a0e6995b4f2475909af2672fc2f6aee13c00ec2853f"
+  },
+  {
+    "archivo": "07_barandas/referencias/mockup-pc.png",
+    "origen": "generated_images/exec-c10fd149-db39-434d-a8da-c5aaa28e4954.png",
+    "uso": "Referencia de composicion PC; NO insertar como fondo",
+    "ancho": 1672,
+    "alto": 941,
+    "bytes": 2376629,
+    "sha256": "2ae53339e4c400369bf13483377dbee25068747a1b99964eaf4e484f9e9eb705"
+  },
+  {
+    "archivo": "07_barandas/referencias/mockup-celular.png",
+    "origen": "upload/Diseño que acompaña cada paso-7.png",
+    "uso": "Referencia movil; NO insertar como fondo",
+    "ancho": 940,
+    "alto": 1672,
+    "bytes": 2377384,
+    "sha256": "d67e81a6d09d34f184ba56455bb50e7b440940a1d69b5ac1b48cb630bb1a456d"
+  },
+  {
+    "archivo": "08_estructuras/referencias/mockup-pc.png",
+    "origen": "generated_images/exec-3d91765a-4e66-45d5-9e44-b0a7c4f8bbf1.png",
+    "uso": "Referencia de composicion PC; NO insertar como fondo",
+    "ancho": 1672,
+    "alto": 941,
+    "bytes": 2461525,
+    "sha256": "966dd86f38604dcce6327cc073319d266b4513a672748f5a57ad929459a9e36f"
+  },
+  {
+    "archivo": "08_estructuras/referencias/mockup-celular.png",
+    "origen": "upload/Estructura metálica en patio luminoso-8.png",
+    "uso": "Referencia movil; NO insertar como fondo",
+    "ancho": 941,
+    "alto": 1672,
+    "bytes": 2939043,
+    "sha256": "470c34f83ea14c2c2766e87da0acdb698e527d6cd9019e7ef0008e12e67f7014"
+  },
+  {
+    "archivo": "09_cerco/referencias/mockup-pc.png",
+    "origen": "generated_images/exec-a1c2549f-c572-4eda-9384-52455970771d.png",
+    "uso": "Referencia de composicion PC; NO insertar como fondo",
+    "ancho": 1672,
+    "alto": 941,
+    "bytes": 2026332,
+    "sha256": "2a9d378503b8a769bc492daa64b160fdf03744cc4f12b01819f364efce02cfb2"
+  },
+  {
+    "archivo": "09_cerco/referencias/mockup-celular.png",
+    "origen": "upload/Perímetro eléctrico en perspectiva-9.png",
+    "uso": "Referencia movil; NO insertar como fondo",
+    "ancho": 941,
+    "alto": 1672,
+    "bytes": 2400404,
+    "sha256": "e981a5a0c91239998883781828eec552b24f20e3a80e12e5217a7ce50494f6a0"
+  },
+  {
+    "archivo": "10_drywall/referencias/mockup-pc.png",
+    "origen": "generated_images/exec-a8ada977-a2f6-4c79-803a-31d640a4a5bf.png",
+    "uso": "Referencia de composicion PC; NO insertar como fondo",
+    "ancho": 1672,
+    "alto": 941,
+    "bytes": 2087263,
+    "sha256": "a7ac58eec798b0f82b303e9edc606bfdba296ab7ec86bacf296f80d7ee730fff"
+  },
+  {
+    "archivo": "10_drywall/referencias/mockup-celular.png",
+    "origen": "upload/Explora tu espacio con IRP Drywall-10.png",
+    "uso": "Referencia movil; NO insertar como fondo",
+    "ancho": 941,
+    "alto": 1672,
+    "bytes": 2163551,
+    "sha256": "1297b702ff45011620bb34f457d5faba25a8e1f5d68ccf53eeadfe5899995d95"
+  },
+  {
+    "archivo": "01_principales_medida/imagenes/modelo-madera.png",
+    "origen": "generated_images/exec-a722e9c6-195e-40dc-bdf6-d54715e2b407.png",
+    "uso": "Fotografia limpia para el apartado informativo",
+    "ancho": 1536,
+    "alto": 1024,
+    "bytes": 3065058,
+    "sha256": "53fc899d6bcf5a997468d84ca43c30ec489c76630d284de44c32af5b9ea1d373"
+  },
+  {
+    "archivo": "01_principales_medida/imagenes/detalle-tirador.png",
+    "origen": "generated_images/exec-7a4e0d88-7f5d-442b-9550-e1c299d8d4d1.png",
+    "uso": "Fotografia limpia para el apartado informativo",
+    "ancho": 1536,
+    "alto": 1024,
+    "bytes": 1816448,
+    "sha256": "f952e9921aba4ec9014f7870f3306a0a70b7f08dafeb9c49fd09baaafea96438"
+  },
+  {
+    "archivo": "01_principales_medida/catalogo-proyecto/modelo-01.webp",
+    "origen": "irp-review/public/images/configurator/catalog/01_Puertas_principales_a_medida/Basadas_en_fotos_cliente/puerta-bloques-madera.webp",
+    "uso": "Modelo existente; Codex debe verificar publicacion y apertura por ID en catalogo actual",
+    "ancho": 1448,
+    "alto": 1086,
+    "bytes": 184822,
+    "sha256": "768d96d2bf116a7c4661589ec633c36282633f18fb27147dd0a88176f9a3b3d0"
+  },
+  {
+    "archivo": "01_principales_medida/catalogo-proyecto/modelo-02.webp",
+    "origen": "irp-review/public/images/configurator/catalog/01_Puertas_principales_a_medida/Basadas_en_fotos_cliente/puerta-diagonales-nogal.webp",
+    "uso": "Modelo existente; Codex debe verificar publicacion y apertura por ID en catalogo actual",
+    "ancho": 1448,
+    "alto": 1086,
+    "bytes": 186674,
+    "sha256": "4c3733412dc504c051832fb884c9edf1bc4859bf8202ed4acc69b18f94ce3548"
+  },
+  {
+    "archivo": "01_principales_medida/catalogo-proyecto/modelo-03.webp",
+    "origen": "irp-review/public/images/configurator/catalog/01_Puertas_principales_a_medida/Basadas_en_fotos_cliente/puerta-dos-laterales.webp",
+    "uso": "Modelo existente; Codex debe verificar publicacion y apertura por ID en catalogo actual",
+    "ancho": 1448,
+    "alto": 1086,
+    "bytes": 182962,
+    "sha256": "1b0ab68b406e0ae34a0c1200bfa320233085c0e4c643f6046ad971e01401625c"
+  },
+  {
+    "archivo": "01_principales_medida/catalogo-proyecto/modelo-04.webp",
+    "origen": "irp-review/public/images/configurator/catalog/01_Puertas_principales_a_medida/Basadas_en_fotos_cliente/puerta-geometrica-madera-negro.webp",
+    "uso": "Modelo existente; Codex debe verificar publicacion y apertura por ID en catalogo actual",
+    "ancho": 1448,
+    "alto": 1086,
+    "bytes": 260262,
+    "sha256": "de09c4ba37eb59afd8eb91b8107edb8cb1f0e01550e4fa4ded33635c7d92817c"
+  },
+  {
+    "archivo": "01_principales_medida/catalogo-proyecto/modelo-05.webp",
+    "origen": "irp-review/public/images/configurator/catalog/01_Puertas_principales_a_medida/Basadas_en_fotos_cliente/puerta-lateral-derecho.webp",
+    "uso": "Modelo existente; Codex debe verificar publicacion y apertura por ID en catalogo actual",
+    "ancho": 1448,
+    "alto": 1086,
+    "bytes": 234592,
+    "sha256": "82dfa98309dbf60e1353bbddc7324467afe7eb4f29884cc3a46d478194b39de8"
+  },
+  {
+    "archivo": "01_principales_medida/catalogo-proyecto/modelo-06.webp",
+    "origen": "irp-review/public/images/configurator/catalog/01_Puertas_principales_a_medida/Basadas_en_fotos_cliente/puerta-lateral-negro-vidrio.webp",
+    "uso": "Modelo existente; Codex debe verificar publicacion y apertura por ID en catalogo actual",
+    "ancho": 1448,
+    "alto": 1086,
+    "bytes": 234438,
+    "sha256": "c65bf5fb783bb33a6b09942eef47dd7dc983b41a0bf93b0d645b97eee589885b"
+  },
+  {
+    "archivo": "01_principales_medida/catalogo-proyecto/modelo-07.webp",
+    "origen": "irp-review/public/images/configurator/catalog/01_Puertas_principales_a_medida/Basadas_en_fotos_cliente/puerta-lineas-escalonadas.webp",
+    "uso": "Modelo existente; Codex debe verificar publicacion y apertura por ID en catalogo actual",
+    "ancho": 1448,
+    "alto": 1086,
+    "bytes": 275048,
+    "sha256": "0123a8f0d4545f72e533ad905f4cab55b7b1998fe6fa32f5838fc909048d246c"
+  },
+  {
+    "archivo": "01_principales_medida/catalogo-proyecto/modelo-08.webp",
+    "origen": "irp-review/public/images/configurator/catalog/01_Puertas_principales_a_medida/Basadas_en_fotos_cliente/puerta-madera-horizontal-negro.webp",
+    "uso": "Modelo existente; Codex debe verificar publicacion y apertura por ID en catalogo actual",
+    "ancho": 1448,
+    "alto": 1086,
+    "bytes": 227546,
+    "sha256": "a68a5752afae862d18dd6de4dd2bec0e48f70a1928d4d7c290061e76d9a86970"
+  },
+  {
+    "archivo": "01_principales_medida/catalogo-proyecto/modelo-09.webp",
+    "origen": "irp-review/public/images/configurator/catalog/01_Puertas_principales_a_medida/Basadas_en_fotos_cliente/puerta-madera-horizontal-plata.webp",
+    "uso": "Modelo existente; Codex debe verificar publicacion y apertura por ID en catalogo actual",
+    "ancho": 1448,
+    "alto": 1086,
+    "bytes": 166078,
+    "sha256": "33f90e576b9987d6506659f88b6e699962c03e3ff1dd4ff614f2a47af943c65a"
+  },
+  {
+    "archivo": "01_principales_medida/catalogo-proyecto/modelo-10.webp",
+    "origen": "irp-review/public/images/configurator/catalog/01_Puertas_principales_a_medida/Basadas_en_fotos_cliente/puerta-madera-lisa.webp",
+    "uso": "Modelo existente; Codex debe verificar publicacion y apertura por ID en catalogo actual",
+    "ancho": 1448,
+    "alto": 1086,
+    "bytes": 188932,
+    "sha256": "fa495a9b01c5dd94ead75b7dbad0bf5787fe7c66066a0294ae6b4c3b10bca4d7"
+  },
+  {
+    "archivo": "01_principales_medida/catalogo-proyecto/modelo-11.webp",
+    "origen": "irp-review/public/images/configurator/catalog/01_Puertas_principales_a_medida/Basadas_en_fotos_cliente/puerta-negra-bandas-plata.webp",
+    "uso": "Modelo existente; Codex debe verificar publicacion y apertura por ID en catalogo actual",
+    "ancho": 1448,
+    "alto": 1086,
+    "bytes": 214684,
+    "sha256": "d87dfda1bd0505f3b7f39dbc9bb6e380f797927cbf10b2cd2f9a47b9bf08959b"
+  },
+  {
+    "archivo": "01_principales_medida/catalogo-proyecto/modelo-12.webp",
+    "origen": "irp-review/public/images/configurator/catalog/01_Puertas_principales_a_medida/Basadas_en_fotos_cliente/puerta-ventana-plata.webp",
+    "uso": "Modelo existente; Codex debe verificar publicacion y apertura por ID en catalogo actual",
+    "ancho": 1448,
+    "alto": 1086,
+    "bytes": 257000,
+    "sha256": "8908fd2a9e1b8e2ac90d66968bf65480f894ea7cf127fba70bfb499752c86561"
+  },
+  {
+    "archivo": "01_principales_medida/catalogo-proyecto/modelo-13.webp",
+    "origen": "irp-review/public/images/configurator/catalog/01_Puertas_principales_a_medida/Basadas_en_fotos_cliente/puerta-ventana-vertical.webp",
+    "uso": "Modelo existente; Codex debe verificar publicacion y apertura por ID en catalogo actual",
+    "ancho": 1448,
+    "alto": 1086,
+    "bytes": 243002,
+    "sha256": "8a14368b235be2cf992edd9c3f736a45e109a2f63e22a242e62bd669ee3a7685"
+  },
+  {
+    "archivo": "01_principales_medida/catalogo-proyecto/modelo-14.webp",
+    "origen": "irp-review/public/images/configurator/catalog/01_Puertas_principales_a_medida/Basadas_en_fotos_cliente/puerta-vidrios-cuadrados.webp",
+    "uso": "Modelo existente; Codex debe verificar publicacion y apertura por ID en catalogo actual",
+    "ancho": 1448,
+    "alto": 1086,
+    "bytes": 223110,
+    "sha256": "cc8062f3ec8272d475402c99226dbd060f7524423e3d696f9dda221449cc45ab"
+  },
+  {
+    "archivo": "01_principales_medida/catalogo-proyecto/modelo-15.webp",
+    "origen": "irp-review/public/images/configurator/catalog/01_Puertas_principales_a_medida/Propuestas/Batientes/diagonal-grafito.webp",
+    "uso": "Modelo existente; Codex debe verificar publicacion y apertura por ID en catalogo actual",
+    "ancho": 1448,
+    "alto": 1086,
+    "bytes": 208344,
+    "sha256": "6e1d9e1c51b56f582b828eee26cf1684cd7e8902ce4dabce3d1e759818ad657f"
+  },
+  {
+    "archivo": "01_principales_medida/catalogo-proyecto/modelo-16.webp",
+    "origen": "irp-review/public/images/configurator/catalog/01_Puertas_principales_a_medida/Propuestas/Batientes/doble-chevron.webp",
+    "uso": "Modelo existente; Codex debe verificar publicacion y apertura por ID en catalogo actual",
+    "ancho": 1448,
+    "alto": 1086,
+    "bytes": 206556,
+    "sha256": "1acef6269a79690420b439b371f2c5c1b4c036b6211831084fc4c760f1f2e7f2"
+  },
+  {
+    "archivo": "01_principales_medida/catalogo-proyecto/modelo-17.webp",
+    "origen": "irp-review/public/images/configurator/catalog/01_Puertas_principales_a_medida/Propuestas/Batientes/geometrica-grafito.webp",
+    "uso": "Modelo existente; Codex debe verificar publicacion y apertura por ID en catalogo actual",
+    "ancho": 1448,
+    "alto": 1086,
+    "bytes": 190120,
+    "sha256": "3413e92a557f46064a0c862fad9c236493fcbc99942de03f6a909cb6957ad418"
+  },
+  {
+    "archivo": "01_principales_medida/catalogo-proyecto/modelo-18.webp",
+    "origen": "irp-review/public/images/configurator/catalog/01_Puertas_principales_a_medida/Propuestas/Batientes/roble.webp",
+    "uso": "Modelo existente; Codex debe verificar publicacion y apertura por ID en catalogo actual",
+    "ancho": 1448,
+    "alto": 1086,
+    "bytes": 185748,
+    "sha256": "20c32c73c597eab781d261a671fb6658c871e872548ca8ed851bc722f7f765c6"
+  },
+  {
+    "archivo": "01_principales_medida/catalogo-proyecto/modelo-19.webp",
+    "origen": "irp-review/public/images/configurator/catalog/01_Puertas_principales_a_medida/Propuestas/Pivotantes/grafito-facetas.webp",
+    "uso": "Modelo existente; Codex debe verificar publicacion y apertura por ID en catalogo actual",
+    "ancho": 1448,
+    "alto": 1086,
+    "bytes": 195190,
+    "sha256": "0a45f413585761fac2c5b6ae69cd22a81cc915c74659f3cc68b14779ac37b38b"
+  },
+  {
+    "archivo": "01_principales_medida/catalogo-proyecto/modelo-20.webp",
+    "origen": "irp-review/public/images/configurator/catalog/01_Puertas_principales_a_medida/Propuestas/Pivotantes/marfil.webp",
+    "uso": "Modelo existente; Codex debe verificar publicacion y apertura por ID en catalogo actual",
+    "ancho": 1448,
+    "alto": 1086,
+    "bytes": 180826,
+    "sha256": "7b4fa74d9e6f4a6daaf79015b7e16aed363ca33531f8bfa3b2c22af8c285852e"
+  },
+  {
+    "archivo": "01_principales_medida/catalogo-proyecto/modelo-21.webp",
+    "origen": "irp-review/public/images/configurator/catalog/01_Puertas_principales_a_medida/Propuestas/Pivotantes/nogal.webp",
+    "uso": "Modelo existente; Codex debe verificar publicacion y apertura por ID en catalogo actual",
+    "ancho": 1448,
+    "alto": 1086,
+    "bytes": 202500,
+    "sha256": "ac9e3012d6f8fb484b068d6c03cccc5fbb2e030d5268d1b0b8359ebfef3c5951"
+  },
+  {
+    "archivo": "01_principales_medida/catalogo-proyecto/modelo-22.webp",
+    "origen": "irp-review/public/images/configurator/catalog/01_Puertas_principales_a_medida/Propuestas/doble-batiente-grafito.webp",
+    "uso": "Modelo existente; Codex debe verificar publicacion y apertura por ID en catalogo actual",
+    "ancho": 1448,
+    "alto": 1086,
+    "bytes": 149122,
+    "sha256": "a4647804946e80ac2838fb52696cad336c470b5d9ad15cf2272890cdc023197b"
+  },
+  {
+    "archivo": "01_principales_medida/catalogo-proyecto/modelo-23.webp",
+    "origen": "irp-review/public/images/configurator/catalog/01_Puertas_principales_a_medida/Propuestas/pivotante-grafito.webp",
+    "uso": "Modelo existente; Codex debe verificar publicacion y apertura por ID en catalogo actual",
+    "ancho": 1448,
+    "alto": 1086,
+    "bytes": 195802,
+    "sha256": "8f062ce777d73f6ef2c007c816999624defe513ef66bbf3e63fdb5fa7b015d5b"
+  },
+  {
+    "archivo": "01_principales_medida/catalogo-proyecto/modelo-24.webp",
+    "origen": "irp-review/public/images/configurator/catalog/01_Puertas_principales_a_medida/Propuestas/portada-principal-grafito.webp",
+    "uso": "Modelo existente; Codex debe verificar publicacion y apertura por ID en catalogo actual",
+    "ancho": 1448,
+    "alto": 1086,
+    "bytes": 124952,
+    "sha256": "33d292254dae871c82322b266c69ff5f568776a84a164d03ed2747984230d83b"
+  },
+  {
+    "archivo": "02_importadas/imagenes/fachada-miel.png",
+    "origen": "generated_images/exec-7ad4b728-6dc7-461a-9f14-467d1719e3b0.png",
+    "uso": "Serie de color: misma escena; version corregida de puerta",
+    "ancho": 1672,
+    "alto": 941,
+    "bytes": 2842864,
+    "sha256": "dd989cbbc71310124a52565f03db3356871d91d3d8b6169f8fedc2fb3caee969"
+  },
+  {
+    "archivo": "02_importadas/imagenes/fachada-blanco.png",
+    "origen": "generated_images/exec-49dff333-7c17-4156-bc44-347817b20a2d.png",
+    "uso": "Serie de color: misma escena; version corregida de puerta",
+    "ancho": 1672,
+    "alto": 941,
+    "bytes": 2670433,
+    "sha256": "3cbc9565e58c640d05d2eb149ef95a08c31792bc8cefbd243b0bb6976c54ef10"
+  },
+  {
+    "archivo": "02_importadas/imagenes/fachada-grafito.png",
+    "origen": "generated_images/exec-5dcbc551-4477-4f04-a8b9-008c0f1c13c8.png",
+    "uso": "Serie de color: misma escena; version corregida de puerta",
+    "ancho": 1672,
+    "alto": 941,
+    "bytes": 2735632,
+    "sha256": "fff177874bd51454c647cebc64521d98f4265d5c84268d68ee5f3aa221dae25d"
+  },
+  {
+    "archivo": "02_importadas/imagenes/fachada-negro.png",
+    "origen": "generated_images/exec-9850d812-b529-436a-b6e3-6d39e28d03e3.png",
+    "uso": "Serie de color: misma escena; version corregida de puerta",
+    "ancho": 1672,
+    "alto": 941,
+    "bytes": 2657496,
+    "sha256": "1f7549a934f5afce7667e105a83bf718c0cac078a0e6c31380eb161558bf0b76"
+  },
+  {
+    "archivo": "02_importadas/imagenes/fachada-nogal.png",
+    "origen": "generated_images/exec-0af3ce03-0ab5-4db1-9de6-a3e353780141.png",
+    "uso": "Serie de color: misma escena; version corregida de puerta",
+    "ancho": 1672,
+    "alto": 941,
+    "bytes": 2703841,
+    "sha256": "45636faf5d916d2abdde919f65460f54cab0859b65091d5715c99a55f42376ea"
+  },
+  {
+    "archivo": "03_contraplacadas/imagenes/singapur-catalogo.webp",
+    "origen": "irp-review/public/images/configurator/catalog/11_Puertas_contraplacadas/Referencia_Singapur_confirmar_ficha/puerta-bloques-miel.webp",
+    "uso": "Modelo Singapur del proyecto; exclusivamente pivotante",
+    "ancho": 1448,
+    "alto": 1086,
+    "bytes": 180360,
+    "sha256": "f8f54d2b2a94f22a058c1d80e3038eedc71d68601fe64314510ec65d08856cac"
+  },
+  {
+    "archivo": "03_contraplacadas/imagenes/lamborghini-referencia-aprobada.png",
+    "origen": "generated_images/exec-8ff3abbe-17d8-4078-9a2b-d5a86cc9add5.png",
+    "uso": "Imagen Lamborghini aprobada previamente; conservar identidad y no inventar apertura",
+    "ancho": 1122,
+    "alto": 1402,
+    "bytes": 2256202,
+    "sha256": "4a1b1610cfd795d57e791b65f7c253d4ca5510f10e4f00a49b73e3939d6d735f"
+  },
+  {
+    "archivo": "04_garaje/imagenes/garaje-seccional.png",
+    "origen": "generated_images/exec-52debd39-0b9c-4a27-8d05-c48d8e67a4f9.png",
+    "uso": "Fotografia limpia para el apartado informativo",
+    "ancho": 1536,
+    "alto": 1024,
+    "bytes": 2486232,
+    "sha256": "0c99fc5b88b3c44bb1cec7d84c1873b7c1cfe07d47c8663244f0a604103befa7"
+  },
+  {
+    "archivo": "04_garaje/imagenes/garaje-corrediza.png",
+    "origen": "generated_images/exec-e9b920c6-0a3a-4f33-babf-04e6c4df153a.png",
+    "uso": "Fotografia limpia para el apartado informativo",
+    "ancho": 1536,
+    "alto": 1024,
+    "bytes": 2896716,
+    "sha256": "b7df3cf8ebc1162af9db1a0990b64befbff7b0d44fdf1b2c7d71b0e8ac2d07a7"
+  },
+  {
+    "archivo": "05_sol_sombra/imagenes/fondo-principal.png",
+    "origen": "generated_images/exec-1cee6b2a-58e9-4771-9ff4-db2e7784dd63.png",
+    "uso": "Fondo limpio sin textos ni controles",
+    "ancho": 1672,
+    "alto": 941,
+    "bytes": 2883338,
+    "sha256": "3943be8586bee25f568b485a67369124dbc924155dacbe1417cc1b850dcdf9a1"
+  },
+  {
+    "archivo": "06_vidrios/imagenes/fondo-principal.png",
+    "origen": "generated_images/exec-92ffb025-fbcd-4412-9d26-ffd0a4119be6.png",
+    "uso": "Fondo limpio sin textos ni controles",
+    "ancho": 1672,
+    "alto": 941,
+    "bytes": 2613759,
+    "sha256": "5c75f7ddeba59424c1088cbcdf560e305426f33e4f96a93e52dae921f45386e1"
+  },
+  {
+    "archivo": "07_barandas/imagenes/fondo-principal.png",
+    "origen": "generated_images/exec-b71082d4-a99b-4455-93e4-62647428561e.png",
+    "uso": "Fondo limpio sin textos ni controles",
+    "ancho": 1672,
+    "alto": 941,
+    "bytes": 2676524,
+    "sha256": "720650f2e4623a6ea6c36561cf4427fc99b3047301bac7c792021fb6cd5c83de"
+  },
+  {
+    "archivo": "08_estructuras/imagenes/fondo-principal.png",
+    "origen": "generated_images/exec-07b2a3f2-babb-4ed9-bf8a-d6f3e1dab544.png",
+    "uso": "Fondo limpio sin textos ni controles",
+    "ancho": 1672,
+    "alto": 941,
+    "bytes": 3069085,
+    "sha256": "f15fa7e9ab674291e5cfa5a9763d76bca44a1374422985adb5a51b5cddc455e8"
+  },
+  {
+    "archivo": "09_cerco/imagenes/fondo-principal.png",
+    "origen": "generated_images/exec-c220b323-3da6-45be-8ec9-81a431272812.png",
+    "uso": "Fondo limpio sin textos ni controles",
+    "ancho": 1672,
+    "alto": 941,
+    "bytes": 2493670,
+    "sha256": "7b68bcb5ded6a1fd010fdf4471776e6fdb92bffe2bf3b57712b0c472a7dae561"
+  },
+  {
+    "archivo": "10_drywall/imagenes/fondo-principal.png",
+    "origen": "generated_images/exec-c0496001-4d72-4d33-bf36-d239c34c6229.png",
+    "uso": "Fondo limpio sin textos ni controles",
+    "ancho": 1672,
+    "alto": 941,
+    "bytes": 1990628,
+    "sha256": "d362cb96897523d4406834a71d4c1834cf4abd4e190765878f5eb67b00491aec"
+  },
+  {
+    "archivo": "05_sol_sombra/imagenes/terraza.png",
+    "origen": "generated_images/exec-801dda4b-8369-477f-a29c-600f7c40d05b.png",
+    "uso": "Fotografia limpia para el apartado informativo",
+    "ancho": 1536,
+    "alto": 1024,
+    "bytes": 3025133,
+    "sha256": "4228075b4a43bd58234d88f1230decea6a039ae9a9a6caa361dfab3857f0c44d"
+  },
+  {
+    "archivo": "06_vidrios/imagenes/division-vidrio.png",
+    "origen": "generated_images/exec-606e269a-79c0-489b-80e4-091bb2dd038c.png",
+    "uso": "Fotografia limpia para el apartado informativo",
+    "ancho": 1536,
+    "alto": 1024,
+    "bytes": 2454688,
+    "sha256": "3417bc8d73fa259ab976a96df675ebcdd34a1d27883b0cd4002ae5eea05d9ec8"
+  },
+  {
+    "archivo": "07_barandas/imagenes/detalle-pasamanos.png",
+    "origen": "generated_images/exec-ccd1cb0f-b3c1-49b6-9004-98fbca75982b.png",
+    "uso": "Fotografia limpia para el apartado informativo",
+    "ancho": 1536,
+    "alto": 1024,
+    "bytes": 1839135,
+    "sha256": "e4d8c3171bf8388ec828e49a44537b52fff749c16eb7c74eed73ee568baaea3b"
+  },
+  {
+    "archivo": "08_estructuras/imagenes/detalle-union.png",
+    "origen": "generated_images/exec-3cb9ea0c-2d2a-4ef8-b834-6df8c2ddf8f5.png",
+    "uso": "Fotografia limpia para el apartado informativo",
+    "ancho": 1536,
+    "alto": 1024,
+    "bytes": 2128491,
+    "sha256": "3fcb49176bfa2ad4978a1268b755d583f5f83d83c7b146d7ef1ff8df25ae1d77"
+  },
+  {
+    "archivo": "09_cerco/imagenes/detalle-aisladores.png",
+    "origen": "generated_images/exec-5bba1fa6-4d25-4eb1-8817-c23c87d76349.png",
+    "uso": "Fotografia limpia para el apartado informativo",
+    "ancho": 1536,
+    "alto": 1024,
+    "bytes": 1996281,
+    "sha256": "2b71c90e8ac6c65cd36488bd6498d5bf86040a8261dedd435ba04fe7984c96a0"
+  },
+  {
+    "archivo": "10_drywall/imagenes/detalle-instalacion.png",
+    "origen": "generated_images/exec-d06f631c-62ba-44bb-a422-8935b67a4abb.png",
+    "uso": "Fotografia limpia para el apartado informativo",
+    "ancho": 1536,
+    "alto": 1024,
+    "bytes": 2146725,
+    "sha256": "a1ddf83668d86c7053f4785f16011637cb963b06f6d2fbb93a3470f20a81ea50"
+  }
+]

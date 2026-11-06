@@ -349,10 +349,12 @@ function CompositionHero({ content }: { content: HeroContent["composition"] }) {
   return (
     <section ref={sectionRef} className="irp-hero" id="inicio" data-intro-status={status}>
       <div className="irp-hero__media">
-        <picture className="irp-hero__fallback">
-          <source media="(max-width: 767px)" srcSet="/NUEVO/NUEVO%20LOADER/mobile-intro-last-frame.webp" />
-          <img src={content.fallbackImage.src} alt={content.fallbackImage.alt} width={1920} height={1080} />
-        </picture>
+        {(status === "skipped" || status === "failed") ? (
+          <picture className="irp-hero__fallback">
+            <source media="(max-width: 767px)" srcSet="/NUEVO/NUEVO%20LOADER/mobile-intro-last-frame.webp" />
+            <img src={content.fallbackImage.src} alt={content.fallbackImage.alt} width={1920} height={1080} />
+          </picture>
+        ) : null}
         <video ref={videoRef} className="irp-hero__video" preload="auto" autoPlay muted playsInline
           disablePictureInPicture tabIndex={-1} aria-label={content.desktopVideo.alt}>
           <source media="(max-width: 767px)" src={content.mobileVideo.src} type="video/mp4" />

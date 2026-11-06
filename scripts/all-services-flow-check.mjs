@@ -12,13 +12,13 @@ const services = [
   ["techos-coberturas", "techos-coberturas"],
   ["ventanas-mamparas", "ventanas-mamparas"],
   ["acero-barandas", "acero-barandas"],
-  ["estructuras-metalicas", "estructuras-especiales"],
   ["cerco-electrico", "cerco-electrico"],
   ["drywall-cielorrasos", "drywall-cielorrasos"]
 ];
+const visualOnly = process.env.IRP_VISUAL_ONLY === "1";
 const viewports = [
   { width: 1440, height: 900, label: "desktop" },
-  { width: 768, height: 1024, label: "tablet" },
+  ...(!visualOnly ? [{ width: 768, height: 1024, label: "tablet" }] : []),
   { width: 390, height: 844, label: "mobile" }
 ];
 const failures = [];
@@ -26,7 +26,10 @@ const results = [];
 const check = (condition, message) => { if (!condition) failures.push(message); };
 
 await mkdir(outputDirectory, { recursive: true });
-const browser = await chromium.launch({ executablePath: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe", headless: true });
+const browserExecutable = process.env.IRP_BROWSER_EXECUTABLE?.trim();
+const browser = await chromium.launch(browserExecutable
+  ? { executablePath: browserExecutable, headless: true }
+  : { channel: process.env.IRP_BROWSER_CHANNEL?.trim() || "chrome", headless: true });
 
 try {
   for (const viewport of viewports) {
@@ -40,7 +43,7 @@ try {
       const errors = [];
       const onPageError = (error) => errors.push(error.message);
       page.on("pageerror", onPageError);
-      const response = await page.goto(`${baseUrl}/soluciones/${slug}`, { waitUntil: "networkidle", timeout: 60000 });
+      const response = await page.goto(`${baseUrl}/soluciones/${slug}`, { waitUntil: visualOnly ? "domcontentloaded" : "networkidle", timeout: 60000 });
       await page.locator(".configurator__controls").waitFor({ state: "attached", timeout: 20000 }).catch(() => undefined);
       await page.evaluate(async () => {
         for (let y = 0; y < document.documentElement.scrollHeight; y += Math.max(500, innerHeight * .9)) {
@@ -73,6 +76,7 @@ try {
     await context.close();
   }
 
+  if (!visualOnly) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "es-PE", reducedMotion: "reduce", extraHTTPHeaders: { "X-Real-IP": `qa-services-${Date.now()}` } });
   await context.addInitScript(() => {
     sessionStorage.setItem("irp-intro-v4", "seen");
@@ -107,6 +111,7 @@ try {
   check(stored.items?.length === services.length, `Mi Proyecto contiene ${stored.items?.length ?? 0} de ${services.length} servicios`);
   results.push({ configuredServices: stored.items?.map((item) => item.productId) ?? [] });
   await context.close();
+  }
 } finally {
   await browser.close();
 }
@@ -119,5 +124,5 @@ for (const result of results) {
   if (result.errors?.length) failures.push(`${result.slug}/${result.viewport}: ${result.errors.join("; ")}`);
 }
 
-console.log(JSON.stringify({ passed: failures.length === 0, checkedRoutes: services.length * viewports.length, configuredServices: results.at(-1)?.configuredServices?.length ?? 0, outputDirectory, failures }, null, 2));
+console.log(JSON.stringify({ passed: failures.length === 0, checkedRoutes: services.length * viewports.length, configuredServices: visualOnly ? null : results.at(-1)?.configuredServices?.length ?? 0, outputDirectory, failures }, null, 2));
 if (failures.length) process.exitCode = 1;

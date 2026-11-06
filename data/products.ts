@@ -168,21 +168,6 @@ export const products: Product[] = [
     evidence: "reference"
   },
   {
-    id: "estructuras-especiales",
-    name: "Estructuras especiales",
-    shortName: "Estructuras",
-    group: "estructuras",
-    description: "Soluciones metálicas para necesidades especiales.",
-    longDescription: "Evaluamos proyectos residenciales, comerciales e industriales que requieren estructura, fabricación y montaje a medida.",
-    audiences: ["residencial", "comercial", "industrial"],
-    image: catalogImage("07_Estructuras_metalicas/Propuestas/estructura-negra.png"),
-    gallery: [catalogImage("07_Estructuras_metalicas/Propuestas/estructura-negra.png")],
-    benefits: ["Evaluación técnica", "Fabricación a medida", "Materiales resistentes", "Montaje especializado", "Seguimiento de proyecto"],
-    finishes: [finishes[3], finishes[4], finishes[5]],
-    tiktokUrl,
-    evidence: "reference"
-  },
-  {
     id: "puertas-principales",
     name: "Puertas principales importadas",
     shortName: "Principal importada",

@@ -1,0 +1,8 @@
+Cerco electrico
+
+Explorar 4,5,6,8 hilos como contenido informativo. Fondo es fotografia general, NO prueba visual de cantidad. Si se cambia numero, usar dibujo SVG exacto con conteo validado, no interpretar los esquemas imprecisos del mockup. No mostrar numero activo contradictorio con foto presentada como exacta.
+
+REFERENCIAS: solo orientan composicion. IMAGENES: recursos limpios para la interfaz.
+Fondo blanco en PC y celular tiene prioridad sobre cualquier zona oscura del mockup.
+PC: composicion horizontal aproximada 16:9 sin recortar textos. Celular: altura automatica, nunca achicar captura PC.
+Estos recursos son ilustraciones editoriales generadas salvo los identificados como catalogo. No declararlos obras realizadas.

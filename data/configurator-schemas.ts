@@ -112,7 +112,7 @@ export const configuratorSchemas: Record<ConfiguratorFamily, ConfiguratorSchema>
     version: 2,
     steps: [
       solutionStep,
-      choice("garage-type", "Tipo", "Elige el tipo de puerta de garaje", "subtype", ["Seccional", "Levadiza", "Corrediza", "Batiente"]),
+      choice("garage-type", "Tipo", "Elige el tipo de puerta de garaje", "subtype", ["Seccional", "Corrediza", "Batiente"]),
       dimensionsStep("Ingresa las medidas aproximadas del garaje", "Ancho (m)", "Alto (m)", { required: true }),
       choice("design", "Diseño", "Elige el diseño de referencia", "design", ["Liso", "Acanalado", "Con aplicaciones", "Personalizado"]),
       finishStep,
@@ -160,8 +160,6 @@ export const configuratorSchemas: Record<ConfiguratorFamily, ConfiguratorSchema>
       dimensionsStep("Indica las medidas del vano", "Ancho (m)", "Alto (m)", { required: true }),
       choice("profile", "Perfil", "Selecciona el perfil o material", "material", ["Aluminio estándar", "Aluminio serie europea", "Acero"]),
       choice("glass", "Vidrio", "Selecciona el tipo de vidrio", "design", ["Templado incoloro", "Templado bronce", "Laminado", "Insulado"]),
-      finishStep,
-      notesStep,
     ],
   },
   acero: {
@@ -172,11 +170,8 @@ export const configuratorSchemas: Record<ConfiguratorFamily, ConfiguratorSchema>
       solutionStep,
       choice("steel-type", "Producto", "Selecciona el elemento", "subtype", ["Baranda", "Pasamanos", "Complemento metálico"]),
       dimensionsStep("Indica longitud y altura", "Longitud (m)", "Altura (m)", { required: true, visibleWhen: { key: "subtype", values: ["Baranda"] } }),
-      dimensionsStep("Indica la longitud", "Longitud (m)", "", { required: true, hideHeight: true, visibleWhen: { key: "subtype", values: ["Pasamanos", "Complemento metálico"] } }),
+      dimensionsStep("Indica la longitud", "Longitud (m)", "", { required: true, hideHeight: true, visibleWhen: { key: "subtype", values: ["Pasamanos"] } }),
       choice("steel-material", "Material", "Selecciona el material", "material", ["Acero inoxidable", "Acero al carbono", "Aluminio"]),
-      finishStep,
-      multi("steel-accessories", "Adicionales", "Selecciona adicionales compatibles", ["Vidrio templado", "Anclaje especial", "Pasamanos complementario"]),
-      notesStep,
     ],
   },
   estructuras: {
@@ -188,8 +183,6 @@ export const configuratorSchemas: Record<ConfiguratorFamily, ConfiguratorSchema>
       choice("structure-use", "Uso", "Selecciona el uso de la estructura", "subtype", ["Cobertura", "Taller o almacén", "Marco o cerramiento", "Fabricación especial"]),
       dimensionsStep("Indica las dimensiones generales", "Ancho o longitud (m)", "Alto (m)", { required: true }),
       choice("structure-material", "Material", "Selecciona el material de referencia", "material", ["Acero al carbono", "Acero galvanizado", "Acero inoxidable"]),
-      finishStep,
-      notesStep,
     ],
   },
   "puertas-principales": {
@@ -214,7 +207,6 @@ export const configuratorSchemas: Record<ConfiguratorFamily, ConfiguratorSchema>
       dimensionsStep("Indica el perímetro", "Metros lineales (m)", "", { required: true, hideHeight: true }),
       choice("fence-lines", "Líneas", "Selecciona la configuración de referencia", "design", ["4 líneas", "5 líneas", "6 líneas", "8 líneas"]),
       choice("fence-equipment", "Equipo", "Selecciona el energizador de referencia", "material", ["Residencial", "Comercial", "Alto recorrido"]),
-      notesStep,
     ],
   },
   drywall: {
@@ -314,11 +306,13 @@ export function getConfiguratorSchema(productGroup: ProductGroup, productId?: st
   const publishedTypes = (definition?.catalogTypes ?? [])
     .filter((type) => !type.archived && type.published !== false)
     .sort((left, right) => (left.order ?? 0) - (right.order ?? 0));
+  const hasCatalogTaxonomy = definition ? Object.prototype.hasOwnProperty.call(definition, "catalogTypes") : false;
   const typeStep = (id: string, title: string, fallback: string[]): Extract<ConfiguratorStep, { kind: "choice" }> => {
-    const base = choice(id, "Apertura", title, "openingSystem", publishedTypes.length ? publishedTypes.map((type) => type.value) : fallback) as Extract<ConfiguratorStep, { kind: "choice" }>;
+    const available = hasCatalogTaxonomy ? publishedTypes.map((type) => type.value) : fallback;
+    const base = choice(id, "Apertura", title, "openingSystem", available) as Extract<ConfiguratorStep, { kind: "choice" }>;
     return {
       ...base,
-      options: publishedTypes.length
+      options: hasCatalogTaxonomy
         ? publishedTypes.map((type) => ({ value: type.value, label: type.label, description: type.description }))
         : fallback.map((value) => ({ value, label: value })),
     };
@@ -332,12 +326,10 @@ export function getConfiguratorSchema(productGroup: ProductGroup, productId?: st
       version: 4,
       steps: [
         solutionStep,
-        choice("model", "Modelo", "Selecciona un modelo o envíanos tu propia referencia", "model", [...models.map((model) => model.id), CUSTOM_ENTRY_DESIGN_ID]),
-        dimensionsStep("Indica las medidas aproximadas de tu referencia", "Ancho (m)", "Alto (m)", { required: true, visibleWhen: { key: "model", values: [CUSTOM_ENTRY_DESIGN_ID] } }),
+        choice("model", "Modelo", "Selecciona el modelo importado", "model", models.map((model) => model.id)),
         { ...finishStep, title: "Selecciona un color disponible", description: "La imagen cambia con el color cuando existe una referencia aprobada." },
         choice("variant", "Medida", "Selecciona una medida disponible", "variant", models.flatMap((model) => model.variants.map((variant) => variant.id))),
         ...(accessories.length ? [multi("imported-accessories", "Complementos", "Selecciona complementos compatibles", accessories.map((option) => option.id))] : []),
-        notesStep,
       ],
     } satisfies ConfiguratorSchema, overrides);
   }
@@ -358,7 +350,7 @@ export function getConfiguratorSchema(productGroup: ProductGroup, productId?: st
     version: 5,
     steps: [
       solutionStep,
-      typeStep("garage-opening", "Elige el tipo de puerta de garaje", ["Seccional", "Levadiza", "Corrediza", "Batiente"]),
+      typeStep("garage-opening", "Elige el tipo de puerta de garaje", ["Seccional", "Corrediza", "Batiente"]),
       choice("model", "Diseño", "Elige un diseño compatible o sube tu propia referencia", "model", [...publishedModels.map((model) => model.id), CUSTOM_ENTRY_DESIGN_ID]),
       dimensionsStep("Ingresa las medidas aproximadas del garaje", "Ancho (m)", "Alto (m)", { required: true }),
     ],

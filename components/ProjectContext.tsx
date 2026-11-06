@@ -15,6 +15,7 @@ type ProjectContextValue = {
   updateItem: (id: string, product: Product, configuration: Partial<QuoteItemConfiguration>) => void;
   duplicateItem: (id: string) => void;
   removeItem: (id: string) => void;
+  removeItems: (ids: string[]) => void;
   changeQuantity: (id: string, delta: number) => void;
   clearProject: () => void;
 };
@@ -27,7 +28,7 @@ const STORAGE_VERSION = 3 as const;
 const dimensionsSchema = z.object({
   width: z.string().min(1).optional(),
   height: z.string().min(1).optional(),
-  unit: z.literal("m")
+  unit: z.enum(["m", "mm"])
 }).strict();
 
 const configurationSchema = z.object({
@@ -91,7 +92,7 @@ function normalizeConfiguration(configuration: Partial<QuoteItemConfiguration> =
 
   return {
     ...(!simplifiedDesignCatalog && optionalText(configuration.subtype) ? { subtype: optionalText(configuration.subtype) } : {}),
-    ...(width || height ? { dimensions: { ...(width ? { width } : {}), ...(height ? { height } : {}), unit: "m" as const } } : {}),
+    ...(width || height ? { dimensions: { ...(width ? { width } : {}), ...(height ? { height } : {}), unit: configuration.dimensions?.unit === "mm" ? "mm" as const : "m" as const } } : {}),
     ...(configuration.measurementsUnknown ? { measurementsUnknown: true } : {}),
     ...(!simplifiedConfiguration && optionalText(configuration.design) ? { design: optionalText(configuration.design) } : {}),
     ...(!simplifiedDesignCatalog && optionalText(configuration.panel) ? { panel: optionalText(configuration.panel) } : {}),
@@ -120,7 +121,7 @@ function configurationFromUnknown(value: unknown, legacyItem: UnknownRecord): Qu
     ? {
         width: optionalText(stored.dimensions.width),
         height: optionalText(stored.dimensions.height),
-        unit: "m" as const
+        unit: stored.dimensions.unit === "mm" ? "mm" as const : "m" as const
       }
     : parseLegacyMeasures(legacyItem.measures);
   const storedAccessories = Array.isArray(stored.accessories)
@@ -311,6 +312,11 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     setItems((current) => current.filter((item) => item.id !== id));
   }, []);
 
+  const removeItems = useCallback((ids: string[]) => {
+    const selected = new Set(ids);
+    setItems((current) => current.filter((item) => !selected.has(item.id)));
+  }, []);
+
   const changeQuantity = useCallback((id: string, delta: number) => {
     setItems((current) => current
       .map((item) => item.id === id ? {
@@ -334,9 +340,10 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     updateItem,
     duplicateItem,
     removeItem,
+    removeItems,
     changeQuantity,
     clearProject
-  }), [items, hydrated, drawerOpen, addProduct, updateItem, duplicateItem, removeItem, changeQuantity, clearProject]);
+  }), [items, hydrated, drawerOpen, addProduct, updateItem, duplicateItem, removeItem, removeItems, changeQuantity, clearProject]);
 
   return <ProjectContext.Provider value={value}>{children}</ProjectContext.Provider>;
 }

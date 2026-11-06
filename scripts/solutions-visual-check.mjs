@@ -10,7 +10,7 @@ const viewports = [
   ["1024x768", 1024, 768], ["768x1024", 768, 1024], ["430x932", 430, 932],
   ["390x844", 390, 844], ["360x800", 360, 800]
 ];
-const expectedLinks = ["puertas-a-medida", "puertas-automatizacion", "puertas-principales", "techos-coberturas", "ventanas-mamparas", "acero-barandas", "estructuras-metalicas", "cerco-electrico", "drywall-cielorrasos"];
+const expectedLinks = ["puertas-a-medida", "puertas-automatizacion", "puertas-principales", "puertas-contraplacadas", "techos-coberturas", "ventanas-mamparas", "acero-barandas", "cerco-electrico", "drywall-cielorrasos"];
 
 await mkdir(outputDirectory, { recursive: true });
 const browser = await chromium.launch({ executablePath, headless: true });
@@ -56,7 +56,7 @@ try {
       overflow: metrics.scrollWidth > metrics.clientWidth + 2,
       clipped: metrics.clipped,
       serviceLinks: expectedLinks.every((id, index) => serviceHrefs[index] === `/soluciones/${id}`),
-      categoryLinks: ["#accesos", "#vidrio", "#estructuras", "#acabados"].every((href, index) => categoryHrefs[index] === href),
+      categoryLinks: ["#accesos", "#vidrio", "#exteriores", "#acabados"].every((href, index) => categoryHrefs[index] === href),
       count: metrics.headings.length,
       errors
     });

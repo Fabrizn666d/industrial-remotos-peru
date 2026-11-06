@@ -17,8 +17,15 @@ function list(value: unknown) {
 }
 
 export function pricingConfigurationFromRequest(configuration: PublicRequestSubmission["items"][number]["configuration"]): PricingConfiguration {
+  const unit = text(configuration.unit);
+  const toMeters = (value: unknown) => {
+    const raw = text(value);
+    if (!raw || unit !== "mm") return raw;
+    const numeric = Number(raw.replace(",", "."));
+    return Number.isFinite(numeric) ? String(numeric / 1000) : raw;
+  };
   return {
-    width: text(configuration.width), height: text(configuration.height), measurementsUnknown: configuration.measurementsUnknown === true, subtype: text(configuration.subtype),
+    width: toMeters(configuration.width), height: toMeters(configuration.height), measurementsUnknown: configuration.measurementsUnknown === true, subtype: text(configuration.subtype),
     model: text(configuration.model), variant: text(configuration.variant), openingSystem: text(configuration.openingSystem),
     design: text(configuration.design), panel: text(configuration.panel), material: text(configuration.material), finish: text(configuration.finish),
     automation: text(configuration.automation), accessories: list(configuration.accessories)

@@ -9,7 +9,6 @@ const cases = [
   ["techos-coberturas", "Techos y coberturas"],
   ["ventanas-mamparas", "Ventanas y mamparas"],
   ["acero-barandas", "Acero inoxidable y barandas"],
-  ["estructuras-metalicas", "Estructuras especiales"],
   ["cerco-electrico", "Cerco eléctrico"],
   ["drywall-cielorrasos", "Drywall y cielorrasos"]
 ];
@@ -41,7 +40,7 @@ try {
     const finishChanged = await finishButtons.nth(1).getAttribute("aria-pressed") === "true";
     const gallerySlides = await page.locator('#galeria [class*="gallerySlide"]').count();
     const galleryControls = await page.locator('#galeria [class*="galleryPause"]').count();
-    const galleryIsContinuous = gallerySlides >= 3 && galleryControls === 0;
+    const galleryIsContinuous = gallerySlides >= 3 && galleryControls === 1;
     if (response?.status() !== 200 || caption !== productName || questionId === "solution" || !anchors.includes("#cotizar") || !choiceChanged || !finishChanged || !galleryIsContinuous || errors.length) {
       failures.push({ slug, status: response?.status(), caption, expectedCaption: productName, questionId, anchors, choiceChanged, finishChanged, gallerySlides, galleryControls, galleryIsContinuous, errors });
     }

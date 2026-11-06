@@ -121,7 +121,7 @@ try {
   await context.addInitScript(() => sessionStorage.setItem("irp-intro-v4", "seen"));
   const page = await context.newPage();
 
-  const serviceSlugs = ["puertas-automatizacion", "puertas-principales", "techos-coberturas", "ventanas-mamparas", "acero-barandas", "estructuras-metalicas", "cerco-electrico", "drywall-cielorrasos"];
+  const serviceSlugs = ["puertas-automatizacion", "puertas-principales", "techos-coberturas", "ventanas-mamparas", "acero-barandas", "cerco-electrico", "drywall-cielorrasos"];
   for (const slug of serviceSlugs) {
     const response = await page.goto(`${baseUrl}/soluciones/${slug}`, { waitUntil: "networkidle" });
     check(response?.status() === 200, `Portal ${slug} no respondió 200`);

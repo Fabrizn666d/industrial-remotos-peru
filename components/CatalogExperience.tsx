@@ -15,7 +15,6 @@ const groups: Array<{ value: "todos" | ProductGroup; label: string }> = [
   { value: "techos", label: "Techos" },
   { value: "ventanas", label: "Ventanas y mamparas" },
   { value: "acero", label: "Acero y barandas" },
-  { value: "estructuras", label: "Estructuras" },
   { value: "cerco", label: "Cerco eléctrico" },
   { value: "drywall", label: "Drywall" },
   { value: "automatizacion", label: "Automatización" }

@@ -1,0 +1,11 @@
+IRP - PAQUETE VISUAL POR SERVICIO
+
+Diez carpetas. Cada una contiene referencias de PC/celular, fotografias limpias y LEEME con uso especifico.
+Las imagenes nuevas son recursos editoriales generados, no fotografias de trabajos ejecutados. No reemplazan fichas de productos.
+
+DECISION FINAL: fondos de interfaz BLANCOS en PC y celular. Azul marino solo tipografia, azul electrico acentos. Algunos mockups PC previos contienen paneles oscuros: se traducen a blanco sin perder composicion.
+No usar mockups completos como fondos. Textos, controles, mascaras, lineas, halos, hotspots y animaciones se construyen en HTML/CSS/SVG.
+Fondos maestros se entregan en su resolucion real; no se anuncian como 8K. Usar encuadre responsive mediante picture/object-position; no deformar ni cortar el producto.
+Las imagenes estan organizadas por servicio, no necesitan renombrarse manualmente. Inventario.json identifica dimensiones y funcion de cada archivo.
+No estan incluidos estados fotograficos inventados: variantes de apertura, aplicaciones o productos no presentes deben tomarse del catalogo existente verificado. Los LEEME indican esos casos.
+Los efectos futuristas son de interfaz; no representan prestaciones fisicas.

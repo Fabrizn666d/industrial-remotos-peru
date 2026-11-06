@@ -16,7 +16,6 @@ const serviceRoutes = [
   ["techos", "/soluciones/techos-coberturas"],
   ["mamparas", "/soluciones/ventanas-mamparas"],
   ["barandas", "/soluciones/acero-barandas"],
-  ["estructuras", "/soluciones/estructuras-metalicas"],
   ["cerco", "/soluciones/cerco-electrico"],
   ["drywall", "/soluciones/drywall-cielorrasos"]
 ];

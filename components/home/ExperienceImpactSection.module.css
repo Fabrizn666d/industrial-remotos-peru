@@ -369,18 +369,20 @@
   }
 
   .sideArtwork {
-    top: 10.5rem;
+    top: 12rem;
     width: 13rem;
     height: 19.5rem;
     opacity: 0.92;
   }
 
   .sideArtworkLeft {
-    left: -7.6rem;
+    left: 0;
+    translate: -50% 0;
   }
 
   .sideArtworkRight {
-    right: -7.6rem;
+    right: 0;
+    translate: 50% 0;
   }
 
   .content {

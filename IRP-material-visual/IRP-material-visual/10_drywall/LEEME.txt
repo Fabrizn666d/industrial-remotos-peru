@@ -1,0 +1,8 @@
+Drywall y cielorrasos
+
+Escena con marcadores Division, Cielorraso, Revestimiento y una sola fuente de estado sincronizada con acordeon accesible. Marcadores y lineas van en HTML/SVG. Descripciones concretas de aplicacion sin inventar placa, aislacion o resistencia al fuego.
+
+REFERENCIAS: solo orientan composicion. IMAGENES: recursos limpios para la interfaz.
+Fondo blanco en PC y celular tiene prioridad sobre cualquier zona oscura del mockup.
+PC: composicion horizontal aproximada 16:9 sin recortar textos. Celular: altura automatica, nunca achicar captura PC.
+Estos recursos son ilustraciones editoriales generadas salvo los identificados como catalogo. No declararlos obras realizadas.

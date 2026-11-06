@@ -29,9 +29,8 @@ export function HomeIntroProvider({ children }: { children: React.ReactNode }) {
       firstHomeEntryRef.current = null;
       delete document.documentElement.dataset.irpIntroCurrent;
       try {
-        if (sessionStorage.getItem(HOME_INTRO_SESSION_KEY) === "seen") {
-          document.documentElement.classList.add(HOME_INTRO_SEEN_CLASS);
-        }
+        sessionStorage.setItem(HOME_INTRO_SESSION_KEY, "seen");
+        document.documentElement.classList.add(HOME_INTRO_SEEN_CLASS);
       } catch { /* Storage can be unavailable in privacy-restricted contexts. */ }
       setStatus("skipped");
       return;
@@ -53,6 +52,8 @@ export function HomeIntroProvider({ children }: { children: React.ReactNode }) {
     }
     document.documentElement.classList.remove(HOME_INTRO_SEEN_CLASS);
     document.documentElement.dataset.irpIntroCurrent = "play";
+    try { sessionStorage.setItem(HOME_INTRO_SESSION_KEY, "seen"); }
+    catch { /* Playback must continue when storage is unavailable. */ }
     setStatus("loading");
   }, [pathname]);
 

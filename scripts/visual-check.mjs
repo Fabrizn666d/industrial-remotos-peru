@@ -19,7 +19,7 @@ const viewports = [
   ["mobile-360", 360, 800],
   ["mobile-320", 320, 720]
 ];
-const routes = ["/", "/soluciones", "/soluciones/puertas-automatizacion", "/soluciones/puertas-principales", "/soluciones/techos-coberturas", "/soluciones/ventanas-mamparas", "/soluciones/acero-barandas", "/soluciones/estructuras-metalicas", "/soluciones/cerco-electrico", "/soluciones/drywall-cielorrasos", "/productos", "/proyectos", "/cotizar", "/nosotros", "/contacto", "/libro-reclamaciones", "/mi-proyecto", "/asistente", "/cotizar/finalizar", "/cotizar/confirmacion/COT-IRP-00284", "/proforma"];
+const routes = ["/", "/soluciones", "/soluciones/puertas-automatizacion", "/soluciones/puertas-principales", "/soluciones/techos-coberturas", "/soluciones/ventanas-mamparas", "/soluciones/acero-barandas", "/soluciones/cerco-electrico", "/soluciones/drywall-cielorrasos", "/productos", "/proyectos", "/cotizar", "/nosotros", "/contacto", "/libro-reclamaciones", "/mi-proyecto", "/asistente", "/cotizar/finalizar", "/cotizar/confirmacion/COT-IRP-00284", "/proforma"];
 
 await mkdir(outputDirectory, { recursive: true });
 const browser = await chromium.launch({ executablePath, headless: true });
